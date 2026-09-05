@@ -4,15 +4,20 @@ const client = axios.create({
   baseURL: "/api/v1/salud",
 });
 
-// Cuando tengamos Cognito, aquí se leerá el token guardado
-// (por ahora devuelve null y las peticiones reales del backend fallarán con 401,
-// así que mientras tanto usamos mocks)
 client.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
+});
+
+// Cliente aparte para los endpoints de integración externa (API key, no token de usuario)
+export const clientExterno = axios.create({
+  baseURL: "/api/v1/salud",
+  headers: {
+    "X-API-Key": "clave-temporal-cambiar",
+  },
 });
 
 export default client;
