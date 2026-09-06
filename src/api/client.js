@@ -16,7 +16,7 @@ client.interceptors.request.use((config) => {
 export const clientExterno = axios.create({
   baseURL: "/api/v1/salud",
   headers: {
-    "X-API-Key": "clave-temporal-cambiar",
+    "X-API-Key": import.meta.env.VITE_MODULOS_API_KEY || "clave-temporal-cambiar",
   },
 });
 
