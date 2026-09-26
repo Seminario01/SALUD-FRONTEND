@@ -33,6 +33,8 @@ export default function MiResumen() {
   const [citas, setCitas] = useState([]);
   const [vacunacion, setVacunacion] = useState(undefined);
   const [ultimaAtencion, setUltimaAtencion] = useState(undefined);
+  const [codigo, setCodigo] = useState(null);
+  const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
     client
@@ -47,7 +49,10 @@ export default function MiResumen() {
           .then((r) => setUltimaAtencion(r.data.data[0] ?? null))
           .catch(() => setUltimaAtencion(null));
       })
-      .catch(() => setPaciente(null));
+      .catch((err) => {
+        setPaciente(null);
+        setCodigo(err.response?.data?.sub ?? null);
+      });
   }, []);
 
   const ahora = new Date();
@@ -64,8 +69,21 @@ export default function MiResumen() {
 
       {paciente === null && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-sm text-amber-900 max-w-xl">
-          Su usuario todavía no está vinculado a un registro de paciente. Acérquese a recepción para
-          que lo registren con su cuenta del Login Único.
+          <p>
+            Su usuario todavía no está vinculado a un registro de paciente. Acérquese a recepción y
+            muestre este código para que lo vinculen:
+          </p>
+          {codigo && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <code className="bg-white border border-amber-200 rounded px-2 py-1 font-mono text-xs text-slate-800 break-all">{codigo}</code>
+              <button
+                onClick={() => navigator.clipboard?.writeText(codigo).then(() => setCopiado(true))}
+                className="text-xs px-2 py-1 rounded border border-amber-300 hover:bg-amber-100"
+              >
+                {copiado ? "Copiado" : "Copiar"}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

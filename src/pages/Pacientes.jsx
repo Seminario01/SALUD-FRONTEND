@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import Paginacion from "../components/Paginacion";
+import usePaginacion from "../hooks/usePaginacion";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 
@@ -33,7 +36,7 @@ function FormularioPaciente({ onCreado }) {
     client
       .post("/pacientes", cuerpo)
       .then((res) => {
-        setExito(`Paciente registrado con ID ${res.data.data.id}.`);
+        setExito({ id: res.data.data.id, nombre: cuerpo.nombre_completo });
         setDatos(PACIENTE_VACIO);
         onCreado();
       })
@@ -93,7 +96,12 @@ function FormularioPaciente({ onCreado }) {
         >
           {enviando ? "Guardando..." : "Registrar"}
         </button>
-        {exito && <span className="text-sm text-green-700">{exito}</span>}
+        {exito && (
+          <span className="text-sm text-green-700">
+            Paciente registrado con ID {exito.id}.{" "}
+            <Link to={`/pacientes/${exito.id}`} className="font-medium underline hover:text-green-900">Ver ficha de {exito.nombre} →</Link>
+          </span>
+        )}
         {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
     </form>
@@ -140,6 +148,7 @@ export default function Pacientes() {
 
   // --- Listado real: GET /pacientes (solo personal de Salud) ---
   const [pacientes, setPacientes] = useState([]);
+  const pag = usePaginacion(pacientes, 15);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
@@ -234,10 +243,12 @@ export default function Pacientes() {
             </tr>
           </thead>
           <tbody>
-            {pacientes.map((p) => (
+            {pag.items.map((p) => (
               <tr key={p.id} className="border-b hover:bg-gray-50">
                 <td className="p-2">{p.id}</td>
-                <td className="p-2">{p.nombre_completo}</td>
+                <td className="p-2">
+                  <Link to={`/pacientes/${p.id}`} className="font-medium text-blue-700 hover:underline">{p.nombre_completo}</Link>
+                </td>
                 <td className="p-2">{p.cui}</td>
                 <td className="p-2">{p.telefono}</td>
                 <td className="p-2">{p.tipo_seguro}</td>
@@ -254,6 +265,7 @@ export default function Pacientes() {
           </tbody>
         </table>
       )}
+      <Paginacion {...pag} />
     </div>
   );
 }

@@ -103,6 +103,7 @@ export default function Turnos() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [errorAccion, setErrorAccion] = useState(null);
+  const [consultorio, setConsultorio] = useState("Consultorio 1");
 
   const cargar = useCallback(() => {
     client
@@ -121,8 +122,9 @@ export default function Turnos() {
 
   function avanzar(turno) {
     setErrorAccion(null);
+    const accion = SIGUIENTE[turno.estado].accion;
     client
-      .put(`/turnos/${turno.id}/${SIGUIENTE[turno.estado].accion}`)
+      .put(`/turnos/${turno.id}/${accion}`, accion === "llamar" ? { modulo_asignado: consultorio } : {})
       .then(cargar)
       .catch((err) => setErrorAccion(mensajeError(err)));
   }
@@ -131,7 +133,25 @@ export default function Turnos() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Turnos activos</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">Turnos activos</h1>
+        <div className="flex flex-wrap items-center gap-3">
+          {puedeAtenderTurnos && (
+            <label className="text-sm flex items-center gap-2">
+              Llamar a:
+              <select value={consultorio} onChange={(e) => setConsultorio(e.target.value)} className="border rounded px-2 py-1">
+                {["Consultorio 1", "Consultorio 2", "Consultorio 3", "Consultorio 4", "Emergencias"].map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+            </label>
+          )}
+          <a href="/turnos/pantalla" target="_blank" rel="noreferrer"
+            className="text-sm px-3 py-1.5 rounded-lg border border-blue-700 text-blue-700 hover:bg-blue-50">
+            Abrir pantalla de sala de espera ↗
+          </a>
+        </div>
+      </div>
 
       {puedeGenerarTurnos && <FormularioTurno onCreado={cargar} />}
 
@@ -147,6 +167,7 @@ export default function Turnos() {
           <thead>
             <tr className="border-b bg-gray-100">
               <th className="p-2">N° turno</th>
+              {turnos.some((t) => "paciente" in t) && <th className="p-2">Paciente</th>}
               <th className="p-2">Tipo de atención</th>
               <th className="p-2">Prioridad</th>
               <th className="p-2">Estado</th>
@@ -157,7 +178,11 @@ export default function Turnos() {
             {turnos.map((t) => (
               <tr key={t.id} className="border-b hover:bg-gray-50">
                 <td className="p-2 font-bold">{t.numero_turno}</td>
-                <td className="p-2">{TIPOS[t.tipo_atencion] ?? t.tipo_atencion}</td>
+                {"paciente" in t && <td className="p-2">{t.paciente ?? "—"}</td>}
+                <td className="p-2">
+                  {TIPOS[t.tipo_atencion] ?? t.tipo_atencion}
+                  {t.modulo_asignado && <span className="block text-xs text-slate-500">{t.modulo_asignado}</span>}
+                </td>
                 <td className={`p-2 capitalize ${t.prioridad === "urgente" ? "text-red-700 font-semibold" : ""}`}>
                   {t.prioridad}
                 </td>

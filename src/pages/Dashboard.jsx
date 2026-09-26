@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import client from "../api/client";
 import MiResumen from "./MiResumen";
 import EstadoIntegraciones from "../components/EstadoIntegraciones";
+import ResumenCitas from "../components/ResumenCitas";
 import useRoles from "../hooks/useRoles";
 
 function TarjetaResumen({ titulo, valor, detalle, to, color }) {
@@ -137,6 +138,7 @@ export default function Dashboard() {
           </div>
         </>
       )}
+      {esPersonal && <ResumenCitas />}
       {esPersonal && <EstadoIntegraciones />}
     </div>
   );

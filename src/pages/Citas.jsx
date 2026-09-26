@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
+import Paginacion from "../components/Paginacion";
+import usePaginacion from "../hooks/usePaginacion";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 
 const colores = {
@@ -94,6 +96,25 @@ export default function Citas() {
   const { pacientes, aviso } = usePacientesSeleccionables(esPersonal);
   const nombrePaciente = (id) => pacientes.find((p) => p.id === id)?.nombre_completo ?? `ID ${id}`;
   const [citas, setCitas] = useState([]);
+  // --- Filtros (en el navegador) ---
+  const [filtroEstado, setFiltroEstado] = useState("");
+  const [desde, setDesde] = useState("");
+  const [hasta, setHasta] = useState("");
+  const [texto, setTexto] = useState("");
+  const filtradas = citas.filter((c) => {
+    const dia = String(c.fecha_hora).slice(0, 10);
+    if (filtroEstado && c.estado !== filtroEstado) return false;
+    if (desde && dia < desde) return false;
+    if (hasta && dia > hasta) return false;
+    if (texto) {
+      const t = texto.toLowerCase();
+      const nombre = (pacientes.find((p) => p.id === c.paciente_id)?.nombre_completo ?? "").toLowerCase();
+      if (!nombre.includes(t) && !(c.motivo ?? "").toLowerCase().includes(t)) return false;
+    }
+    return true;
+  });
+  const pag = usePaginacion(filtradas, 15);
+  const hayFiltros = filtroEstado || desde || hasta || texto;
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [errorAccion, setErrorAccion] = useState(null);
@@ -161,9 +182,35 @@ export default function Citas() {
       {errorAccion && <p className="mb-4 text-red-600 text-sm">{errorAccion}</p>}
       {avisoPago && <p className="mb-4 text-sm text-green-800 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{avisoPago}</p>}
 
-      {!error && citas.length === 0 && <p className="text-gray-500 text-sm">No hay citas registradas.</p>}
-
       {!error && citas.length > 0 && (
+        <div className="flex flex-wrap items-end gap-3 mb-3">
+          <label className="text-sm">Estado
+            <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="border rounded px-2 py-1.5 block">
+              <option value="">Todos</option>
+              {["pendiente", "confirmada", "atendida", "cancelada"].map((e) => <option key={e} value={e}>{e}</option>)}
+            </select>
+          </label>
+          <label className="text-sm">Desde
+            <input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} className="border rounded px-2 py-1 block" />
+          </label>
+          <label className="text-sm">Hasta
+            <input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} className="border rounded px-2 py-1 block" />
+          </label>
+          <label className="text-sm">{esPersonal ? "Paciente o motivo" : "Motivo"}
+            <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Buscar..." className="border rounded px-2 py-1 block w-52" />
+          </label>
+          {hayFiltros && (
+            <button onClick={() => { setFiltroEstado(""); setDesde(""); setHasta(""); setTexto(""); }}
+              className="text-sm px-3 py-1.5 rounded border hover:bg-gray-100">Quitar filtros</button>
+          )}
+          <span className="text-sm text-slate-500 ml-auto">{filtradas.length} cita(s)</span>
+        </div>
+      )}
+
+      {!error && citas.length === 0 && <p className="text-gray-500 text-sm">No hay citas registradas.</p>}
+      {!error && citas.length > 0 && filtradas.length === 0 && <p className="text-gray-500 text-sm">Ninguna cita coincide con los filtros.</p>}
+
+      {!error && filtradas.length > 0 && (
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b bg-gray-100">
@@ -176,7 +223,7 @@ export default function Citas() {
             </tr>
           </thead>
           <tbody>
-            {citas.map((c) => {
+            {pag.items.map((c) => {
               const activa = c.estado === "pendiente" || c.estado === "confirmada";
               return (
                 <tr key={c.id} className="border-b hover:bg-gray-50">
@@ -220,6 +267,7 @@ export default function Citas() {
           </tbody>
         </table>
       )}
+      <Paginacion {...pag} />
     </div>
   );
 }
