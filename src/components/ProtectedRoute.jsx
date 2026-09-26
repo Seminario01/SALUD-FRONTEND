@@ -1,9 +1,11 @@
 import { Navigate } from "react-router-dom";
-import { estaAutenticado } from "../auth";
+import { useAuth } from "react-oidc-context";
 
 export default function ProtectedRoute({ children }) {
-  if (!estaAutenticado()) {
-    return <Navigate to="/login" replace />;
-  }
+  const auth = useAuth();
+
+  if (auth.isLoading) return <p className="p-6">Cargando sesión...</p>;
+  if (!auth.isAuthenticated) return <Navigate to="/login" replace />;
+
   return children;
 }

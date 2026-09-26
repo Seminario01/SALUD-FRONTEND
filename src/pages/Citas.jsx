@@ -18,8 +18,7 @@ export default function Citas() {
       .get("/citas")
       .then((res) => setCitas(res.data.data))
       .catch((err) => {
-        // Si el backend responde 401/403, probablemente falte el token de Cognito
-        // (todavía no hay User Pool configurado) o el usuario no tiene permiso.
+        // 401: la sesión venció. 403: el usuario no tiene el rol necesario.
         setError(err.response?.data?.message || err.message);
       })
       .finally(() => setCargando(false));

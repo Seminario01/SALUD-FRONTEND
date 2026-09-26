@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { clientExterno } from "../api/client";
+import client from "../api/client";
 
 export default function Recursos() {
   const [recursos, setRecursos] = useState([]);
@@ -7,7 +7,8 @@ export default function Recursos() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    clientExterno.get("/recursos/disponibilidad")
+    // GET /recursos requiere el token del Login Único.
+    client.get("/recursos")
       .then((res) => setRecursos(res.data.data))
       .catch((err) => setError(err.message))
       .finally(() => setCargando(false));

@@ -1,12 +1,15 @@
-import { Link, Outlet, useNavigate } from "react-router-dom";
-import { cerrarSesion } from "../auth";
+import { Link, Outlet } from "react-router-dom";
+import { useAuth } from "react-oidc-context";
+import { rolesDe } from "../auth";
 
 export default function Layout() {
-  const navigate = useNavigate();
+  const auth = useAuth();
+  const perfil = auth.user?.profile;
+  const rolesSalud = rolesDe(auth.user).filter((r) => r.startsWith("salud:") || r === "ciudadano");
 
   function manejarLogout() {
-    cerrarSesion();
-    navigate("/login");
+    // Cierra la sesión también en el Login Único (no solo en esta app).
+    auth.signoutRedirect({ id_token_hint: auth.user?.id_token });
   }
 
   return (
@@ -20,7 +23,11 @@ export default function Layout() {
           <Link to="/recursos" className="hover:underline">Recursos</Link>
           <Link to="/vacunacion" className="hover:underline">Vacunación</Link>
           <Link to="/expedientes" className="hover:underline">Expedientes</Link>
-          <button onClick={manejarLogout} className="ml-auto hover:underline text-sm">
+          <span className="ml-auto text-sm text-blue-100">
+            {perfil?.name || perfil?.preferred_username}
+            {rolesSalud.length > 0 && <span className="opacity-75"> · {rolesSalud.join(", ")}</span>}
+          </span>
+          <button onClick={manejarLogout} className="hover:underline text-sm">
             Cerrar sesión
           </button>
         </nav>
