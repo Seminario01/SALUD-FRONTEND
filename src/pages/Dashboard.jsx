@@ -26,7 +26,13 @@ export default function Dashboard() {
       .catch(() => setErrorIndicadores(true));
   }, []);
 
-  const camasDisponibles = indicadores?.recursos?.find((r) => r.tipo === "cama");
+  // Formato de GET /indicadores: { pacientes_totales, citas: {...}, turnos: {...},
+  // vacunacion: {...}, recursos_hospitalarios: [...] }
+  const citas = indicadores?.citas ?? {};
+  const turnos = indicadores?.turnos ?? {};
+  const vacunacion = indicadores?.vacunacion ?? {};
+  const recursos = indicadores?.recursos_hospitalarios ?? [];
+  const camasDisponibles = recursos.find((r) => r.tipo === "cama");
 
   return (
     <div className="p-6">
@@ -54,22 +60,22 @@ export default function Dashboard() {
           />
           <TarjetaResumen
             titulo="Citas pendientes"
-            valor={indicadores.citas_pendientes}
-            detalle={`${indicadores.citas_atendidas} atendidas, ${indicadores.citas_canceladas} canceladas`}
+            valor={citas.pendientes ?? 0}
+            detalle={`${citas.atendidas ?? 0} atendidas, ${citas.canceladas ?? 0} canceladas`}
             to="/citas"
             color="text-yellow-600"
           />
           <TarjetaResumen
             titulo="Turnos en espera"
-            valor={indicadores.turnos_en_espera}
-            detalle={`${indicadores.turnos_atendidos} atendidos`}
+            valor={turnos.en_espera ?? 0}
+            detalle={`${turnos.atendidos ?? 0} atendidos`}
             to="/turnos"
             color="text-orange-600"
           />
           <TarjetaResumen
             titulo="Vacunación pendiente"
-            valor={indicadores.vacunacion_pendiente}
-            detalle={`${indicadores.estudiantes_vacunados} estudiantes con esquema completo`}
+            valor={vacunacion.pendiente ?? 0}
+            detalle={`${vacunacion.estudiantes_vacunados ?? 0} estudiantes con esquema completo`}
             to="/vacunacion"
             color="text-purple-600"
           />
@@ -77,7 +83,7 @@ export default function Dashboard() {
       )}
 
       <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Recursos hospitalarios</h2>
-      {indicadores && (!indicadores.recursos || indicadores.recursos.length === 0) && (
+      {indicadores && recursos.length === 0 && (
         <p className="text-gray-500 text-sm">Aún no hay recursos cargados en la base de datos.</p>
       )}
       {camasDisponibles && (
@@ -93,15 +99,15 @@ export default function Dashboard() {
         Ver todos los recursos →
       </Link>
 
-      {indicadores?.presupuesto && (
+      {indicadores?.presupuesto_servicio_social && (
         <>
-          <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Presupuesto ({indicadores.presupuesto.periodo})</h2>
+          <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Presupuesto ({indicadores.presupuesto_servicio_social.periodo})</h2>
           <div className="bg-white border rounded-lg p-4 shadow-sm inline-block">
             <p className="text-sm text-gray-500">Ejecutado / Asignado</p>
             <p className="text-3xl font-bold text-teal-700">
-              Q{indicadores.presupuesto.monto_ejecutado_servicio_social.toLocaleString()}{" "}
+              Q{indicadores.presupuesto_servicio_social.monto_ejecutado_servicio_social.toLocaleString()}{" "}
               <span className="text-sm text-gray-400 font-normal">
-                / Q{indicadores.presupuesto.monto_asignado.toLocaleString()}
+                / Q{indicadores.presupuesto_servicio_social.monto_asignado.toLocaleString()}
               </span>
             </p>
           </div>
