@@ -19,3 +19,11 @@ client.interceptors.request.use((config) => {
 // Es solo para comunicación servidor a servidor entre backends.
 
 export default client;
+
+// Convierte un error de axios en un mensaje para mostrar en pantalla.
+export function mensajeError(err) {
+  const status = err.response?.status;
+  if (status === 401) return "Su sesión venció. Vuelva a iniciar sesión.";
+  if (status === 403) return err.response?.data?.message || "No tiene permiso para esta acción.";
+  return err.response?.data?.message || err.message;
+}
