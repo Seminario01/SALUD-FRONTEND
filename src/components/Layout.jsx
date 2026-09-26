@@ -18,6 +18,8 @@ const ETIQUETA_ROL = {
   "salud:medico": "Médico",
   "salud:recepcion": "Recepción",
   ciudadano: "Ciudadano",
+  "auditoria:analista": "Auditoría Social",
+  "auditoria:admin": "Auditoría Social",
 };
 
 export default function Layout() {
@@ -25,13 +27,13 @@ export default function Layout() {
   const r = useRoles();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const perfil = auth.user?.profile;
-  const rolPrincipal = ["salud:admin", "salud:medico", "salud:recepcion", "ciudadano"].find((x) => r.roles.includes(x));
+  const rolPrincipal = ["salud:admin", "salud:medico", "salud:recepcion", "auditoria:admin", "auditoria:analista", "ciudadano"].find((x) => r.roles.includes(x));
 
   // Cada rol ve solo lo que puede usar (el backend igual valida cada petición)
   const enlaces = [
-    { to: "/", texto: r.esPersonal ? "Dashboard" : "Mi resumen", ver: true },
+    { to: "/", texto: r.esPersonal ? "Dashboard" : r.esAuditor ? "Panel de indicadores" : "Mi resumen", ver: true },
     { to: "/pacientes", texto: "Pacientes", ver: r.esPersonal },
-    { to: "/citas", texto: r.esPersonal ? "Citas" : "Mis citas", ver: true },
+    { to: "/citas", texto: r.esPersonal ? "Citas" : "Mis citas", ver: r.esPersonal || r.esCiudadano },
     { to: "/turnos", texto: "Turnos", ver: r.esPersonal },
     { to: "/vacunacion", texto: r.esPersonal ? "Vacunación" : "Mi vacunación", ver: r.esAdmin || r.esMedico || r.esCiudadano },
     { to: "/expedientes", texto: r.esPersonal ? "Expedientes" : "Mi expediente", ver: r.esAdmin || r.esMedico || r.esCiudadano },

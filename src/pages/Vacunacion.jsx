@@ -33,6 +33,23 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
     setDatos(datosDe(buscar(id)));
     setExito(null);
     setError(null);
+    setEducacion(null);
+  }
+
+  // --- Consulta al módulo de Educación: ¿el paciente es estudiante? ---
+  const [educacion, setEducacion] = useState(null);
+  const cui = pacientes.find((p) => String(p.id) === String(pacienteId))?.cui;
+
+  function verificarEducacion() {
+    setEducacion({ cargando: true });
+    client
+      .get(`/educacion/estudiantes/${encodeURIComponent(cui)}`)
+      .then((res) => {
+        const d = res.data.data;
+        setEducacion({ datos: d });
+        setDatos((actual) => ({ ...actual, es_estudiante: Boolean(d.esEstudiante) }));
+      })
+      .catch((err) => setEducacion({ error: mensajeError(err) }));
   }
 
   function enviar(e) {
@@ -75,6 +92,17 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
             onChange={(e) => setDatos({ ...datos, es_estudiante: e.target.checked })}
           />
           Es estudiante
+          {pacienteId && (
+            <button
+              type="button"
+              onClick={verificarEducacion}
+              disabled={!cui || educacion?.cargando}
+              title={cui ? "Consultar al módulo de Educación" : "El paciente no tiene CUI registrado"}
+              className="ml-2 text-xs px-2 py-0.5 rounded border hover:bg-gray-100 disabled:opacity-40"
+            >
+              {educacion?.cargando ? "Consultando..." : "Verificar en Educación"}
+            </button>
+          )}
         </label>
         <label className="text-sm flex items-center gap-2 pb-2">
           <input
@@ -84,6 +112,16 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
           />
           Esquema completo
         </label>
+        {educacion && !educacion.cargando && (
+          <p className={`text-sm md:col-span-3 rounded-lg px-3 py-2 ${educacion.error ? "bg-slate-50 text-slate-600" : educacion.datos?.esEstudiante ? "bg-blue-50 text-blue-800" : "bg-slate-50 text-slate-600"}`}>
+            {educacion.error
+              ? educacion.error
+              : educacion.datos.esEstudiante
+                ? `Educación: estudiante de ${educacion.datos.establecimiento ?? "—"} · ${educacion.datos.grado ?? ""} ${educacion.datos.seccion ? `sección ${educacion.datos.seccion}` : ""} · jornada ${educacion.datos.jornada ?? "—"}`
+                : "Educación: el CUI no corresponde a un estudiante activo."}
+            {educacion.datos?.simulado && <span className="text-amber-700"> (simulador)</span>}
+          </p>
+        )}
         <label className="text-sm md:col-span-3">
           Vacunas pendientes
           <input

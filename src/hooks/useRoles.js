@@ -17,6 +17,8 @@ export default function useRoles() {
     esRecepcion,
     esPersonal: esAdmin || esMedico || esRecepcion,
     esCiudadano: roles.includes(ROLES.CIUDADANO),
+    // Auditoría Social: solo lectura de indicadores agregados
+    esAuditor: roles.includes("auditoria:analista") || roles.includes("auditoria:admin"),
     // Mismas reglas que el backend (ver docs/AUTENTICACION.md del backend)
     puedeRegistrarPacientes: esAdmin || esRecepcion,
     puedeGenerarTurnos: esAdmin || esRecepcion,

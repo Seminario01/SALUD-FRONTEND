@@ -100,6 +100,41 @@ function FormularioPaciente({ onCreado }) {
   );
 }
 
+function ResultadoAntecedentes({ consulta, onCerrar }) {
+  if (!consulta) return null;
+  const { paciente, cargando, error, datos } = consulta;
+  const alto = datos?.tieneAntecedentes && ["ALTO", "MEDIO"].includes(String(datos.nivelRiesgo).toUpperCase());
+  const estilo = error
+    ? "bg-slate-50 border-slate-200"
+    : datos?.tieneAntecedentes
+      ? alto ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"
+      : "bg-green-50 border-green-200";
+  return (
+    <div id="resultado-antecedentes" className={`border rounded-xl p-4 mb-4 text-sm scroll-mt-4 ${estilo}`}>
+      <div className="flex justify-between gap-3">
+        <p className="font-semibold text-slate-800">Antecedentes en Seguridad · {paciente.nombre_completo}</p>
+        <button onClick={onCerrar} className="text-slate-400 hover:text-slate-700" aria-label="Cerrar">✕</button>
+      </div>
+      {cargando && <p className="text-slate-500 mt-1">Consultando al módulo de Seguridad...</p>}
+      {error && <p className="text-slate-600 mt-1">{error}</p>}
+      {datos && !datos.tieneAntecedentes && (
+        <p className="text-green-800 mt-1">Sin antecedentes registrados. Atención normal.</p>
+      )}
+      {datos?.tieneAntecedentes && (
+        <div className="mt-1 space-y-0.5 text-slate-700">
+          <p>Tipo: <span className="font-medium">{datos.tipoAntecedente || "—"}</span></p>
+          <p>Nivel de riesgo: <span className="font-semibold">{datos.nivelRiesgo}</span></p>
+          <p className={datos.requiereCustodia ? "font-semibold text-red-700" : ""}>
+            {datos.requiereCustodia ? "Requiere custodia durante la atención." : "No requiere custodia."}
+          </p>
+          <p className="text-xs text-slate-500">El paciente se atiende siempre; esto solo indica cuidados adicionales.</p>
+        </div>
+      )}
+      {datos?.simulado && <p className="text-xs text-amber-700 mt-2">Respuesta del simulador de Seguridad (desarrollo).</p>}
+    </div>
+  );
+}
+
 export default function Pacientes() {
   const { puedeRegistrarPacientes } = useRoles();
 
@@ -124,6 +159,23 @@ export default function Pacientes() {
   useEffect(() => {
     cargar();
   }, [cargar]);
+
+  // --- Consulta de antecedentes en el módulo de Seguridad (WS-SALUD-08) ---
+  const [consulta, setConsulta] = useState(null);
+
+  function consultarAntecedentes(p) {
+    if (!p.cui) {
+      setConsulta({ paciente: p, error: "El paciente no tiene CUI registrado; no se puede consultar a Seguridad." });
+      return;
+    }
+    setConsulta({ paciente: p, cargando: true });
+    // El resultado aparece arriba de la tabla: llevar la vista hasta él
+    setTimeout(() => document.getElementById("resultado-antecedentes")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+    client
+      .get(`/pacientes/${p.id}/antecedentes`)
+      .then((res) => setConsulta({ paciente: p, datos: res.data.data }))
+      .catch((err) => setConsulta({ paciente: p, error: mensajeError(err) }));
+  }
 
   // --- Búsqueda por nombre o CUI (GET /pacientes?q=...) ---
   const [texto, setTexto] = useState("");
@@ -165,6 +217,7 @@ export default function Pacientes() {
       </div>
       {cargando && <p className="text-sm text-gray-500">Cargando...</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
+      <ResultadoAntecedentes consulta={consulta} onCerrar={() => setConsulta(null)} />
       {!cargando && !error && pacientes.length === 0 && (
         <p className="text-sm text-gray-500">No se encontraron pacientes.</p>
       )}
@@ -177,6 +230,7 @@ export default function Pacientes() {
               <th className="p-2">CUI</th>
               <th className="p-2">Teléfono</th>
               <th className="p-2">Tipo de seguro</th>
+              <th className="p-2">Antecedentes (Seguridad)</th>
             </tr>
           </thead>
           <tbody>
@@ -187,6 +241,14 @@ export default function Pacientes() {
                 <td className="p-2">{p.cui}</td>
                 <td className="p-2">{p.telefono}</td>
                 <td className="p-2">{p.tipo_seguro}</td>
+                <td className="p-2">
+                  <button
+                    onClick={() => consultarAntecedentes(p)}
+                    className="text-xs px-2 py-1 rounded border hover:bg-gray-100"
+                  >
+                    Consultar
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

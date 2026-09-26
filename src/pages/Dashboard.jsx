@@ -2,21 +2,29 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import client from "../api/client";
 import MiResumen from "./MiResumen";
+import EstadoIntegraciones from "../components/EstadoIntegraciones";
+import useRoles from "../hooks/useRoles";
 
 function TarjetaResumen({ titulo, valor, detalle, to, color }) {
-  return (
-    <Link
-      to={to}
-      className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow block"
-    >
+  const contenido = (
+    <>
       <p className="text-sm text-gray-500">{titulo}</p>
       <p className={`text-3xl font-bold ${color}`}>{valor}</p>
       <p className="text-xs text-gray-400 mt-1">{detalle}</p>
+    </>
+  );
+  // Sin "to" (vista de Auditoría) la tarjeta no es un enlace
+  if (!to) return <div className="bg-white border rounded-lg p-4 shadow-sm block">{contenido}</div>;
+  return (
+    <Link to={to} className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow block">
+      {contenido}
     </Link>
   );
 }
 
 export default function Dashboard() {
+  const { esPersonal, esAuditor } = useRoles();
+  const enlace = (ruta) => (esPersonal ? ruta : undefined);
   const [indicadores, setIndicadores] = useState(null);
   const [errorIndicadores, setErrorIndicadores] = useState(false);
   const [sinPermiso, setSinPermiso] = useState(false);
@@ -47,7 +55,11 @@ export default function Dashboard() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-1">Módulo de Salud</h1>
-      <p className="text-gray-500 mb-6">Resumen general del sistema</p>
+      <p className="text-gray-500 mb-6">
+        {esAuditor && !esPersonal
+          ? "Vista de Auditoría Social: indicadores agregados, solo lectura (sin datos personales)."
+          : "Resumen general del sistema"}
+      </p>
 
       {errorIndicadores && (
         <p className="text-red-600 text-sm mb-4">
@@ -65,28 +77,28 @@ export default function Dashboard() {
             titulo="Pacientes registrados"
             valor={indicadores.pacientes_totales}
             detalle="Total en la base de datos"
-            to="/pacientes"
+            to={enlace("/pacientes")}
             color="text-blue-700"
           />
           <TarjetaResumen
             titulo="Citas pendientes"
             valor={citas.pendientes ?? 0}
             detalle={`${citas.atendidas ?? 0} atendidas, ${citas.canceladas ?? 0} canceladas`}
-            to="/citas"
+            to={enlace("/citas")}
             color="text-yellow-600"
           />
           <TarjetaResumen
             titulo="Turnos en espera"
             valor={turnos.en_espera ?? 0}
             detalle={`${turnos.atendidos ?? 0} atendidos`}
-            to="/turnos"
+            to={enlace("/turnos")}
             color="text-orange-600"
           />
           <TarjetaResumen
             titulo="Vacunación pendiente"
             valor={vacunacion.pendiente ?? 0}
             detalle={`${vacunacion.estudiantes_vacunados ?? 0} estudiantes con esquema completo`}
-            to="/vacunacion"
+            to={enlace("/vacunacion")}
             color="text-purple-600"
           />
         </div>
@@ -105,9 +117,11 @@ export default function Dashboard() {
           </p>
         </div>
       )}
-      <Link to="/recursos" className="block mt-2 text-sm text-blue-700 hover:underline">
-        Ver todos los recursos →
-      </Link>
+      {esPersonal && (
+        <Link to="/recursos" className="block mt-2 text-sm text-blue-700 hover:underline">
+          Ver todos los recursos →
+        </Link>
+      )}
 
       {indicadores?.presupuesto_servicio_social && (
         <>
@@ -123,6 +137,7 @@ export default function Dashboard() {
           </div>
         </>
       )}
+      {esPersonal && <EstadoIntegraciones />}
     </div>
   );
 }

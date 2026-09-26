@@ -119,6 +119,29 @@ export default function Citas() {
     client.put(`/citas/${cita.id}`, { estado }).then(cargar).catch((err) => setErrorAccion(mensajeError(err)));
   }
 
+  // WS-SALUD-09: el backend consulta a Tributario y, si está pagado, marca la cita
+  const [verificando, setVerificando] = useState(null);
+  const [avisoPago, setAvisoPago] = useState(null);
+
+  function verificarPago(cita) {
+    setErrorAccion(null);
+    setAvisoPago(null);
+    setVerificando(cita.id);
+    client
+      .post(`/citas/${cita.id}/verificar-pago`)
+      .then((res) => {
+        const d = res.data.data;
+        setAvisoPago(
+          d.pagoConfirmado
+            ? `Tributario confirmó el pago (Q${d.monto}, referencia ${d.numeroReferencia}).`
+            : `Tributario no confirmó el pago (referencia ${d.numeroReferencia}).`
+        );
+        cargar();
+      })
+      .catch((err) => setErrorAccion(mensajeError(err)))
+      .finally(() => setVerificando(null));
+  }
+
   function cancelar(cita) {
     if (!window.confirm(`¿Cancelar la cita del ${formatoFecha(cita.fecha_hora)}?`)) return;
     setErrorAccion(null);
@@ -136,6 +159,7 @@ export default function Citas() {
 
       {error && <p className="mb-4 text-red-600 text-sm">No se pudieron cargar las citas: {error}</p>}
       {errorAccion && <p className="mb-4 text-red-600 text-sm">{errorAccion}</p>}
+      {avisoPago && <p className="mb-4 text-sm text-green-800 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{avisoPago}</p>}
 
       {!error && citas.length === 0 && <p className="text-gray-500 text-sm">No hay citas registradas.</p>}
 
@@ -147,6 +171,7 @@ export default function Citas() {
               {esPersonal && <th className="p-2">Paciente</th>}
               <th className="p-2">Motivo</th>
               <th className="p-2">Estado</th>
+              <th className="p-2">Pago</th>
               <th className="p-2">Acciones</th>
             </tr>
           </thead>
@@ -162,6 +187,21 @@ export default function Citas() {
                     <span className={`px-2 py-1 rounded text-sm ${colores[c.estado] ?? "bg-gray-100 text-gray-800"}`}>
                       {c.estado}
                     </span>
+                  </td>
+                  <td className="p-2">
+                    {c.pago_confirmado ? (
+                      <span className="px-2 py-1 rounded text-sm bg-green-100 text-green-800">Pagado</span>
+                    ) : esPersonal && c.estado !== "cancelada" ? (
+                      <button
+                        onClick={() => verificarPago(c)}
+                        disabled={verificando === c.id}
+                        className={`${boton} disabled:opacity-50`}
+                      >
+                        {verificando === c.id ? "Consultando..." : "Verificar pago"}
+                      </button>
+                    ) : (
+                      <span className="text-sm text-slate-400">Pendiente</span>
+                    )}
                   </td>
                   <td className="p-2 space-x-1">
                     {esPersonal && c.estado === "pendiente" && (
