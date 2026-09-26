@@ -14,12 +14,8 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
-// Cliente aparte para los endpoints de integración externa (API key, no token de usuario)
-export const clientExterno = axios.create({
-  baseURL: "/api/v1/salud",
-  headers: {
-    "X-API-Key": import.meta.env.VITE_MODULOS_API_KEY || "clave-temporal-cambiar",
-  },
-});
+// Nota: la API key entre módulos (X-API-Key) NO va en el frontend. Todo lo
+// que se ve en el navegador (incluidas las variables VITE_*) es público.
+// Es solo para comunicación servidor a servidor entre backends.
 
 export default client;

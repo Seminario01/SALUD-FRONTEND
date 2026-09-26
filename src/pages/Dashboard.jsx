@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { clientExterno } from "../api/client";
+import { useAuth } from "react-oidc-context";
+import client from "../api/client";
 
 function TarjetaResumen({ titulo, valor, detalle, to, color }) {
   return (
@@ -16,15 +17,37 @@ function TarjetaResumen({ titulo, valor, detalle, to, color }) {
 }
 
 export default function Dashboard() {
+  const auth = useAuth();
   const [indicadores, setIndicadores] = useState(null);
   const [errorIndicadores, setErrorIndicadores] = useState(false);
+  const [sinPermiso, setSinPermiso] = useState(false);
 
   useEffect(() => {
-    clientExterno
-      .get("/indicadores")
-      .then((res) => setIndicadores(res.data.data ?? res.data))
-      .catch(() => setErrorIndicadores(true));
+    // GET /panel usa el token del usuario (solo personal de Salud).
+    // La API key entre módulos NO se usa desde el navegador.
+    client
+      .get("/panel")
+      .then((res) => setIndicadores(res.data.data))
+      .catch((err) => {
+        if (err.response?.status === 403) setSinPermiso(true);
+        else setErrorIndicadores(true);
+      });
   }, []);
+
+  if (sinPermiso) {
+    return (
+      <div className="p-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-1">
+          Bienvenido, {auth.user?.profile?.given_name || auth.user?.profile?.name}
+        </h1>
+        <p className="text-gray-500 mb-6">Módulo de Salud</p>
+        <p className="text-gray-700">
+          El resumen general es solo para el personal de Salud. Puede consultar sus{" "}
+          <Link to="/citas" className="text-blue-700 hover:underline">citas</Link>.
+        </p>
+      </div>
+    );
+  }
 
   // Formato de GET /indicadores: { pacientes_totales, citas: {...}, turnos: {...},
   // vacunacion: {...}, recursos_hospitalarios: [...] }
