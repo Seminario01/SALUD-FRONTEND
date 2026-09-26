@@ -108,9 +108,9 @@ export default function Pacientes() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
-  const cargar = useCallback(() => {
+  const cargar = useCallback((q = "") => {
     client
-      .get("/pacientes")
+      .get("/pacientes", { params: q ? { q } : {} })
       .then((res) => {
         setPacientes(res.data.data);
         setError(null);
@@ -125,25 +125,19 @@ export default function Pacientes() {
     cargar();
   }, [cargar]);
 
-  // --- Búsqueda por ID ---
-  const [idBuscado, setIdBuscado] = useState("");
-  const [pacienteEncontrado, setPacienteEncontrado] = useState(null);
-  const [buscando, setBuscando] = useState(false);
-  const [errorBusqueda, setErrorBusqueda] = useState(null);
+  // --- Búsqueda por nombre o CUI (GET /pacientes?q=...) ---
+  const [texto, setTexto] = useState("");
 
-  function buscarPaciente(e) {
+  function buscar(e) {
     e.preventDefault();
-    if (!idBuscado) return;
+    setCargando(true);
+    cargar(texto.trim());
+  }
 
-    setBuscando(true);
-    setErrorBusqueda(null);
-    setPacienteEncontrado(null);
-
-    client
-      .get(`/pacientes/${idBuscado}`)
-      .then((res) => setPacienteEncontrado(res.data.data))
-      .catch((err) => setErrorBusqueda(mensajeError(err)))
-      .finally(() => setBuscando(false));
+  function limpiar() {
+    setTexto("");
+    setCargando(true);
+    cargar("");
   }
 
   return (
@@ -152,39 +146,29 @@ export default function Pacientes() {
 
       {puedeRegistrarPacientes && <FormularioPaciente onCreado={cargar} />}
 
-      <div className="bg-white border rounded-lg p-4 shadow-sm mb-6">
-        <h2 className="font-bold text-gray-700 mb-2">Buscar paciente por ID</h2>
-        <form onSubmit={buscarPaciente} className="flex gap-2 items-center">
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-3">
+        <h2 className="font-bold text-gray-700">Listado de pacientes</h2>
+        <form onSubmit={buscar} className="flex gap-2">
           <input
-            type="number"
-            value={idBuscado}
-            onChange={(e) => setIdBuscado(e.target.value)}
-            placeholder="ID del paciente"
-            className="border rounded px-3 py-1 w-40"
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            placeholder="Buscar por nombre o CUI"
+            className="border rounded px-3 py-1.5 w-64"
           />
-          <button
-            type="submit"
-            className="bg-blue-700 text-white px-4 py-1 rounded hover:bg-blue-800"
-          >
-            Buscar
-          </button>
+          <button type="submit" className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800">Buscar</button>
+          {texto && (
+            <button type="button" onClick={limpiar} className="px-3 py-1.5 rounded border hover:bg-gray-100 text-sm">
+              Limpiar
+            </button>
+          )}
         </form>
-
-        {buscando && <p className="text-sm text-gray-500 mt-2">Buscando...</p>}
-        {errorBusqueda && <p className="text-sm text-red-600 mt-2">{errorBusqueda}</p>}
-        {pacienteEncontrado && (
-          <div className="mt-3 text-sm text-gray-700">
-            <p><span className="font-semibold">Nombre:</span> {pacienteEncontrado.nombre_completo}</p>
-            <p><span className="font-semibold">CUI:</span> {pacienteEncontrado.cui}</p>
-            <p><span className="font-semibold">Tipo de seguro:</span> {pacienteEncontrado.tipo_seguro}</p>
-          </div>
-        )}
       </div>
-
-      <h2 className="font-bold text-gray-700 mb-2">Listado de pacientes</h2>
       {cargando && <p className="text-sm text-gray-500">Cargando...</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
-      {!cargando && !error && (
+      {!cargando && !error && pacientes.length === 0 && (
+        <p className="text-sm text-gray-500">No se encontraron pacientes.</p>
+      )}
+      {!cargando && !error && pacientes.length > 0 && (
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b bg-gray-100">

@@ -15,8 +15,7 @@ function formatoFecha(texto) {
   return isNaN(fecha) ? texto : fecha.toLocaleString("es-GT", { dateStyle: "medium", timeStyle: "short" });
 }
 
-function FormularioCita({ esPersonal, onCreada }) {
-  const { pacientes, aviso } = usePacientesSeleccionables(esPersonal);
+function FormularioCita({ esPersonal, pacientes, aviso, onCreada }) {
   const [pacienteId, setPacienteId] = useState("");
   const [fechaHora, setFechaHora] = useState("");
   const [motivo, setMotivo] = useState("");
@@ -92,6 +91,8 @@ function FormularioCita({ esPersonal, onCreada }) {
 
 export default function Citas() {
   const { esPersonal } = useRoles();
+  const { pacientes, aviso } = usePacientesSeleccionables(esPersonal);
+  const nombrePaciente = (id) => pacientes.find((p) => p.id === id)?.nombre_completo ?? `ID ${id}`;
   const [citas, setCitas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -131,7 +132,7 @@ export default function Citas() {
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-4">{esPersonal ? "Citas médicas" : "Mis citas"}</h1>
 
-      <FormularioCita esPersonal={esPersonal} onCreada={cargar} />
+      <FormularioCita esPersonal={esPersonal} pacientes={pacientes} aviso={aviso} onCreada={cargar} />
 
       {error && <p className="mb-4 text-red-600 text-sm">No se pudieron cargar las citas: {error}</p>}
       {errorAccion && <p className="mb-4 text-red-600 text-sm">{errorAccion}</p>}
@@ -155,7 +156,7 @@ export default function Citas() {
               return (
                 <tr key={c.id} className="border-b hover:bg-gray-50">
                   <td className="p-2">{formatoFecha(c.fecha_hora)}</td>
-                  {esPersonal && <td className="p-2">ID {c.paciente_id}</td>}
+                  {esPersonal && <td className="p-2 font-medium text-slate-700">{nombrePaciente(c.paciente_id)}</td>}
                   <td className="p-2">{c.motivo}</td>
                   <td className="p-2">
                     <span className={`px-2 py-1 rounded text-sm ${colores[c.estado] ?? "bg-gray-100 text-gray-800"}`}>
