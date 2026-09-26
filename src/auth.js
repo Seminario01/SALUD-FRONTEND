@@ -7,8 +7,11 @@
 //  - El issuer cambia cada día: va en el .env.local (VITE_AUTH_URL), nunca en el código.
 import { WebStorageStateStore, User } from "oidc-client-ts";
 
-export const AUTH_URL = import.meta.env.VITE_AUTH_URL; // <URL_DEL_DIA>/realms/rsd
-export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID || "salud-web";
+// Prioridad: config en tiempo de ejecución (public/config.js, lo genera el
+// contenedor al arrancar) y, si no existe, las variables VITE_* del .env.local.
+const runtime = window.__SALUD_CONFIG__ || {};
+export const AUTH_URL = runtime.AUTH_URL || import.meta.env.VITE_AUTH_URL; // <URL_DEL_DIA>/realms/rsd
+export const CLIENT_ID = runtime.CLIENT_ID || import.meta.env.VITE_CLIENT_ID || "salud-web";
 
 export const oidcConfig = {
   authority: AUTH_URL,
