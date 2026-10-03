@@ -63,7 +63,7 @@ export default function MiResumen() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-1">Hola, {nombre}</h1>
-      <p className="text-slate-500 mb-6">Este es el resumen de su información en el Módulo de Salud.</p>
+      <p className="text-slate-500 mb-6">Resumen de su información</p>
 
       {paciente === undefined && <p className="text-sm text-slate-500">Cargando...</p>}
 

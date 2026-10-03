@@ -135,10 +135,8 @@ function ResultadoAntecedentes({ consulta, onCerrar }) {
           <p className={datos.requiereCustodia ? "font-semibold text-red-700" : ""}>
             {datos.requiereCustodia ? "Requiere custodia durante la atención." : "No requiere custodia."}
           </p>
-          <p className="text-xs text-slate-500">El paciente se atiende siempre; esto solo indica cuidados adicionales.</p>
         </div>
       )}
-      {datos?.simulado && <p className="text-xs text-amber-700 mt-2">Respuesta del simulador de Seguridad (desarrollo).</p>}
     </div>
   );
 }

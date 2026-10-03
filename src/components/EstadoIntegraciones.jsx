@@ -41,7 +41,6 @@ export default function EstadoIntegraciones() {
                   <p className="text-sm font-medium text-slate-700">{nombre}</p>
                   <p className="text-xs text-slate-500">
                     {estilo.texto}
-                    {e.simulado && <span className="ml-1 text-amber-600">(simulador)</span>}
                   </p>
                 </div>
               </div>

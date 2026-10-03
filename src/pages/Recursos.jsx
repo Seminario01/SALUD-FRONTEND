@@ -160,11 +160,7 @@ export default function Recursos() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-1">Recursos hospitalarios</h1>
-      <p className="text-sm text-gray-500 mb-4">
-        {gestiona ? "Actualice la disponibilidad y presione Guardar."
-          : actualizaCamas ? "Actualice la disponibilidad de camas y presione Guardar." : "Disponibilidad actual."}
-      </p>
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">Recursos hospitalarios</h1>
       {recursos.length === 0 && <p className="text-gray-500 text-sm">No hay recursos registrados.</p>}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {recursos.map((r) => (

@@ -27,7 +27,7 @@ export default function Login() {
             Seguridad, Tributario y Auditoría Social.
           </p>
         </div>
-        <p className="text-sm text-blue-200">Red Inteligente de Servicios Digitales · Proyecto integrador</p>
+        <p className="text-sm text-blue-200">Red Inteligente de Servicios Digitales</p>
       </div>
 
       {/* Acceso */}
@@ -39,9 +39,7 @@ export default function Login() {
           </div>
 
           <h1 className="text-2xl font-bold text-slate-900">Iniciar sesión</h1>
-          <p className="text-sm text-slate-500 mt-1 mb-6">
-            Use su cuenta del Login Único. Es la misma para todos los módulos del sistema.
-          </p>
+          <p className="text-sm text-slate-500 mt-1 mb-6">Ingrese con su cuenta del Login Único.</p>
 
           {auth.error && (
             <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
@@ -55,10 +53,6 @@ export default function Login() {
           >
             Iniciar sesión con el Login Único
           </button>
-
-          <p className="text-xs text-slate-400 mt-4 text-center">
-            Será redirigido a la pantalla segura del Login Único y volverá aquí al terminar.
-          </p>
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import useRoles from "../hooks/useRoles";
 
 // Integración con los otros módulos de la Red: estado, demostración en ambas
 // direcciones y bitácora de llamadas. Mientras los otros equipos no publiquen
-// sus servicios, responden los SIMULADORES (datos ficticios) y aquí se indica.
+// sus servicios, Salud se conecta a los simuladores del backend (datos ficticios).
 
 const MODULOS = [
   {
@@ -49,12 +49,6 @@ const RESULTADO = {
 const numero = (v) => (typeof v === "number" ? v.toLocaleString("es-GT") : v ?? "—");
 const hora = (iso) => new Date(iso).toLocaleString("es-GT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-function Etiqueta({ simulado }) {
-  return simulado
-    ? <span className="text-[11px] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 bg-amber-100 text-amber-800">Simulado</span>
-    : <span className="text-[11px] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 bg-blue-100 text-blue-800">Servicio real</span>;
-}
-
 function TarjetaModulo({ modulo, estado }) {
   const e = estado ?? { estado: "no_configurado" };
   const estilo = ESTADO[e.estado] ?? ESTADO.no_disponible;
@@ -62,7 +56,6 @@ function TarjetaModulo({ modulo, estado }) {
     <div className="bg-white border rounded-lg p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-bold text-slate-800 text-lg">{modulo.nombre}</h2>
-        {e.estado === "conectado" && <Etiqueta simulado={e.simulado} />}
       </div>
       <p className="flex items-center gap-2 text-sm text-slate-600">
         <span className={`h-2.5 w-2.5 rounded-full ${estilo.punto}`} /> {estilo.texto}
@@ -155,28 +148,9 @@ export default function Integraciones() {
       .finally(() => { setProbando(null); cargarBitacora(); });
   }
 
-  const haySimulados = estado && Object.values(estado).some((e) => e.simulado);
-
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Integración con otros módulos</h1>
-        <p className="text-slate-500 mt-1 max-w-3xl">
-          Salud intercambia información con Educación, Seguridad, Tributario y Auditoría Social. El navegador nunca
-          llama directo a otro módulo: lo hace el backend de Salud, con la API key acordada entre equipos y el token del usuario.
-        </p>
-      </div>
-
-      {haySimulados && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <p className="font-semibold">Algunos módulos responden con simuladores</p>
-          <p className="mt-0.5">
-            Mientras sus equipos publican sus servicios, Salud se conecta a simuladores construidos a partir del contrato
-            acordado, con datos ficticios. Cuando un módulo publique su servicio real, solo se cambia su URL en la
-            configuración; el sistema de Salud no cambia.
-          </p>
-        </div>
-      )}
+      <h1 className="text-2xl font-bold">Integración con otros módulos</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {MODULOS.map((m) => <TarjetaModulo key={m.clave} modulo={m} estado={estado?.[m.clave]} />)}
@@ -185,12 +159,7 @@ export default function Integraciones() {
 
       {puedeProbar && (
         <section className="bg-white border rounded-lg p-5">
-          <h2 className="font-bold text-slate-700">Probar: otro módulo consulta a Salud</h2>
-          <p className="text-sm text-slate-500 mt-1 mb-4">
-            El módulo simulado hace una petición real a los servicios de Salud, con su API key, y aquí se ve qué pidió y qué
-            le respondió Salud. Las consultas que Salud hace a los demás se prueban desde Pacientes (antecedentes),
-            Vacunación (estudiante) y Citas (verificar pago).
-          </p>
+          <h2 className="font-bold text-slate-700 mb-4">Consultas de otros módulos a Salud</h2>
           <div className="flex flex-wrap gap-2 mb-4">
             {CASOS.map((c) => (
               <button key={c.caso} onClick={() => probar(c.caso)} disabled={probando !== null}
@@ -205,10 +174,7 @@ export default function Integraciones() {
 
       <section className="bg-white border rounded-lg p-5">
         <div className="flex flex-wrap items-end justify-between gap-3 mb-3">
-          <div>
-            <h2 className="font-bold text-slate-700">Bitácora de llamadas</h2>
-            <p className="text-sm text-slate-500">Últimas 50 · se actualiza sola · los CUI se muestran enmascarados</p>
-          </div>
+          <h2 className="font-bold text-slate-700">Bitácora de llamadas</h2>
           <div className="flex flex-wrap gap-2 text-sm">
             <select value={filtroModulo} onChange={(e) => setFiltroModulo(e.target.value)} className="border rounded px-2 py-1.5">
               <option value="">Todos los módulos</option>
@@ -241,7 +207,6 @@ export default function Integraciones() {
                       {r.direccion === "saliente"
                         ? <span>Salud <span className="text-blue-600">→</span> <b>{r.modulo}</b></span>
                         : <span><b>{r.modulo}</b> <span className="text-blue-600">→</span> Salud</span>}
-                      {r.simulado && <span className="ml-1 text-[10px] font-semibold uppercase text-amber-700">sim</span>}
                     </td>
                     <td className="py-2 pr-3">
                       <p className="text-slate-800">{r.operacion}</p>

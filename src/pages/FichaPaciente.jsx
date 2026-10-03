@@ -105,7 +105,7 @@ function FormularioEdicion({ paciente, puedeTodo, onGuardado, onCancelar }) {
       </label>
       {puedeTodo && (
         <label className="text-sm md:col-span-3">
-          Vincular cuenta del Login Único (código de 36 caracteres que el ciudadano ve en "Mi resumen")
+          Código de vinculación del ciudadano
           <input value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder={paciente.tiene_cuenta ? "Ya vinculado: escriba un código nuevo solo para cambiarlo" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"}
             maxLength={36} className={`${campo} font-mono text-sm`} />
         </label>
@@ -226,7 +226,6 @@ export default function FichaPaciente() {
               className="text-sm px-3 py-1 rounded border hover:bg-gray-100 disabled:opacity-50">
               {antecedentes?.cargando ? "Consultando..." : "Consultar"}</button>}
           >
-            {!antecedentes && <p className="text-sm text-slate-500">Consulte al módulo de Seguridad antes de la atención.</p>}
             {antecedentes?.error && <p className="text-sm text-slate-600">{antecedentes.error}</p>}
             {a && !a.tieneAntecedentes && <p className="text-sm text-green-800">Sin antecedentes registrados. Atención normal.</p>}
             {a?.tieneAntecedentes && (
@@ -235,7 +234,6 @@ export default function FichaPaciente() {
                 <p className="font-semibold">{a.requiereCustodia ? "Requiere custodia durante la atención." : "No requiere custodia."}</p>
               </div>
             )}
-            {a?.simulado && <p className="text-xs text-amber-700 mt-2">(simulador)</p>}
           </Seccion>
         )}
 

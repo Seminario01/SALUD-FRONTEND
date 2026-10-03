@@ -96,7 +96,7 @@ export default function PantallaTurnos() {
       </div>
 
       <footer className="text-center text-blue-200 text-sm mt-8">
-        Los turnos urgentes se atienden primero · Esta pantalla se actualiza automáticamente
+        Los turnos urgentes se atienden primero
       </footer>
     </div>
   );

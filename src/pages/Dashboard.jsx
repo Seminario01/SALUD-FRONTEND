@@ -60,13 +60,13 @@ export default function Dashboard() {
       <h1 className="text-2xl font-bold text-gray-800 mb-1">Módulo de Salud</h1>
       <p className="text-gray-500 mb-6">
         {esAuditor && !esPersonal
-          ? "Vista de Auditoría Social: indicadores agregados, solo lectura (sin datos personales)."
+          ? "Indicadores agregados del Módulo de Salud"
           : "Resumen general del sistema"}
       </p>
 
       {errorIndicadores && (
         <p className="text-red-600 text-sm mb-4">
-          No se pudieron cargar los indicadores. ¿Está corriendo el backend local?
+          No se pudieron cargar los indicadores.
         </p>
       )}
 

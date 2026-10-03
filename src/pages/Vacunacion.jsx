@@ -119,7 +119,6 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
               : educacion.datos.esEstudiante
                 ? `Educación: estudiante de ${educacion.datos.establecimiento ?? "—"} · ${educacion.datos.grado ?? ""} ${educacion.datos.seccion ? `sección ${educacion.datos.seccion}` : ""} · jornada ${educacion.datos.jornada ?? "—"}`
                 : "Educación: el CUI no corresponde a un estudiante activo."}
-            {educacion.datos?.simulado && <span className="text-amber-700"> (simulador)</span>}
           </p>
         )}
         <label className="text-sm md:col-span-3">
@@ -228,9 +227,7 @@ function VacunacionPersonal({ registra, anula }) {
           seleccionInicial={editar}
           onGuardado={cargar}
         />
-      ) : (
-        <p className="mb-4 text-sm text-slate-500">Consulta en solo lectura: registran vacunas Médico y Enfermería.</p>
-      )}
+      ) : null}
 
       {error && <p className="mb-4 text-red-600 text-sm">No se pudieron cargar los registros: {error}</p>}
       {errorAccion && <p className="mb-4 text-red-600 text-sm">{errorAccion}</p>}

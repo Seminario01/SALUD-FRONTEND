@@ -118,7 +118,7 @@ export default function Layout() {
       </main>
 
       <footer className="text-center text-xs text-slate-400 py-4">
-        Módulo de Salud · Red Inteligente de Servicios Digitales · Autenticación con el Login Único
+        Módulo de Salud · Red Inteligente de Servicios Digitales
       </footer>
     </div>
   );
