@@ -11,6 +11,7 @@ import PantallaTurnos from "./pages/PantallaTurnos";
 import Recursos from "./pages/Recursos";
 import Vacunacion from "./pages/Vacunacion";
 import Expedientes from "./pages/Expedientes";
+import Integraciones from "./pages/Integraciones";
 import NoEncontrado from "./pages/NoEncontrado";
 
 export default function App() {
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/recursos" element={<Recursos />} />
           <Route path="/vacunacion" element={<Vacunacion />} />
           <Route path="/expedientes" element={<Expedientes />} />
+          <Route path="/integraciones" element={<Integraciones />} />
           <Route path="*" element={<NoEncontrado />} />
         </Route>
       </Routes>

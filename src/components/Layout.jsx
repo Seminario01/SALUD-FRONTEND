@@ -38,6 +38,7 @@ export default function Layout() {
     { to: "/vacunacion", texto: r.esPersonal ? "Vacunación" : "Mi vacunación", ver: r.esAdmin || r.esMedico || r.esCiudadano },
     { to: "/expedientes", texto: r.esPersonal ? "Expedientes" : "Mi expediente", ver: r.esAdmin || r.esMedico || r.esCiudadano },
     { to: "/recursos", texto: "Recursos", ver: r.esPersonal },
+    { to: "/integraciones", texto: "Integraciones", ver: r.esPersonal },
   ].filter((e) => e.ver);
 
   function manejarLogout() {
@@ -46,7 +47,7 @@ export default function Layout() {
   }
 
   const claseEnlace = ({ isActive }) =>
-    `px-3 py-2 rounded-lg text-sm font-medium transition ${
+    `px-2.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${
       isActive ? "bg-white/15 text-white" : "text-blue-100 hover:bg-white/10 hover:text-white"
     }`;
 
@@ -62,7 +63,7 @@ export default function Layout() {
             </div>
           </div>
 
-          <nav className="hidden lg:flex items-center gap-1 ml-4">
+          <nav className="hidden xl:flex items-center gap-0.5 ml-2">
             {enlaces.map((e) => (
               <NavLink key={e.to} to={e.to} end={e.to === "/"} className={claseEnlace}>
                 {e.texto}
@@ -70,7 +71,7 @@ export default function Layout() {
             ))}
           </nav>
 
-          <div className="ml-auto hidden lg:flex items-center gap-3">
+          <div className="ml-auto hidden xl:flex items-center gap-3">
             <div className="text-right leading-tight">
               <p className="text-sm font-medium">{perfil?.name || perfil?.preferred_username}</p>
               {rolPrincipal && (
@@ -79,7 +80,7 @@ export default function Layout() {
             </div>
             <button
               onClick={manejarLogout}
-              className="text-sm border border-white/30 rounded-lg px-3 py-1.5 hover:bg-white/10 transition"
+              className="text-sm whitespace-nowrap border border-white/30 rounded-lg px-3 py-1.5 hover:bg-white/10 transition"
             >
               Cerrar sesión
             </button>
@@ -87,7 +88,7 @@ export default function Layout() {
 
           {/* Celular / tableta */}
           <button
-            className="ml-auto lg:hidden p-2 rounded-lg hover:bg-white/10"
+            className="ml-auto xl:hidden p-2 rounded-lg hover:bg-white/10"
             onClick={() => setMenuAbierto(!menuAbierto)}
             aria-label="Abrir menú"
             aria-expanded={menuAbierto}
@@ -99,7 +100,7 @@ export default function Layout() {
         </div>
 
         {menuAbierto && (
-          <div className="lg:hidden border-t border-white/15 px-4 pb-4">
+          <div className="xl:hidden border-t border-white/15 px-4 pb-4">
             <nav className="flex flex-col gap-1 pt-3">
               {enlaces.map((e) => (
                 <NavLink key={e.to} to={e.to} end={e.to === "/"} className={claseEnlace} onClick={() => setMenuAbierto(false)}>

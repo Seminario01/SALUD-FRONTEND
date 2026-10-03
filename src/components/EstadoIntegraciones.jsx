@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import client from "../api/client";
 
 const NOMBRES = { educacion: "Educación", seguridad: "Seguridad", tributario: "Tributario" };
@@ -23,7 +24,10 @@ export default function EstadoIntegraciones() {
 
   return (
     <div className="bg-white border rounded-lg p-4 shadow-sm mt-8">
-      <h2 className="font-bold text-slate-700 mb-3">Integración con otros módulos</h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-bold text-slate-700">Integración con otros módulos</h2>
+        <Link to="/integraciones" className="text-sm text-blue-700 hover:underline">Ver detalle y bitácora →</Link>
+      </div>
       {!estado && <p className="text-sm text-slate-400">Verificando conexión...</p>}
       {estado && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
