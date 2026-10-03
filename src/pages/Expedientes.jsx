@@ -120,8 +120,9 @@ function Historial({ registros }) {
 }
 
 export default function Expedientes() {
-  const { esMedico, esAdmin } = useRoles();
-  const puedeVerTodos = esMedico || esAdmin; // recepción NO ve expedientes
+  const { puede } = useRoles();
+  const puedeVerTodos = puede("expediente.ver"); // Recepción, Caja y Farmacia NO ven expedientes
+  const registra = puede("expediente.registrar");
   const { pacientes, aviso } = usePacientesSeleccionables(puedeVerTodos);
   const [elegido, setElegido] = useState("");
   // El ciudadano solo tiene su propio registro: se elige solo
@@ -178,7 +179,7 @@ export default function Expedientes() {
         </label>
       )}
 
-      {pacienteId && esMedico && <FormularioAtencion key={pacienteId} pacienteId={pacienteId} onRegistrada={cargar} />}
+      {pacienteId && registra && <FormularioAtencion key={pacienteId} pacienteId={pacienteId} onRegistrada={cargar} />}
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
       {pacienteId && registros && (

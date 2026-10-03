@@ -119,8 +119,8 @@ function ResultadoDemo({ r }) {
 }
 
 export default function Integraciones() {
-  const { esAdmin, esMedico } = useRoles();
-  const puedeProbar = esAdmin || esMedico;
+  const { puede } = useRoles();
+  const puedeProbar = puede("integraciones.demo");
   const [estado, setEstado] = useState(null);
   const [bitacora, setBitacora] = useState(null);
   const [filtroModulo, setFiltroModulo] = useState("");

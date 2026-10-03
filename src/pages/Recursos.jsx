@@ -8,7 +8,7 @@ const TIPOS = {
   cupo_consulta: "Cupos de consulta",
 };
 
-function TarjetaRecurso({ recurso, editable, onGuardado }) {
+function TarjetaRecurso({ recurso, editable, soloDisponible, onGuardado }) {
   const [disponible, setDisponible] = useState(recurso.disponible);
   const [total, setTotal] = useState(recurso.total);
   const [guardando, setGuardando] = useState(false);
@@ -22,7 +22,7 @@ function TarjetaRecurso({ recurso, editable, onGuardado }) {
     setGuardando(true);
     setMensaje(null);
     client
-      .put(`/recursos/${recurso.id}`, { disponible: Number(disponible), total: Number(total) })
+      .put(`/recursos/${recurso.id}`, soloDisponible ? { disponible: Number(disponible) } : { disponible: Number(disponible), total: Number(total) })
       .then(() => {
         setMensaje({ ok: true, texto: "Guardado." });
         onGuardado();
@@ -46,11 +46,13 @@ function TarjetaRecurso({ recurso, editable, onGuardado }) {
             <input type="number" min="0" value={disponible} onChange={(e) => setDisponible(e.target.value)}
               className="border rounded px-2 py-1 w-20 block" />
           </label>
-          <label className="text-xs">
-            Total
-            <input type="number" min="0" value={total} onChange={(e) => setTotal(e.target.value)}
-              className="border rounded px-2 py-1 w-20 block" />
-          </label>
+          {!soloDisponible && (
+            <label className="text-xs">
+              Total
+              <input type="number" min="0" value={total} onChange={(e) => setTotal(e.target.value)}
+                className="border rounded px-2 py-1 w-20 block" />
+            </label>
+          )}
           <button type="submit" disabled={guardando || !cambiado}
             className="bg-blue-700 text-white text-sm px-3 py-1 rounded hover:bg-blue-800 disabled:opacity-40">
             Guardar
@@ -128,7 +130,9 @@ function FormularioRecurso({ onCreado }) {
 }
 
 export default function Recursos() {
-  const { esAdmin } = useRoles();
+  const { puede } = useRoles();
+  const gestiona = puede("recursos.gestionar");          // Administración: todo
+  const actualizaCamas = puede("recursos.camas");       // Enfermería: disponibilidad de camas
   const [recursos, setRecursos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -158,15 +162,17 @@ export default function Recursos() {
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-1">Recursos hospitalarios</h1>
       <p className="text-sm text-gray-500 mb-4">
-        {esAdmin ? "Actualice la disponibilidad y presione Guardar." : "Disponibilidad actual."}
+        {gestiona ? "Actualice la disponibilidad y presione Guardar."
+          : actualizaCamas ? "Actualice la disponibilidad de camas y presione Guardar." : "Disponibilidad actual."}
       </p>
       {recursos.length === 0 && <p className="text-gray-500 text-sm">No hay recursos registrados.</p>}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {recursos.map((r) => (
-          <TarjetaRecurso key={`${r.id}-${version}`} recurso={r} editable={esAdmin} onGuardado={cargar} />
+          <TarjetaRecurso key={`${r.id}-${version}`} recurso={r} onGuardado={cargar}
+            editable={gestiona || (actualizaCamas && r.tipo === "cama")} soloDisponible={!gestiona} />
         ))}
       </div>
-      {esAdmin && <FormularioRecurso onCreado={cargar} />}
+      {gestiona && <FormularioRecurso onCreado={cargar} />}
     </div>
   );
 }

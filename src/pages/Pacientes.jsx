@@ -144,7 +144,8 @@ function ResultadoAntecedentes({ consulta, onCerrar }) {
 }
 
 export default function Pacientes() {
-  const { puedeRegistrarPacientes } = useRoles();
+  const { puedeRegistrarPacientes, puede } = useRoles();
+  const puedeAntecedentes = puede("pacientes.antecedentes");
 
   // --- Listado real: GET /pacientes (solo personal de Salud) ---
   const [pacientes, setPacientes] = useState([]);
@@ -239,7 +240,7 @@ export default function Pacientes() {
               <th className="p-2">CUI</th>
               <th className="p-2">Teléfono</th>
               <th className="p-2">Tipo de seguro</th>
-              <th className="p-2">Antecedentes (Seguridad)</th>
+              {puedeAntecedentes && <th className="p-2">Antecedentes (Seguridad)</th>}
             </tr>
           </thead>
           <tbody>
@@ -252,14 +253,16 @@ export default function Pacientes() {
                 <td className="p-2">{p.cui}</td>
                 <td className="p-2">{p.telefono}</td>
                 <td className="p-2">{p.tipo_seguro}</td>
-                <td className="p-2">
-                  <button
-                    onClick={() => consultarAntecedentes(p)}
-                    className="text-xs px-2 py-1 rounded border hover:bg-gray-100"
-                  >
-                    Consultar
-                  </button>
-                </td>
+                {puedeAntecedentes && (
+                  <td className="p-2">
+                    <button
+                      onClick={() => consultarAntecedentes(p)}
+                      className="text-xs px-2 py-1 rounded border hover:bg-gray-100"
+                    >
+                      Consultar
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

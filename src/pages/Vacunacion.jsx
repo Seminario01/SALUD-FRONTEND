@@ -178,13 +178,12 @@ function MiVacunacion() {
 }
 
 export default function Vacunacion() {
-  const { esAdmin, esMedico } = useRoles();
-  const puedeGestionar = esAdmin || esMedico;
-  if (!puedeGestionar) return <MiVacunacion />;
-  return <VacunacionPersonal esAdmin={esAdmin} />;
+  const { puede } = useRoles();
+  if (!puede("vacunacion.ver")) return <MiVacunacion />;
+  return <VacunacionPersonal registra={puede("vacunacion.registrar")} anula={puede("vacunacion.anular")} />;
 }
 
-function VacunacionPersonal({ esAdmin }) {
+function VacunacionPersonal({ registra, anula }) {
   const { pacientes } = usePacientesSeleccionables(true);
   const [registros, setRegistros] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -210,7 +209,7 @@ function VacunacionPersonal({ esAdmin }) {
   const nombre = (id) => pacientes.find((p) => p.id === id)?.nombre_completo ?? `ID ${id}`;
 
   function eliminar(r) {
-    if (!window.confirm(`¿Eliminar el registro de vacunación de ${nombre(r.paciente_id)}?`)) return;
+    if (!window.confirm(`¿Anular el registro de vacunación de ${nombre(r.paciente_id)}? Use esta opción solo si se creó por error.`)) return;
     setErrorAccion(null);
     client.delete(`/vacunacion/${r.paciente_id}`).then(cargar).catch((err) => setErrorAccion(mensajeError(err)));
   }
@@ -221,13 +220,17 @@ function VacunacionPersonal({ esAdmin }) {
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-4">Vacunación</h1>
 
-      <FormularioVacunacion
-        key={editar ?? "nuevo"}
-        pacientes={pacientes}
-        registros={registros}
-        seleccionInicial={editar}
-        onGuardado={cargar}
-      />
+      {registra ? (
+        <FormularioVacunacion
+          key={editar ?? "nuevo"}
+          pacientes={pacientes}
+          registros={registros}
+          seleccionInicial={editar}
+          onGuardado={cargar}
+        />
+      ) : (
+        <p className="mb-4 text-sm text-slate-500">Consulta en solo lectura: registran vacunas Médico y Enfermería.</p>
+      )}
 
       {error && <p className="mb-4 text-red-600 text-sm">No se pudieron cargar los registros: {error}</p>}
       {errorAccion && <p className="mb-4 text-red-600 text-sm">{errorAccion}</p>}
@@ -241,7 +244,7 @@ function VacunacionPersonal({ esAdmin }) {
               <th className="p-2">Estudiante</th>
               <th className="p-2">Esquema completo</th>
               <th className="p-2">Pendientes</th>
-              <th className="p-2">Acciones</th>
+              {(registra || anula) && <th className="p-2">Acciones</th>}
             </tr>
           </thead>
           <tbody>
@@ -251,19 +254,23 @@ function VacunacionPersonal({ esAdmin }) {
                 <td className="p-2">{v.es_estudiante ? "Sí" : "No"}</td>
                 <td className="p-2"><Si valor={v.esquema_completo} /></td>
                 <td className="p-2">{v.vacunas_pendientes || "—"}</td>
-                <td className="p-2 space-x-1">
-                  <button
-                    onClick={() => { setEditar(v.paciente_id); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                    className="text-xs px-2 py-1 rounded border hover:bg-gray-100"
-                  >
-                    Editar
-                  </button>
-                  {esAdmin && (
-                    <button onClick={() => eliminar(v)} className="text-xs px-2 py-1 rounded border hover:bg-gray-100 text-red-700">
-                      Eliminar
-                    </button>
-                  )}
-                </td>
+                {(registra || anula) && (
+                  <td className="p-2 space-x-1">
+                    {registra && (
+                      <button
+                        onClick={() => { setEditar(v.paciente_id); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                        className="text-xs px-2 py-1 rounded border hover:bg-gray-100"
+                      >
+                        Editar
+                      </button>
+                    )}
+                    {anula && (
+                      <button onClick={() => eliminar(v)} className="text-xs px-2 py-1 rounded border hover:bg-gray-100 text-red-700">
+                        Anular
+                      </button>
+                    )}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

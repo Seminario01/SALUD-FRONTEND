@@ -13,32 +13,24 @@ export function LogoSalud({ className = "h-8 w-8" }) {
   );
 }
 
-const ETIQUETA_ROL = {
-  "salud:admin": "Administración",
-  "salud:medico": "Médico",
-  "salud:recepcion": "Recepción",
-  ciudadano: "Ciudadano",
-  "auditoria:analista": "Auditoría Social",
-  "auditoria:admin": "Auditoría Social",
-};
 
 export default function Layout() {
   const auth = useAuth();
   const r = useRoles();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const perfil = auth.user?.profile;
-  const rolPrincipal = ["salud:admin", "salud:medico", "salud:recepcion", "auditoria:admin", "auditoria:analista", "ciudadano"].find((x) => r.roles.includes(x));
+
 
   // Cada rol ve solo lo que puede usar (el backend igual valida cada petición)
   const enlaces = [
     { to: "/", texto: r.esPersonal ? "Dashboard" : r.esAuditor ? "Panel de indicadores" : "Mi resumen", ver: true },
-    { to: "/pacientes", texto: "Pacientes", ver: r.esPersonal },
-    { to: "/citas", texto: r.esPersonal ? "Citas" : "Mis citas", ver: r.esPersonal || r.esCiudadano },
-    { to: "/turnos", texto: "Turnos", ver: r.esPersonal },
-    { to: "/vacunacion", texto: r.esPersonal ? "Vacunación" : "Mi vacunación", ver: r.esAdmin || r.esMedico || r.esCiudadano },
-    { to: "/expedientes", texto: r.esPersonal ? "Expedientes" : "Mi expediente", ver: r.esAdmin || r.esMedico || r.esCiudadano },
-    { to: "/recursos", texto: "Recursos", ver: r.esPersonal },
-    { to: "/integraciones", texto: "Integraciones", ver: r.esPersonal },
+    { to: "/pacientes", texto: "Pacientes", ver: r.puede("pacientes.ver") },
+    { to: "/citas", texto: r.esPersonal ? "Citas" : "Mis citas", ver: r.puede("citas.ver") || r.esCiudadano },
+    { to: "/turnos", texto: "Turnos", ver: r.puede("turnos.ver_cola", "turnos.generar") },
+    { to: "/vacunacion", texto: r.esPersonal ? "Vacunación" : "Mi vacunación", ver: r.puede("vacunacion.ver") || r.esCiudadano },
+    { to: "/expedientes", texto: r.esPersonal ? "Expedientes" : "Mi expediente", ver: r.puede("expediente.ver") || r.esCiudadano },
+    { to: "/recursos", texto: "Recursos", ver: r.puede("recursos.ver") },
+    { to: "/integraciones", texto: "Integraciones", ver: r.puede("integraciones.ver") },
   ].filter((e) => e.ver);
 
   function manejarLogout() {
@@ -72,10 +64,10 @@ export default function Layout() {
           </nav>
 
           <div className="ml-auto hidden xl:flex items-center gap-3">
-            <div className="text-right leading-tight">
+            <div className="text-right leading-tight whitespace-nowrap">
               <p className="text-sm font-medium">{perfil?.name || perfil?.preferred_username}</p>
-              {rolPrincipal && (
-                <span className="text-[11px] bg-white/15 rounded-full px-2 py-0.5">{ETIQUETA_ROL[rolPrincipal]}</span>
+              {r.puesto && (
+                <span className="text-[11px] bg-white/15 rounded-full px-2 py-0.5 whitespace-nowrap">{r.puesto}</span>
               )}
             </div>
             <button
@@ -111,7 +103,7 @@ export default function Layout() {
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/15">
               <span className="text-sm">
                 {perfil?.name || perfil?.preferred_username}
-                {rolPrincipal && <span className="text-blue-100"> · {ETIQUETA_ROL[rolPrincipal]}</span>}
+                {r.puesto && <span className="text-blue-100"> · {r.puesto}</span>}
               </span>
               <button onClick={manejarLogout} className="text-sm border border-white/30 rounded-lg px-3 py-1.5">
                 Cerrar sesión

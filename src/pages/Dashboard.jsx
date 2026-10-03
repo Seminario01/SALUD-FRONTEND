@@ -24,8 +24,10 @@ function TarjetaResumen({ titulo, valor, detalle, to, color }) {
 }
 
 export default function Dashboard() {
-  const { esPersonal, esAuditor } = useRoles();
-  const enlace = (ruta) => (esPersonal ? ruta : undefined);
+  const { esPersonal, esAuditor, puede } = useRoles();
+  // Cada tarjeta enlaza a su pantalla solo si el puesto puede usarla.
+  const PERMISO_RUTA = { "/pacientes": "pacientes.ver", "/citas": "citas.ver", "/turnos": "turnos.ver_cola", "/vacunacion": "vacunacion.ver" };
+  const enlace = (ruta) => (puede(PERMISO_RUTA[ruta]) ? ruta : undefined);
   const [indicadores, setIndicadores] = useState(null);
   const [errorIndicadores, setErrorIndicadores] = useState(false);
   const [sinPermiso, setSinPermiso] = useState(false);
@@ -118,7 +120,7 @@ export default function Dashboard() {
           </p>
         </div>
       )}
-      {esPersonal && (
+      {puede("recursos.ver") && (
         <Link to="/recursos" className="block mt-2 text-sm text-blue-700 hover:underline">
           Ver todos los recursos →
         </Link>
@@ -138,8 +140,8 @@ export default function Dashboard() {
           </div>
         </>
       )}
-      {esPersonal && <ResumenCitas />}
-      {esPersonal && <EstadoIntegraciones />}
+      {puede("citas.ver") && <ResumenCitas />}
+      {puede("integraciones.ver") && <EstadoIntegraciones />}
     </div>
   );
 }

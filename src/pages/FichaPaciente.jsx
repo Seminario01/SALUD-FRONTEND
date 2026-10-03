@@ -123,9 +123,12 @@ function FormularioEdicion({ paciente, puedeTodo, onGuardado, onCancelar }) {
 
 export default function FichaPaciente() {
   const { id } = useParams();
-  const { esAdmin, esMedico, esRecepcion, esPersonal } = useRoles();
-  const puedeEditarTodo = esAdmin || esRecepcion;
-  const puedeVerClinico = esAdmin || esMedico;
+  const { puede } = useRoles();
+  const puedeEditarTodo = puede("pacientes.registrar");
+  const puedeVerClinico = puede("expediente.ver");
+  const puedeVerCitas = puede("citas.ver");
+  const puedeVerVacunas = puede("vacunacion.ver");
+  const puedeAntecedentes = puede("pacientes.antecedentes");
 
   const [paciente, setPaciente] = useState(undefined);
   const [error, setError] = useState(null);
@@ -145,12 +148,16 @@ export default function FichaPaciente() {
 
   useEffect(() => {
     cargar();
-    client.get("/citas", { params: { paciente_id: id } }).then((r) => setCitas(r.data.data)).catch(() => setCitas([]));
-    client.get(`/vacunacion/${id}`).then((r) => setVacunacion(r.data.data)).catch(() => setVacunacion(null));
+    if (puedeVerCitas) {
+      client.get("/citas", { params: { paciente_id: id } }).then((r) => setCitas(r.data.data)).catch(() => setCitas([]));
+    }
+    if (puedeVerVacunas) {
+      client.get(`/vacunacion/${id}`).then((r) => setVacunacion(r.data.data)).catch(() => setVacunacion(null));
+    }
     if (puedeVerClinico) {
       client.get(`/expedientes/${id}`).then((r) => setAtenciones(r.data.data)).catch(() => setAtenciones([]));
     }
-  }, [id, cargar, puedeVerClinico]);
+  }, [id, cargar, puedeVerClinico, puedeVerCitas, puedeVerVacunas]);
 
   function consultarAntecedentes() {
     setAntecedentes({ cargando: true });
@@ -212,7 +219,7 @@ export default function FichaPaciente() {
       </Seccion>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {esPersonal && (
+        {puedeAntecedentes && (
           <Seccion
             titulo="Antecedentes (Seguridad)"
             accion={<button onClick={consultarAntecedentes} disabled={antecedentes?.cargando}
@@ -232,7 +239,8 @@ export default function FichaPaciente() {
           </Seccion>
         )}
 
-        <Seccion titulo="Vacunación" accion={<Link to="/vacunacion" className="text-sm text-blue-700 hover:underline">Gestionar →</Link>}>
+        {puedeVerVacunas && (
+        <Seccion titulo="Vacunación" accion={puede("vacunacion.registrar") && <Link to="/vacunacion" className="text-sm text-blue-700 hover:underline">Gestionar →</Link>}>
           {vacunacion === undefined && <p className="text-sm text-slate-400">Cargando...</p>}
           {vacunacion === null && <p className="text-sm text-slate-500">Sin registro de vacunación.</p>}
           {vacunacion && (
@@ -245,9 +253,11 @@ export default function FichaPaciente() {
             </div>
           )}
         </Seccion>
+        )}
       </div>
 
-      <Seccion titulo="Citas" accion={<Link to="/citas" className="text-sm text-blue-700 hover:underline">Agendar →</Link>}>
+      {puedeVerCitas && (
+      <Seccion titulo="Citas" accion={puede("citas.gestionar") && <Link to="/citas" className="text-sm text-blue-700 hover:underline">Agendar →</Link>}>
         {citas === null && <p className="text-sm text-slate-400">Cargando...</p>}
         {citas?.length === 0 && <p className="text-sm text-slate-500">No tiene citas.</p>}
         {citas?.length > 0 && (
@@ -267,9 +277,10 @@ export default function FichaPaciente() {
         )}
         {citas?.length > 8 && <p className="text-xs text-slate-400 mt-2">Mostrando las 8 más recientes de {citas.length}.</p>}
       </Seccion>
+      )}
 
       {puedeVerClinico && (
-        <Seccion titulo="Expediente clínico" accion={<Link to="/expedientes" className="text-sm text-blue-700 hover:underline">Registrar atención →</Link>}>
+        <Seccion titulo="Expediente clínico" accion={puede("expediente.registrar") && <Link to="/expedientes" className="text-sm text-blue-700 hover:underline">Registrar atención →</Link>}>
           {atenciones === null && <p className="text-sm text-slate-400">Cargando...</p>}
           {atenciones?.length === 0 && <p className="text-sm text-slate-500">Sin atenciones registradas.</p>}
           <div className="space-y-2">

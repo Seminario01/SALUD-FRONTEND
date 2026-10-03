@@ -92,7 +92,10 @@ function FormularioCita({ esPersonal, pacientes, aviso, onCreada }) {
 }
 
 export default function Citas() {
-  const { esPersonal } = useRoles();
+  const { puede, esCiudadano } = useRoles();
+  const esPersonal = puede("citas.ver");          // ve las citas de todos los pacientes
+  const gestiona = puede("citas.gestionar");      // agenda, confirma y cancela de cualquiera
+  const verificaPagos = puede("pagos.verificar"); // Caja, Recepción, Administración
   const { pacientes, aviso } = usePacientesSeleccionables(esPersonal);
   const nombrePaciente = (id) => pacientes.find((p) => p.id === id)?.nombre_completo ?? `ID ${id}`;
   const [citas, setCitas] = useState([]);
@@ -176,7 +179,7 @@ export default function Citas() {
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-4">{esPersonal ? "Citas médicas" : "Mis citas"}</h1>
 
-      <FormularioCita esPersonal={esPersonal} pacientes={pacientes} aviso={aviso} onCreada={cargar} />
+      {(gestiona || esCiudadano) && <FormularioCita esPersonal={gestiona} pacientes={pacientes} aviso={aviso} onCreada={cargar} />}
 
       {error && <p className="mb-4 text-red-600 text-sm">No se pudieron cargar las citas: {error}</p>}
       {errorAccion && <p className="mb-4 text-red-600 text-sm">{errorAccion}</p>}
@@ -238,7 +241,7 @@ export default function Citas() {
                   <td className="p-2">
                     {c.pago_confirmado ? (
                       <span className="px-2 py-1 rounded text-sm bg-green-100 text-green-800">Pagado</span>
-                    ) : esPersonal && c.estado !== "cancelada" ? (
+                    ) : verificaPagos && c.estado !== "cancelada" ? (
                       <button
                         onClick={() => verificarPago(c)}
                         disabled={verificando === c.id}
@@ -251,13 +254,13 @@ export default function Citas() {
                     )}
                   </td>
                   <td className="p-2 space-x-1">
-                    {esPersonal && c.estado === "pendiente" && (
+                    {gestiona && c.estado === "pendiente" && (
                       <button onClick={() => cambiarEstado(c, "confirmada")} className={boton}>Confirmar</button>
                     )}
-                    {esPersonal && c.estado === "confirmada" && (
+                    {gestiona && c.estado === "confirmada" && (
                       <button onClick={() => cambiarEstado(c, "atendida")} className={boton}>Marcar atendida</button>
                     )}
-                    {activa && (
+                    {activa && (gestiona || esCiudadano) && (
                       <button onClick={() => cancelar(c)} className={`${boton} text-red-700`}>Cancelar</button>
                     )}
                   </td>
