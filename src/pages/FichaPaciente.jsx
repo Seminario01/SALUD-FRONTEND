@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import EstadoPago from "../components/EstadoPago";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 
@@ -267,7 +268,7 @@ export default function FichaPaciente() {
                   <td className="p-2">{fecha(c.fecha_hora)}</td>
                   <td className="p-2">{c.motivo || "—"}</td>
                   <td className="p-2"><span className={`px-2 py-0.5 rounded text-xs ${COLOR_ESTADO[c.estado] ?? "bg-gray-100"}`}>{c.estado}</span></td>
-                  <td className="p-2">{c.pago_confirmado ? "Pagado" : "—"}</td>
+                  <td className="p-2"><EstadoPago cita={c} /></td>
                 </tr>
               ))}
             </tbody>

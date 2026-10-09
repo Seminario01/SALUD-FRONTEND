@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import EstadoPago from "../components/EstadoPago";
+import { formatoDia } from "../utils/fechas";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import Paginacion from "../components/Paginacion";
@@ -143,9 +145,24 @@ export default function Citas() {
     client.put(`/citas/${cita.id}`, { estado }).then(cargar).catch((err) => setErrorAccion(mensajeError(err)));
   }
 
-  // WS-SALUD-09: el backend consulta a Tributario y, si está pagado, marca la cita
+  // Tributario: Salud registra el cobro (obligación) y después consulta si se pagó
   const [verificando, setVerificando] = useState(null);
   const [avisoPago, setAvisoPago] = useState(null);
+
+  function enviarCobro(cita) {
+    setErrorAccion(null);
+    setAvisoPago(null);
+    setVerificando(cita.id);
+    client
+      .post(`/citas/${cita.id}/cobro`)
+      .then((res) => {
+        const d = res.data.data;
+        setAvisoPago(`Cobro registrado en Tributario: referencia ${d.numeroReferencia}, Q${d.monto?.toFixed(2)}, vence el ${formatoDia(d.fechaVencimiento)}.`);
+        cargar();
+      })
+      .catch((err) => setErrorAccion(mensajeError(err)))
+      .finally(() => setVerificando(null));
+  }
 
   function verificarPago(cita) {
     setErrorAccion(null);
@@ -157,8 +174,8 @@ export default function Citas() {
         const d = res.data.data;
         setAvisoPago(
           d.pagoConfirmado
-            ? `Tributario confirmó el pago (Q${d.monto}, referencia ${d.numeroReferencia}).`
-            : `Tributario no confirmó el pago (referencia ${d.numeroReferencia}).`
+            ? `Tributario confirmó el pago de ${d.numeroReferencia} (autorización ${d.numeroAutorizacion ?? "—"}).`
+            : `${d.numeroReferencia}: Tributario aún no registra el pago.`
         );
         cargar();
       })
@@ -239,18 +256,15 @@ export default function Citas() {
                     </span>
                   </td>
                   <td className="p-2">
-                    {c.pago_confirmado ? (
-                      <span className="px-2 py-1 rounded text-sm bg-green-100 text-green-800">Pagado</span>
-                    ) : verificaPagos && c.estado !== "cancelada" ? (
+                    <EstadoPago cita={c} />
+                    {verificaPagos && !c.pago_confirmado && c.estado !== "cancelada" && (
                       <button
-                        onClick={() => verificarPago(c)}
+                        onClick={() => (c.estado_cobro === "PENDIENTE" ? verificarPago(c) : enviarCobro(c))}
                         disabled={verificando === c.id}
-                        className={`${boton} disabled:opacity-50`}
+                        className={`${boton} disabled:opacity-50 mt-1 block`}
                       >
-                        {verificando === c.id ? "Consultando..." : "Verificar pago"}
+                        {verificando === c.id ? "Consultando..." : c.estado_cobro === "PENDIENTE" ? "Verificar pago" : "Enviar cobro"}
                       </button>
-                    ) : (
-                      <span className="text-sm text-slate-400">Pendiente</span>
                     )}
                   </td>
                   <td className="p-2 space-x-1">

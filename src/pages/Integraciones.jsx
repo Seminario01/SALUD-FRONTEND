@@ -21,8 +21,8 @@ const MODULOS = [
   },
   {
     clave: "tributario", nombre: "Tributario",
-    consumimos: ["Verificar el pago de una cita (WS-SALUD-09)"],
-    nosConsume: ["Costo y estado de pago de una cita"],
+    consumimos: ["Registrar el cobro de una cita (obligación de pago)", "Consultar si el cobro ya se pagó"],
+    nosConsume: ["Aviso de pago de una obligación", "Costo y estado de pago de una cita"],
     indicadores: [["pagosServiciosSaludMes", "Pagos de salud (mes)"], ["pagosVerificadosMes", "Pagos verificados"]],
   },
 ];
@@ -31,6 +31,7 @@ const CASOS = [
   { caso: "seguridad-establecimientos", modulo: "Seguridad", texto: "Pregunta qué establecimientos atienden una emergencia" },
   { caso: "educacion-jornada", modulo: "Educación", texto: "Solicita una jornada de vacunación" },
   { caso: "educacion-practicante", modulo: "Educación", texto: "Consulta las horas de un practicante" },
+  { caso: "tributario-pago", modulo: "Tributario", texto: "Avisa el pago de un cobro pendiente" },
   { caso: "tributario-costo", modulo: "Tributario", texto: "Consulta el costo de una cita" },
   { caso: "auditoria-indicadores", modulo: "Auditoría", texto: "Consulta los indicadores de Salud" },
 ];

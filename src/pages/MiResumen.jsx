@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
+import { formatoDia } from "../utils/fechas";
 import client from "../api/client";
 
 // Vista del ciudadano: solo SUS datos. El backend aplica la misma regla
@@ -59,6 +60,7 @@ export default function MiResumen() {
   const proximas = citas
     .filter((c) => ["pendiente", "confirmada"].includes(c.estado) && new Date(String(c.fecha_hora).replace(" ", "T")) >= ahora)
     .sort((a, b) => String(a.fecha_hora).localeCompare(String(b.fecha_hora)));
+  const porPagar = citas.filter((c) => c.estado_cobro === "PENDIENTE" && !c.pago_confirmado && c.estado !== "cancelada");
 
   return (
     <div className="p-6">
@@ -97,6 +99,22 @@ export default function MiResumen() {
               <dt className="text-slate-400">Seguro</dt><dd>{paciente.tipo_seguro || "—"}</dd>
             </dl>
           </Tarjeta>
+
+          {porPagar.length > 0 && (
+            <Tarjeta titulo="Pagos pendientes">
+              <ul className="space-y-2">
+                {porPagar.map((c) => (
+                  <li key={c.id} className="text-sm">
+                    <p className="font-mono font-semibold text-slate-800">{c.numero_referencia}</p>
+                    <p className="text-slate-600">
+                      {c.motivo || "Consulta"} · Q{Number(c.costo ?? 0).toFixed(2)} · vence {formatoDia(c.fecha_vencimiento)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-slate-500 mt-3">Pague con el número de referencia en el módulo Tributario.</p>
+            </Tarjeta>
+          )}
 
           <Tarjeta titulo="Próxima cita" to="/citas" enlace={proximas.length ? "Ver mis citas" : "Agendar una cita"}>
             {proximas.length === 0 ? (
