@@ -4,6 +4,14 @@ import EstadoPago from "../components/EstadoPago";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 
+const COLOR_HOSPITALIZACION = {
+  PENDIENTE: "bg-yellow-100 text-yellow-800",
+  ACTIVO: "bg-blue-100 text-blue-800",
+  EGRESADO: "bg-green-100 text-green-800",
+  ANULADO: "bg-red-100 text-red-800",
+};
+const TEXTO_HOSPITALIZACION = { PENDIENTE: "pendiente de cama", ACTIVO: "ingresado", EGRESADO: "egresado", ANULADO: "anulado" };
+
 const COLOR_RECETA = {
   PENDIENTE: "bg-yellow-100 text-yellow-800",
   DESPACHADA: "bg-green-100 text-green-800",
@@ -137,6 +145,7 @@ export default function FichaPaciente() {
   const puedeVerVacunas = puede("vacunacion.ver");
   const puedeAntecedentes = puede("pacientes.antecedentes");
   const puedeVerRecetas = puede("recetas.ver");
+  const puedeVerHospitalizacion = puede("hospitalizacion.ver");
 
   const [paciente, setPaciente] = useState(undefined);
   const [error, setError] = useState(null);
@@ -147,6 +156,7 @@ export default function FichaPaciente() {
   const [atenciones, setAtenciones] = useState(null);
   const [antecedentes, setAntecedentes] = useState(null);
   const [recetas, setRecetas] = useState(null);
+  const [hospitalizaciones, setHospitalizaciones] = useState(null);
 
   const cargar = useCallback(() => {
     client
@@ -166,10 +176,13 @@ export default function FichaPaciente() {
     if (puedeVerClinico) {
       client.get(`/expedientes/${id}`).then((r) => setAtenciones(r.data.data)).catch(() => setAtenciones([]));
     }
+    if (puedeVerHospitalizacion) {
+      client.get("/hospitalizaciones", { params: { paciente_id: id } }).then((r) => setHospitalizaciones(r.data.data)).catch(() => setHospitalizaciones([]));
+    }
     if (puedeVerRecetas) {
       client.get("/recetas", { params: { paciente_id: id } }).then((r) => setRecetas(r.data.data)).catch(() => setRecetas([]));
     }
-  }, [id, cargar, puedeVerClinico, puedeVerCitas, puedeVerVacunas, puedeVerRecetas]);
+  }, [id, cargar, puedeVerClinico, puedeVerCitas, puedeVerVacunas, puedeVerRecetas, puedeVerHospitalizacion]);
 
   function consultarAntecedentes() {
     setAntecedentes({ cargando: true });
@@ -302,6 +315,28 @@ export default function FichaPaciente() {
               </div>
             ))}
           </div>
+        </Seccion>
+      )}
+
+      {puedeVerHospitalizacion && (
+        <Seccion titulo="Hospitalizaciones" accion={puede("hospitalizacion.ordenar") && <Link to={`/hospitalizacion?paciente=${id}`} className="text-sm text-blue-700 hover:underline">Ordenar ingreso →</Link>}>
+          {hospitalizaciones === null && <p className="text-sm text-slate-400">Cargando...</p>}
+          {hospitalizaciones?.length === 0 && <p className="text-sm text-slate-500">Sin hospitalizaciones.</p>}
+          {hospitalizaciones?.length > 0 && (
+            <table className="w-full text-left">
+              <thead><tr><th className="p-2">Ingreso</th><th className="p-2">Área y cama</th>{puedeVerClinico && <th className="p-2">Diagnóstico</th>}<th className="p-2">Estado</th></tr></thead>
+              <tbody>
+                {hospitalizaciones.slice(0, 5).map((h) => (
+                  <tr key={h.id}>
+                    <td className="p-2">{fecha(h.fecha_ingreso ?? h.fecha_orden)}</td>
+                    <td className="p-2">{h.area}{h.cama ? ` · ${h.cama}` : ""}</td>
+                    {puedeVerClinico && <td className="p-2">{h.diagnostico}</td>}
+                    <td className="p-2"><span className={`px-2 py-0.5 rounded text-xs ${COLOR_HOSPITALIZACION[h.estado] ?? "bg-gray-100"}`}>{TEXTO_HOSPITALIZACION[h.estado] ?? h.estado}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </Seccion>
       )}
 

@@ -29,6 +29,7 @@ export default function Layout() {
     { to: "/turnos", texto: "Turnos", ver: r.puede("turnos.ver_cola", "turnos.generar") },
     { to: "/vacunacion", texto: r.esPersonal ? "Vacunación" : "Mi vacunación", ver: r.puede("vacunacion.ver") || r.esCiudadano },
     { to: "/expedientes", texto: r.esPersonal ? "Expedientes" : "Mi expediente", ver: r.puede("expediente.ver") || r.esCiudadano },
+    { to: "/hospitalizacion", texto: "Hospitalización", ver: r.puede("hospitalizacion.ver") },
     { to: "/recetas", texto: r.esPersonal ? "Recetas" : "Mis recetas", ver: r.puede("recetas.ver") || r.esCiudadano },
     { to: "/inventario", texto: "Inventario", ver: r.puede("inventario.ver"), grupo: true },
     { to: "/recursos", texto: "Recursos", ver: r.puede("recursos.ver"), grupo: true },
@@ -48,7 +49,7 @@ export default function Layout() {
   }
 
   const claseEnlace = ({ isActive }) =>
-    `px-2.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${
+    `px-2 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${
       isActive ? "bg-white/15 text-white" : "text-blue-100 hover:bg-white/10 hover:text-white"
     }`;
 
@@ -60,7 +61,7 @@ export default function Layout() {
             <LogoSalud className="h-8 w-8 text-white" />
             <div className="leading-tight">
               <p className="font-bold">Módulo Salud</p>
-              <p className="text-[11px] text-blue-100 hidden sm:block">Red Inteligente de Servicios Digitales</p>
+              <p className="text-[11px] text-blue-100 hidden sm:block xl:hidden 2xl:block">Red Inteligente de Servicios Digitales</p>
             </div>
           </div>
 

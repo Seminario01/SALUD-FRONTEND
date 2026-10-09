@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 
@@ -8,7 +9,9 @@ const TIPOS = {
   cupo_consulta: "Cupos de consulta",
 };
 
-function TarjetaRecurso({ recurso, editable, soloDisponible, onGuardado }) {
+const ORDEN = ["cama", "cupo_consulta", "ambulancia"];
+
+function TarjetaRecurso({ recurso, editable, soloDisponible, verCenso, onGuardado }) {
   const [disponible, setDisponible] = useState(recurso.disponible);
   const [total, setTotal] = useState(recurso.total);
   const [guardando, setGuardando] = useState(false);
@@ -39,6 +42,13 @@ function TarjetaRecurso({ recurso, editable, soloDisponible, onGuardado }) {
         {recurso.disponible} <span className="text-sm text-gray-400 font-normal">/ {recurso.total} disponibles</span>
       </p>
 
+      {recurso.por_censo && (
+        <p className="mt-2 text-xs text-slate-500">
+          Según el censo de camas
+          {verCenso && <Link to="/hospitalizacion" className="ml-2 text-blue-700 hover:underline">Ver censo →</Link>}
+        </p>
+      )}
+
       {editable && (
         <form onSubmit={guardar} className="mt-3 flex items-end gap-2 flex-wrap">
           <label className="text-xs">
@@ -65,7 +75,7 @@ function TarjetaRecurso({ recurso, editable, soloDisponible, onGuardado }) {
 }
 
 function FormularioRecurso({ onCreado }) {
-  const VACIO = { tipo: "cama", descripcion: "", disponible: 0, total: 0 };
+  const VACIO = { tipo: "ambulancia", descripcion: "", disponible: 0, total: 0 };
   const [datos, setDatos] = useState(VACIO);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
@@ -99,7 +109,8 @@ function FormularioRecurso({ onCreado }) {
         <label className="text-sm">
           Tipo
           <select name="tipo" value={datos.tipo} onChange={cambiar} className={campo}>
-            {Object.entries(TIPOS).map(([valor, texto]) => (
+            {/* Las camas se agregan al censo desde Hospitalización */}
+            {Object.entries(TIPOS).filter(([valor]) => valor !== "cama").map(([valor, texto]) => (
               <option key={valor} value={valor}>{texto}</option>
             ))}
           </select>
@@ -163,9 +174,9 @@ export default function Recursos() {
       <h1 className="text-2xl font-bold text-gray-800 mb-4">Recursos hospitalarios</h1>
       {recursos.length === 0 && <p className="text-gray-500 text-sm">No hay recursos registrados.</p>}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {recursos.map((r) => (
-          <TarjetaRecurso key={`${r.id}-${version}`} recurso={r} onGuardado={cargar}
-            editable={gestiona || (actualizaCamas && r.tipo === "cama")} soloDisponible={!gestiona} />
+        {[...recursos].sort((a, b) => ORDEN.indexOf(a.tipo) - ORDEN.indexOf(b.tipo) || a.id - b.id).map((r) => (
+          <TarjetaRecurso key={`${r.id}-${version}`} recurso={r} onGuardado={cargar} verCenso={puede("hospitalizacion.ver")}
+            editable={!r.por_censo && (gestiona || (actualizaCamas && r.tipo === "cama"))} soloDisponible={!gestiona} />
         ))}
       </div>
       {gestiona && <FormularioRecurso onCreado={cargar} />}

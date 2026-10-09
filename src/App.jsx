@@ -14,6 +14,7 @@ import Expedientes from "./pages/Expedientes";
 import Integraciones from "./pages/Integraciones";
 import Recetas from "./pages/Recetas";
 import Inventario from "./pages/Inventario";
+import Hospitalizacion from "./pages/Hospitalizacion";
 import NoEncontrado from "./pages/NoEncontrado";
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="/expedientes" element={<Expedientes />} />
           <Route path="/recetas" element={<Recetas />} />
           <Route path="/inventario" element={<Inventario />} />
+          <Route path="/hospitalizacion" element={<Hospitalizacion />} />
           <Route path="/integraciones" element={<Integraciones />} />
           <Route path="*" element={<NoEncontrado />} />
         </Route>

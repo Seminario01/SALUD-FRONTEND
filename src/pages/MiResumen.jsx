@@ -34,6 +34,7 @@ export default function MiResumen() {
   const [citas, setCitas] = useState([]);
   const [vacunacion, setVacunacion] = useState(undefined);
   const [ultimaAtencion, setUltimaAtencion] = useState(undefined);
+  const [hospitalizaciones, setHospitalizaciones] = useState([]);
   const [codigo, setCodigo] = useState(null);
   const [copiado, setCopiado] = useState(false);
 
@@ -44,6 +45,7 @@ export default function MiResumen() {
         const p = res.data.data;
         setPaciente(p);
         client.get("/citas").then((r) => setCitas(r.data.data)).catch(() => setCitas([]));
+        client.get("/hospitalizaciones").then((r) => setHospitalizaciones(r.data.data)).catch(() => setHospitalizaciones([]));
         client.get(`/vacunacion/${p.id}`).then((r) => setVacunacion(r.data.data)).catch(() => setVacunacion(null));
         client
           .get(`/expedientes/${p.id}`)
@@ -60,6 +62,8 @@ export default function MiResumen() {
   const proximas = citas
     .filter((c) => ["pendiente", "confirmada"].includes(c.estado) && new Date(String(c.fecha_hora).replace(" ", "T")) >= ahora)
     .sort((a, b) => String(a.fecha_hora).localeCompare(String(b.fecha_hora)));
+  const hospitalizacion = hospitalizaciones.find((h) => ["ACTIVO", "PENDIENTE"].includes(h.estado))
+    ?? hospitalizaciones.find((h) => h.estado === "EGRESADO");
   const porPagar = citas.filter((c) => c.estado_cobro === "PENDIENTE" && !c.pago_confirmado && c.estado !== "cancelada");
 
   return (
@@ -113,6 +117,30 @@ export default function MiResumen() {
                 ))}
               </ul>
               <p className="text-xs text-slate-500 mt-3">Pague con el número de referencia en el módulo Tributario.</p>
+            </Tarjeta>
+          )}
+
+          {hospitalizacion && (
+            <Tarjeta titulo="Hospitalización">
+              {hospitalizacion.estado === "ACTIVO" && (
+                <>
+                  <p className="text-lg font-semibold text-slate-800">Cama {hospitalizacion.cama} · {hospitalizacion.area}</p>
+                  <p className="text-sm text-slate-600">Ingresado desde el {formatoFecha(hospitalizacion.fecha_ingreso)}</p>
+                  {hospitalizacion.medico && <p className="text-sm text-slate-500">Médico tratante: Dr(a). {hospitalizacion.medico}</p>}
+                </>
+              )}
+              {hospitalizacion.estado === "PENDIENTE" && (
+                <>
+                  <p className="text-lg font-semibold text-amber-600">Ingreso en trámite</p>
+                  <p className="text-sm text-slate-600">{hospitalizacion.area}: se le asignará una cama en breve.</p>
+                </>
+              )}
+              {hospitalizacion.estado === "EGRESADO" && (
+                <>
+                  <p className="text-lg font-semibold text-slate-800">{hospitalizacion.tipo_egreso_texto} · {formatoFecha(hospitalizacion.fecha_egreso, false)}</p>
+                  {hospitalizacion.resumen_egreso && <p className="text-sm text-slate-600">{hospitalizacion.resumen_egreso}</p>}
+                </>
+              )}
             </Tarjeta>
           )}
 

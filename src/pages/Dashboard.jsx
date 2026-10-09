@@ -55,6 +55,7 @@ export default function Dashboard() {
   const vacunacion = indicadores?.vacunacion ?? {};
   const recursos = indicadores?.recursos_hospitalarios ?? [];
   const camasDisponibles = recursos.find((r) => r.tipo === "cama");
+  const hospital = indicadores?.hospitalizacion;
 
   return (
     <div className="p-6">
@@ -108,11 +109,35 @@ export default function Dashboard() {
         </div>
       )}
 
-      <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Recursos hospitalarios</h2>
-      {indicadores && recursos.length === 0 && (
+      <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Hospitalización y camas</h2>
+      {indicadores && !hospital?.camas_total && recursos.length === 0 && (
         <p className="text-gray-500 text-sm">Aún no hay recursos cargados en la base de datos.</p>
       )}
-      {camasDisponibles && (
+      {hospital?.camas_total > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <TarjetaResumen
+            titulo="Camas disponibles"
+            valor={<>{hospital.camas_disponibles} <span className="text-sm text-gray-400 font-normal">/ {hospital.camas_total}</span></>}
+            detalle={`Ocupación ${hospital.ocupacion_porcentaje} %`}
+            to={puede("hospitalizacion.ver") ? "/hospitalizacion" : undefined}
+            color="text-green-700"
+          />
+          <TarjetaResumen
+            titulo="Pacientes hospitalizados"
+            valor={hospital.hospitalizados}
+            detalle={`${hospital.egresos_ultimos_30_dias} egresos en los últimos 30 días`}
+            to={puede("hospitalizacion.ver") ? "/hospitalizacion" : undefined}
+            color="text-blue-700"
+          />
+          <TarjetaResumen
+            titulo="Órdenes pendientes de cama"
+            valor={hospital.ordenes_pendientes}
+            detalle={hospital.ordenes_pendientes ? "Esperan asignación de Enfermería" : "Sin pendientes"}
+            to={puede("hospitalizacion.ver") ? "/hospitalizacion" : undefined}
+            color={hospital.ordenes_pendientes ? "text-yellow-600" : "text-slate-700"}
+          />
+        </div>
+      ) : camasDisponibles && (
         <div className="bg-white border rounded-lg p-4 shadow-sm inline-block">
           <p className="text-sm text-gray-500 capitalize">Camas disponibles</p>
           <p className="text-3xl font-bold text-green-700">
