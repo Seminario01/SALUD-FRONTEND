@@ -4,6 +4,12 @@ import EstadoPago from "../components/EstadoPago";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 
+const COLOR_RECETA = {
+  PENDIENTE: "bg-yellow-100 text-yellow-800",
+  DESPACHADA: "bg-green-100 text-green-800",
+  ANULADA: "bg-red-100 text-red-800",
+};
+
 function fecha(texto, conHora = true) {
   if (!texto || texto === "None") return "—";
   const f = new Date(String(texto).replace(" ", "T"));
@@ -130,6 +136,7 @@ export default function FichaPaciente() {
   const puedeVerCitas = puede("citas.ver");
   const puedeVerVacunas = puede("vacunacion.ver");
   const puedeAntecedentes = puede("pacientes.antecedentes");
+  const puedeVerRecetas = puede("recetas.ver");
 
   const [paciente, setPaciente] = useState(undefined);
   const [error, setError] = useState(null);
@@ -139,6 +146,7 @@ export default function FichaPaciente() {
   const [vacunacion, setVacunacion] = useState(undefined);
   const [atenciones, setAtenciones] = useState(null);
   const [antecedentes, setAntecedentes] = useState(null);
+  const [recetas, setRecetas] = useState(null);
 
   const cargar = useCallback(() => {
     client
@@ -158,7 +166,10 @@ export default function FichaPaciente() {
     if (puedeVerClinico) {
       client.get(`/expedientes/${id}`).then((r) => setAtenciones(r.data.data)).catch(() => setAtenciones([]));
     }
-  }, [id, cargar, puedeVerClinico, puedeVerCitas, puedeVerVacunas]);
+    if (puedeVerRecetas) {
+      client.get("/recetas", { params: { paciente_id: id } }).then((r) => setRecetas(r.data.data)).catch(() => setRecetas([]));
+    }
+  }, [id, cargar, puedeVerClinico, puedeVerCitas, puedeVerVacunas, puedeVerRecetas]);
 
   function consultarAntecedentes() {
     setAntecedentes({ cargando: true });
@@ -291,6 +302,29 @@ export default function FichaPaciente() {
               </div>
             ))}
           </div>
+        </Seccion>
+      )}
+
+      {puedeVerRecetas && (
+        <Seccion titulo="Recetas" accion={puede("recetas.crear") && <Link to={`/recetas?paciente=${id}`} className="text-sm text-blue-700 hover:underline">Recetar →</Link>}>
+          {recetas === null && <p className="text-sm text-slate-400">Cargando...</p>}
+          {recetas?.length === 0 && <p className="text-sm text-slate-500">Sin recetas.</p>}
+          {recetas?.length > 0 && (
+            <table className="w-full text-left">
+              <thead><tr><th className="p-2">No.</th><th className="p-2">Fecha</th><th className="p-2">Medicamentos</th><th className="p-2">Estado</th></tr></thead>
+              <tbody>
+                {recetas.slice(0, 6).map((r) => (
+                  <tr key={r.id}>
+                    <td className="p-2 tabular-nums">{r.id}</td>
+                    <td className="p-2">{fecha(r.fecha)}</td>
+                    <td className="p-2">{r.items.map((it) => `${it.medicamento} ×${it.cantidad}`).join(", ")}</td>
+                    <td className="p-2"><span className={`px-2 py-0.5 rounded text-xs ${COLOR_RECETA[r.estado] ?? "bg-gray-100"}`}>{r.estado.toLowerCase()}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {recetas?.length > 6 && <p className="text-xs text-slate-400 mt-2">Mostrando las 6 más recientes de {recetas.length}.</p>}
         </Seccion>
       )}
     </div>

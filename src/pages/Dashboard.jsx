@@ -4,6 +4,7 @@ import client from "../api/client";
 import MiResumen from "./MiResumen";
 import EstadoIntegraciones from "../components/EstadoIntegraciones";
 import ResumenCitas from "../components/ResumenCitas";
+import ResumenFarmacia from "../components/ResumenFarmacia";
 import useRoles from "../hooks/useRoles";
 
 function TarjetaResumen({ titulo, valor, detalle, to, color }) {
@@ -141,6 +142,7 @@ export default function Dashboard() {
         </>
       )}
       {puede("citas.ver") && <ResumenCitas />}
+      {puede("inventario.ver") && <ResumenFarmacia verRecetas={puede("recetas.despachar", "recetas.anular")} />}
       {puede("integraciones.ver") && <EstadoIntegraciones />}
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import useRoles from "../hooks/useRoles";
 
@@ -29,9 +29,18 @@ export default function Layout() {
     { to: "/turnos", texto: "Turnos", ver: r.puede("turnos.ver_cola", "turnos.generar") },
     { to: "/vacunacion", texto: r.esPersonal ? "Vacunación" : "Mi vacunación", ver: r.puede("vacunacion.ver") || r.esCiudadano },
     { to: "/expedientes", texto: r.esPersonal ? "Expedientes" : "Mi expediente", ver: r.puede("expediente.ver") || r.esCiudadano },
-    { to: "/recursos", texto: "Recursos", ver: r.puede("recursos.ver") },
-    { to: "/integraciones", texto: "Integraciones", ver: r.puede("integraciones.ver") },
+    { to: "/recetas", texto: r.esPersonal ? "Recetas" : "Mis recetas", ver: r.puede("recetas.ver") || r.esCiudadano },
+    { to: "/inventario", texto: "Inventario", ver: r.puede("inventario.ver"), grupo: true },
+    { to: "/recursos", texto: "Recursos", ver: r.puede("recursos.ver"), grupo: true },
+    { to: "/integraciones", texto: "Integraciones", ver: r.puede("integraciones.ver"), grupo: true },
   ].filter((e) => e.ver);
+  // Con muchas opciones, las de gestión van en un menú "Gestión" para que el encabezado quepa
+  const agrupar = enlaces.length > 7;
+  const principales = agrupar ? enlaces.filter((e) => !e.grupo) : enlaces;
+  const gestion = agrupar ? enlaces.filter((e) => e.grupo) : [];
+  const location = useLocation();
+  const [gestionAbierta, setGestionAbierta] = useState(false);
+  const enGestion = gestion.some((e) => location.pathname.startsWith(e.to));
 
   function manejarLogout() {
     // Cierra la sesión también en el Login Único (no solo en esta app).
@@ -56,11 +65,42 @@ export default function Layout() {
           </div>
 
           <nav className="hidden xl:flex items-center gap-0.5 ml-2">
-            {enlaces.map((e) => (
+            {principales.map((e) => (
               <NavLink key={e.to} to={e.to} end={e.to === "/"} className={claseEnlace}>
                 {e.texto}
               </NavLink>
             ))}
+            {gestion.length > 0 && (
+              <div
+                className="relative"
+                onBlur={(ev) => { if (!ev.currentTarget.contains(ev.relatedTarget)) setGestionAbierta(false); }}
+              >
+                <button
+                  onClick={() => setGestionAbierta(!gestionAbierta)}
+                  aria-expanded={gestionAbierta}
+                  className={claseEnlace({ isActive: enGestion }) + " flex items-center gap-1"}
+                >
+                  Gestión
+                  <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                    <path d="M5.5 7.5l4.5 4.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                  </svg>
+                </button>
+                {gestionAbierta && (
+                  <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white text-slate-700 shadow-lg ring-1 ring-black/5 py-1 z-20">
+                    {gestion.map((e) => (
+                      <NavLink
+                        key={e.to}
+                        to={e.to}
+                        onClick={() => setGestionAbierta(false)}
+                        className={({ isActive }) => `block px-4 py-2 text-sm hover:bg-slate-50 ${isActive ? "font-semibold text-blue-700" : ""}`}
+                      >
+                        {e.texto}
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </nav>
 
           <div className="ml-auto hidden xl:flex items-center gap-3">
