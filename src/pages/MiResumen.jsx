@@ -35,6 +35,7 @@ export default function MiResumen() {
   const [vacunacion, setVacunacion] = useState(undefined);
   const [ultimaAtencion, setUltimaAtencion] = useState(undefined);
   const [hospitalizaciones, setHospitalizaciones] = useState([]);
+  const [cuentas, setCuentas] = useState([]);
   const [codigo, setCodigo] = useState(null);
   const [copiado, setCopiado] = useState(false);
 
@@ -46,6 +47,7 @@ export default function MiResumen() {
         setPaciente(p);
         client.get("/citas").then((r) => setCitas(r.data.data)).catch(() => setCitas([]));
         client.get("/hospitalizaciones").then((r) => setHospitalizaciones(r.data.data)).catch(() => setHospitalizaciones([]));
+        client.get("/cuentas").then((r) => setCuentas(r.data.data)).catch(() => setCuentas([]));
         client.get(`/vacunacion/${p.id}`).then((r) => setVacunacion(r.data.data)).catch(() => setVacunacion(null));
         client
           .get(`/expedientes/${p.id}`)
@@ -64,7 +66,12 @@ export default function MiResumen() {
     .sort((a, b) => String(a.fecha_hora).localeCompare(String(b.fecha_hora)));
   const hospitalizacion = hospitalizaciones.find((h) => ["ACTIVO", "PENDIENTE"].includes(h.estado))
     ?? hospitalizaciones.find((h) => h.estado === "EGRESADO");
-  const porPagar = citas.filter((c) => c.estado_cobro === "PENDIENTE" && !c.pago_confirmado && c.estado !== "cancelada");
+  const porPagar = [
+    ...citas.filter((c) => c.estado_cobro === "PENDIENTE" && !c.pago_confirmado && c.estado !== "cancelada")
+      .map((c) => ({ clave: `c${c.id}`, referencia: c.numero_referencia, concepto: c.motivo || "Consulta", monto: c.costo, vence: c.fecha_vencimiento })),
+    ...cuentas.filter((c) => c.estado === "POR_COBRAR")
+      .map((c) => ({ clave: `h${c.id}`, referencia: c.numero_referencia, concepto: c.tipo === "AMBULATORIA" ? "Servicios médicos" : `Hospitalización, ${c.area}`, monto: c.saldo, vence: c.fecha_vencimiento })),
+  ];
 
   return (
     <div className="p-6">
@@ -107,11 +114,11 @@ export default function MiResumen() {
           {porPagar.length > 0 && (
             <Tarjeta titulo="Pagos pendientes">
               <ul className="space-y-2">
-                {porPagar.map((c) => (
-                  <li key={c.id} className="text-sm">
-                    <p className="font-mono font-semibold text-slate-800">{c.numero_referencia}</p>
+                {porPagar.map((p) => (
+                  <li key={p.clave} className="text-sm">
+                    <p className="font-mono font-semibold text-slate-800">{p.referencia}</p>
                     <p className="text-slate-600">
-                      {c.motivo || "Consulta"} · Q{Number(c.costo ?? 0).toFixed(2)} · vence {formatoDia(c.fecha_vencimiento)}
+                      {p.concepto} · Q{Number(p.monto ?? 0).toFixed(2)} · vence {formatoDia(p.vence)}
                     </p>
                   </li>
                 ))}

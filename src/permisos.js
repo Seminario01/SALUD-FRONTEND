@@ -39,6 +39,8 @@ export const PERMISOS = {
   "hospitalizacion.ordenar": [MED],
   "hospitalizacion.camas": [ENF],
   "hospitalizacion.notas": [MED, ENF],
+  "cuentas.ver": [REC, CAJA, ADM],
+  "cuentas.gestionar": [CAJA],
   "recetas.ver": [MED, ENF, FAR, CAJA, JEF, ADM],
   "recetas.crear": [MED],
   "recetas.anular": [MED, JEF],

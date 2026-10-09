@@ -166,6 +166,19 @@ export default function Dashboard() {
           </div>
         </>
       )}
+      {puede("cuentas.ver") && indicadores?.cuentas && (
+        <>
+          <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Caja</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <TarjetaResumen titulo="Cuentas abiertas" valor={indicadores.cuentas.cuentas_abiertas}
+              detalle="Pacientes con cargos en curso" to="/caja" color="text-blue-700" />
+            <TarjetaResumen titulo="Por cobrar en Tributario" valor={`Q${indicadores.cuentas.monto_por_cobrar.toLocaleString("es-GT", { minimumFractionDigits: 2 })}`}
+              detalle={`${indicadores.cuentas.cuentas_por_cobrar} cuenta(s) con referencia de pago`} to="/caja" color="text-yellow-600" />
+            <TarjetaResumen titulo="Cobrado (30 días)" valor={`Q${indicadores.cuentas.cobrado_30_dias.toLocaleString("es-GT", { minimumFractionDigits: 2 })}`}
+              detalle="Pagos confirmados por Tributario" to="/caja" color="text-green-700" />
+          </div>
+        </>
+      )}
       {puede("citas.ver") && <ResumenCitas />}
       {puede("inventario.ver") && <ResumenFarmacia verRecetas={puede("recetas.despachar", "recetas.anular")} />}
       {puede("integraciones.ver") && <EstadoIntegraciones />}

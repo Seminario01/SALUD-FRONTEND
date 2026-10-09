@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ESTADO_CUENTA, descripcionCuenta, quetzales } from "../utils/caja";
 import EstadoPago from "../components/EstadoPago";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
@@ -146,6 +147,7 @@ export default function FichaPaciente() {
   const puedeAntecedentes = puede("pacientes.antecedentes");
   const puedeVerRecetas = puede("recetas.ver");
   const puedeVerHospitalizacion = puede("hospitalizacion.ver");
+  const puedeVerCuentas = puede("cuentas.ver");
 
   const [paciente, setPaciente] = useState(undefined);
   const [error, setError] = useState(null);
@@ -157,6 +159,7 @@ export default function FichaPaciente() {
   const [antecedentes, setAntecedentes] = useState(null);
   const [recetas, setRecetas] = useState(null);
   const [hospitalizaciones, setHospitalizaciones] = useState(null);
+  const [cuentas, setCuentas] = useState(null);
 
   const cargar = useCallback(() => {
     client
@@ -176,13 +179,16 @@ export default function FichaPaciente() {
     if (puedeVerClinico) {
       client.get(`/expedientes/${id}`).then((r) => setAtenciones(r.data.data)).catch(() => setAtenciones([]));
     }
+    if (puedeVerCuentas) {
+      client.get("/cuentas", { params: { paciente_id: id } }).then((r) => setCuentas(r.data.data)).catch(() => setCuentas([]));
+    }
     if (puedeVerHospitalizacion) {
       client.get("/hospitalizaciones", { params: { paciente_id: id } }).then((r) => setHospitalizaciones(r.data.data)).catch(() => setHospitalizaciones([]));
     }
     if (puedeVerRecetas) {
       client.get("/recetas", { params: { paciente_id: id } }).then((r) => setRecetas(r.data.data)).catch(() => setRecetas([]));
     }
-  }, [id, cargar, puedeVerClinico, puedeVerCitas, puedeVerVacunas, puedeVerRecetas, puedeVerHospitalizacion]);
+  }, [id, cargar, puedeVerClinico, puedeVerCitas, puedeVerVacunas, puedeVerRecetas, puedeVerHospitalizacion, puedeVerCuentas]);
 
   function consultarAntecedentes() {
     setAntecedentes({ cargando: true });
@@ -332,6 +338,29 @@ export default function FichaPaciente() {
                     <td className="p-2">{h.area}{h.cama ? ` · ${h.cama}` : ""}</td>
                     {puedeVerClinico && <td className="p-2">{h.diagnostico}</td>}
                     <td className="p-2"><span className={`px-2 py-0.5 rounded text-xs ${COLOR_HOSPITALIZACION[h.estado] ?? "bg-gray-100"}`}>{TEXTO_HOSPITALIZACION[h.estado] ?? h.estado}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Seccion>
+      )}
+
+      {puedeVerCuentas && (
+        <Seccion titulo="Cuentas" accion={<Link to="/caja" className="text-sm text-blue-700 hover:underline">Ir a Caja →</Link>}>
+          {cuentas === null && <p className="text-sm text-slate-400">Cargando...</p>}
+          {cuentas?.length === 0 && <p className="text-sm text-slate-500">Sin cuentas.</p>}
+          {cuentas?.length > 0 && (
+            <table className="w-full text-left">
+              <thead><tr><th className="p-2">No.</th><th className="p-2">Cuenta</th><th className="p-2">Estado</th><th className="p-2 text-right">Saldo</th><th className="p-2">Referencia</th></tr></thead>
+              <tbody>
+                {cuentas.slice(0, 6).map((c) => (
+                  <tr key={c.id}>
+                    <td className="p-2"><Link to={`/caja?cuenta=${c.id}`} className="text-blue-700 hover:underline tabular-nums">{c.id}</Link></td>
+                    <td className="p-2">{descripcionCuenta(c)}</td>
+                    <td className="p-2"><span className={`px-2 py-0.5 rounded text-xs ${ESTADO_CUENTA[c.estado]?.clase ?? "bg-gray-100"}`}>{ESTADO_CUENTA[c.estado]?.texto ?? c.estado}</span></td>
+                    <td className="p-2 text-right tabular-nums">{quetzales(c.saldo)}</td>
+                    <td className="p-2 font-mono text-xs">{c.numero_referencia ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>
