@@ -1,0 +1,2 @@
+# Scripts que corren dentro del contenedor Linux: siempre con saltos de linea LF
+*.sh text eol=lf

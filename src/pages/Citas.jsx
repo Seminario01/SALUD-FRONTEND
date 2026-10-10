@@ -1,5 +1,9 @@
-import { useEffect, useState } from "react";
-import client from "../api/client";
+import { useCallback, useEffect, useState } from "react";
+import client, { mensajeError } from "../api/client";
+import useRoles from "../hooks/useRoles";
+import Paginacion from "../components/Paginacion";
+import usePaginacion from "../hooks/usePaginacion";
+import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 
 const colores = {
   pendiente: "bg-yellow-100 text-yellow-800",
@@ -8,61 +12,265 @@ const colores = {
   cancelada: "bg-red-100 text-red-800",
 };
 
+function formatoFecha(texto) {
+  const fecha = new Date(String(texto).replace(" ", "T"));
+  return isNaN(fecha) ? texto : fecha.toLocaleString("es-GT", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function FormularioCita({ esPersonal, pacientes, aviso, onCreada }) {
+  const [pacienteId, setPacienteId] = useState("");
+  const [fechaHora, setFechaHora] = useState("");
+  const [motivo, setMotivo] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState(null);
+  const [exito, setExito] = useState(null);
+
+  // Un ciudadano solo tiene su propio registro: se selecciona solo
+  const seleccionado = pacienteId || (!esPersonal && pacientes[0]?.id) || "";
+
+  function enviar(e) {
+    e.preventDefault();
+    setEnviando(true);
+    setError(null);
+    setExito(null);
+    client
+      .post("/citas", { paciente_id: Number(seleccionado), fecha_hora: fechaHora, motivo })
+      .then((res) => {
+        setExito(`Cita agendada (ID ${res.data.data.id}).`);
+        setFechaHora("");
+        setMotivo("");
+        onCreada();
+      })
+      .catch((err) => setError(mensajeError(err)))
+      .finally(() => setEnviando(false));
+  }
+
+  if (aviso) return <p className="mb-6 text-sm text-gray-600 bg-yellow-50 border border-yellow-200 rounded p-3">{aviso}</p>;
+
+  const campo = "border rounded px-3 py-1.5 w-full";
+  return (
+    <form onSubmit={enviar} className="bg-white border rounded-lg p-4 shadow-sm mb-6">
+      <h2 className="font-bold text-gray-700 mb-3">Agendar cita</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {esPersonal ? (
+          <label className="text-sm">
+            Paciente *
+            <select value={seleccionado} onChange={(e) => setPacienteId(e.target.value)} required className={campo}>
+              <option value="">Seleccione...</option>
+              {pacientes.map((p) => (
+                <option key={p.id} value={p.id}>{p.nombre_completo} (ID {p.id})</option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <p className="text-sm self-end pb-2">
+            Paciente: <span className="font-semibold">{pacientes[0]?.nombre_completo}</span>
+          </p>
+        )}
+        <label className="text-sm">
+          Fecha y hora *
+          <input type="datetime-local" value={fechaHora} onChange={(e) => setFechaHora(e.target.value)} required className={campo} />
+        </label>
+        <label className="text-sm">
+          Motivo
+          <input value={motivo} onChange={(e) => setMotivo(e.target.value)} maxLength={300} className={campo} />
+        </label>
+      </div>
+      <div className="mt-3 flex items-center gap-3">
+        <button
+          type="submit"
+          disabled={enviando || !seleccionado}
+          className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800 disabled:opacity-50"
+        >
+          {enviando ? "Guardando..." : "Agendar"}
+        </button>
+        {exito && <span className="text-sm text-green-700">{exito}</span>}
+        {error && <span className="text-sm text-red-600">{error}</span>}
+      </div>
+    </form>
+  );
+}
+
 export default function Citas() {
+  const { puede, esCiudadano } = useRoles();
+  const esPersonal = puede("citas.ver");          // ve las citas de todos los pacientes
+  const gestiona = puede("citas.gestionar");      // agenda, confirma y cancela de cualquiera
+  const verificaPagos = puede("pagos.verificar"); // Caja, Recepción, Administración
+  const { pacientes, aviso } = usePacientesSeleccionables(esPersonal);
+  const nombrePaciente = (id) => pacientes.find((p) => p.id === id)?.nombre_completo ?? `ID ${id}`;
   const [citas, setCitas] = useState([]);
+  // --- Filtros (en el navegador) ---
+  const [filtroEstado, setFiltroEstado] = useState("");
+  const [desde, setDesde] = useState("");
+  const [hasta, setHasta] = useState("");
+  const [texto, setTexto] = useState("");
+  const filtradas = citas.filter((c) => {
+    const dia = String(c.fecha_hora).slice(0, 10);
+    if (filtroEstado && c.estado !== filtroEstado) return false;
+    if (desde && dia < desde) return false;
+    if (hasta && dia > hasta) return false;
+    if (texto) {
+      const t = texto.toLowerCase();
+      const nombre = (pacientes.find((p) => p.id === c.paciente_id)?.nombre_completo ?? "").toLowerCase();
+      if (!nombre.includes(t) && !(c.motivo ?? "").toLowerCase().includes(t)) return false;
+    }
+    return true;
+  });
+  const pag = usePaginacion(filtradas, 15);
+  const hayFiltros = filtroEstado || desde || hasta || texto;
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const [errorAccion, setErrorAccion] = useState(null);
 
-  useEffect(() => {
+  const cargar = useCallback(() => {
     client
       .get("/citas")
-      .then((res) => setCitas(res.data.data))
-      .catch((err) => {
-        // Si el backend responde 401/403, probablemente falte el token de Cognito
-        // (todavía no hay User Pool configurado) o el usuario no tiene permiso.
-        setError(err.response?.data?.message || err.message);
+      .then((res) => {
+        setCitas(res.data.data);
+        setError(null);
       })
+      // 401: la sesión venció. 403: el usuario no tiene el rol necesario.
+      .catch((err) => setError(mensajeError(err)))
       .finally(() => setCargando(false));
   }, []);
 
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
+
+  function cambiarEstado(cita, estado) {
+    setErrorAccion(null);
+    client.put(`/citas/${cita.id}`, { estado }).then(cargar).catch((err) => setErrorAccion(mensajeError(err)));
+  }
+
+  // WS-SALUD-09: el backend consulta a Tributario y, si está pagado, marca la cita
+  const [verificando, setVerificando] = useState(null);
+  const [avisoPago, setAvisoPago] = useState(null);
+
+  function verificarPago(cita) {
+    setErrorAccion(null);
+    setAvisoPago(null);
+    setVerificando(cita.id);
+    client
+      .post(`/citas/${cita.id}/verificar-pago`)
+      .then((res) => {
+        const d = res.data.data;
+        setAvisoPago(
+          d.pagoConfirmado
+            ? `Tributario confirmó el pago (Q${d.monto}, referencia ${d.numeroReferencia}).`
+            : `Tributario no confirmó el pago (referencia ${d.numeroReferencia}).`
+        );
+        cargar();
+      })
+      .catch((err) => setErrorAccion(mensajeError(err)))
+      .finally(() => setVerificando(null));
+  }
+
+  function cancelar(cita) {
+    if (!window.confirm(`¿Cancelar la cita del ${formatoFecha(cita.fecha_hora)}?`)) return;
+    setErrorAccion(null);
+    client.delete(`/citas/${cita.id}`).then(cargar).catch((err) => setErrorAccion(mensajeError(err)));
+  }
+
   if (cargando) return <p className="p-6">Cargando...</p>;
 
+  const boton = "text-xs px-2 py-1 rounded border hover:bg-gray-100";
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Citas médicas</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">{esPersonal ? "Citas médicas" : "Mis citas"}</h1>
 
-      {error && (
-        <p className="mb-4 text-red-600 text-sm">
-          No se pudieron cargar las citas: {error}
-        </p>
-      )}
+      {(gestiona || esCiudadano) && <FormularioCita esPersonal={gestiona} pacientes={pacientes} aviso={aviso} onCreada={cargar} />}
 
-      {!error && citas.length === 0 && (
-        <p className="text-gray-500 text-sm">No hay citas registradas.</p>
-      )}
+      {error && <p className="mb-4 text-red-600 text-sm">No se pudieron cargar las citas: {error}</p>}
+      {errorAccion && <p className="mb-4 text-red-600 text-sm">{errorAccion}</p>}
+      {avisoPago && <p className="mb-4 text-sm text-green-800 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{avisoPago}</p>}
 
       {!error && citas.length > 0 && (
+        <div className="flex flex-wrap items-end gap-3 mb-3">
+          <label className="text-sm">Estado
+            <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="border rounded px-2 py-1.5 block">
+              <option value="">Todos</option>
+              {["pendiente", "confirmada", "atendida", "cancelada"].map((e) => <option key={e} value={e}>{e}</option>)}
+            </select>
+          </label>
+          <label className="text-sm">Desde
+            <input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} className="border rounded px-2 py-1 block" />
+          </label>
+          <label className="text-sm">Hasta
+            <input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} className="border rounded px-2 py-1 block" />
+          </label>
+          <label className="text-sm">{esPersonal ? "Paciente o motivo" : "Motivo"}
+            <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Buscar..." className="border rounded px-2 py-1 block w-52" />
+          </label>
+          {hayFiltros && (
+            <button onClick={() => { setFiltroEstado(""); setDesde(""); setHasta(""); setTexto(""); }}
+              className="text-sm px-3 py-1.5 rounded border hover:bg-gray-100">Quitar filtros</button>
+          )}
+          <span className="text-sm text-slate-500 ml-auto">{filtradas.length} cita(s)</span>
+        </div>
+      )}
+
+      {!error && citas.length === 0 && <p className="text-gray-500 text-sm">No hay citas registradas.</p>}
+      {!error && citas.length > 0 && filtradas.length === 0 && <p className="text-gray-500 text-sm">Ninguna cita coincide con los filtros.</p>}
+
+      {!error && filtradas.length > 0 && (
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b bg-gray-100">
               <th className="p-2">Fecha y hora</th>
+              {esPersonal && <th className="p-2">Paciente</th>}
+              <th className="p-2">Motivo</th>
               <th className="p-2">Estado</th>
+              <th className="p-2">Pago</th>
+              <th className="p-2">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {citas.map((c) => (
-              <tr key={c.id} className="border-b hover:bg-gray-50">
-                <td className="p-2">{c.fecha_hora}</td>
-                <td className="p-2">
-                  <span className={`px-2 py-1 rounded text-sm ${colores[c.estado] ?? "bg-gray-100 text-gray-800"}`}>
-                    {c.estado}
-                  </span>
-                </td>
-              </tr>
-            ))}
+            {pag.items.map((c) => {
+              const activa = c.estado === "pendiente" || c.estado === "confirmada";
+              return (
+                <tr key={c.id} className="border-b hover:bg-gray-50">
+                  <td className="p-2">{formatoFecha(c.fecha_hora)}</td>
+                  {esPersonal && <td className="p-2 font-medium text-slate-700">{nombrePaciente(c.paciente_id)}</td>}
+                  <td className="p-2">{c.motivo}</td>
+                  <td className="p-2">
+                    <span className={`px-2 py-1 rounded text-sm ${colores[c.estado] ?? "bg-gray-100 text-gray-800"}`}>
+                      {c.estado}
+                    </span>
+                  </td>
+                  <td className="p-2">
+                    {c.pago_confirmado ? (
+                      <span className="px-2 py-1 rounded text-sm bg-green-100 text-green-800">Pagado</span>
+                    ) : verificaPagos && c.estado !== "cancelada" ? (
+                      <button
+                        onClick={() => verificarPago(c)}
+                        disabled={verificando === c.id}
+                        className={`${boton} disabled:opacity-50`}
+                      >
+                        {verificando === c.id ? "Consultando..." : "Verificar pago"}
+                      </button>
+                    ) : (
+                      <span className="text-sm text-slate-400">Pendiente</span>
+                    )}
+                  </td>
+                  <td className="p-2 space-x-1">
+                    {gestiona && c.estado === "pendiente" && (
+                      <button onClick={() => cambiarEstado(c, "confirmada")} className={boton}>Confirmar</button>
+                    )}
+                    {gestiona && c.estado === "confirmada" && (
+                      <button onClick={() => cambiarEstado(c, "atendida")} className={boton}>Marcar atendida</button>
+                    )}
+                    {activa && (gestiona || esCiudadano) && (
+                      <button onClick={() => cancelar(c)} className={`${boton} text-red-700`}>Cancelar</button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
+      <Paginacion {...pag} />
     </div>
   );
 }

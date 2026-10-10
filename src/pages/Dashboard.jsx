@@ -1,41 +1,72 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { clientExterno } from "../api/client";
+import client from "../api/client";
+import MiResumen from "./MiResumen";
+import EstadoIntegraciones from "../components/EstadoIntegraciones";
+import ResumenCitas from "../components/ResumenCitas";
+import useRoles from "../hooks/useRoles";
 
 function TarjetaResumen({ titulo, valor, detalle, to, color }) {
-  return (
-    <Link
-      to={to}
-      className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow block"
-    >
+  const contenido = (
+    <>
       <p className="text-sm text-gray-500">{titulo}</p>
       <p className={`text-3xl font-bold ${color}`}>{valor}</p>
       <p className="text-xs text-gray-400 mt-1">{detalle}</p>
+    </>
+  );
+  // Sin "to" (vista de Auditoría) la tarjeta no es un enlace
+  if (!to) return <div className="bg-white border rounded-lg p-4 shadow-sm block">{contenido}</div>;
+  return (
+    <Link to={to} className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow block">
+      {contenido}
     </Link>
   );
 }
 
 export default function Dashboard() {
+  const { esPersonal, esAuditor, puede } = useRoles();
+  // Cada tarjeta enlaza a su pantalla solo si el puesto puede usarla.
+  const PERMISO_RUTA = { "/pacientes": "pacientes.ver", "/citas": "citas.ver", "/turnos": "turnos.ver_cola", "/vacunacion": "vacunacion.ver" };
+  const enlace = (ruta) => (puede(PERMISO_RUTA[ruta]) ? ruta : undefined);
   const [indicadores, setIndicadores] = useState(null);
   const [errorIndicadores, setErrorIndicadores] = useState(false);
+  const [sinPermiso, setSinPermiso] = useState(false);
 
   useEffect(() => {
-    clientExterno
-      .get("/indicadores")
-      .then((res) => setIndicadores(res.data.data ?? res.data))
-      .catch(() => setErrorIndicadores(true));
+    // GET /panel usa el token del usuario (solo personal de Salud).
+    // La API key entre módulos NO se usa desde el navegador.
+    client
+      .get("/panel")
+      .then((res) => setIndicadores(res.data.data))
+      .catch((err) => {
+        if (err.response?.status === 403) setSinPermiso(true);
+        else setErrorIndicadores(true);
+      });
   }, []);
 
-  const camasDisponibles = indicadores?.recursos?.find((r) => r.tipo === "cama");
+  // Un ciudadano no ve los indicadores generales: ve su propio resumen.
+  if (sinPermiso) return <MiResumen />;
+
+  // Formato de GET /indicadores: { pacientes_totales, citas: {...}, turnos: {...},
+  // vacunacion: {...}, recursos_hospitalarios: [...] }
+  const citas = indicadores?.citas ?? {};
+  const turnos = indicadores?.turnos ?? {};
+  const vacunacion = indicadores?.vacunacion ?? {};
+  const recursos = indicadores?.recursos_hospitalarios ?? [];
+  const camasDisponibles = recursos.find((r) => r.tipo === "cama");
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-1">Módulo de Salud</h1>
-      <p className="text-gray-500 mb-6">Resumen general del sistema</p>
+      <p className="text-gray-500 mb-6">
+        {esAuditor && !esPersonal
+          ? "Indicadores agregados del Módulo de Salud"
+          : "Resumen general del sistema"}
+      </p>
 
       {errorIndicadores && (
         <p className="text-red-600 text-sm mb-4">
-          No se pudieron cargar los indicadores. ¿Está corriendo el backend local?
+          No se pudieron cargar los indicadores.
         </p>
       )}
 
@@ -49,35 +80,35 @@ export default function Dashboard() {
             titulo="Pacientes registrados"
             valor={indicadores.pacientes_totales}
             detalle="Total en la base de datos"
-            to="/pacientes"
+            to={enlace("/pacientes")}
             color="text-blue-700"
           />
           <TarjetaResumen
             titulo="Citas pendientes"
-            valor={indicadores.citas_pendientes}
-            detalle={`${indicadores.citas_atendidas} atendidas, ${indicadores.citas_canceladas} canceladas`}
-            to="/citas"
+            valor={citas.pendientes ?? 0}
+            detalle={`${citas.atendidas ?? 0} atendidas, ${citas.canceladas ?? 0} canceladas`}
+            to={enlace("/citas")}
             color="text-yellow-600"
           />
           <TarjetaResumen
             titulo="Turnos en espera"
-            valor={indicadores.turnos_en_espera}
-            detalle={`${indicadores.turnos_atendidos} atendidos`}
-            to="/turnos"
+            valor={turnos.en_espera ?? 0}
+            detalle={`${turnos.atendidos ?? 0} atendidos`}
+            to={enlace("/turnos")}
             color="text-orange-600"
           />
           <TarjetaResumen
             titulo="Vacunación pendiente"
-            valor={indicadores.vacunacion_pendiente}
-            detalle={`${indicadores.estudiantes_vacunados} estudiantes con esquema completo`}
-            to="/vacunacion"
+            valor={vacunacion.pendiente ?? 0}
+            detalle={`${vacunacion.estudiantes_vacunados ?? 0} estudiantes con esquema completo`}
+            to={enlace("/vacunacion")}
             color="text-purple-600"
           />
         </div>
       )}
 
       <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Recursos hospitalarios</h2>
-      {indicadores && (!indicadores.recursos || indicadores.recursos.length === 0) && (
+      {indicadores && recursos.length === 0 && (
         <p className="text-gray-500 text-sm">Aún no hay recursos cargados en la base de datos.</p>
       )}
       {camasDisponibles && (
@@ -89,24 +120,28 @@ export default function Dashboard() {
           </p>
         </div>
       )}
-      <Link to="/recursos" className="block mt-2 text-sm text-blue-700 hover:underline">
-        Ver todos los recursos →
-      </Link>
+      {puede("recursos.ver") && (
+        <Link to="/recursos" className="block mt-2 text-sm text-blue-700 hover:underline">
+          Ver todos los recursos →
+        </Link>
+      )}
 
-      {indicadores?.presupuesto && (
+      {indicadores?.presupuesto_servicio_social && (
         <>
-          <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Presupuesto ({indicadores.presupuesto.periodo})</h2>
+          <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Presupuesto ({indicadores.presupuesto_servicio_social.periodo})</h2>
           <div className="bg-white border rounded-lg p-4 shadow-sm inline-block">
             <p className="text-sm text-gray-500">Ejecutado / Asignado</p>
             <p className="text-3xl font-bold text-teal-700">
-              Q{indicadores.presupuesto.monto_ejecutado_servicio_social.toLocaleString()}{" "}
+              Q{indicadores.presupuesto_servicio_social.monto_ejecutado_servicio_social.toLocaleString()}{" "}
               <span className="text-sm text-gray-400 font-normal">
-                / Q{indicadores.presupuesto.monto_asignado.toLocaleString()}
+                / Q{indicadores.presupuesto_servicio_social.monto_asignado.toLocaleString()}
               </span>
             </p>
           </div>
         </>
       )}
+      {puede("citas.ver") && <ResumenCitas />}
+      {puede("integraciones.ver") && <EstadoIntegraciones />}
     </div>
   );
 }
