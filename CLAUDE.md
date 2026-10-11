@@ -1,0 +1,46 @@
+# Contexto del proyecto para Claude Code — SALUD-FRONTEND
+
+Soy Antonio (Denilson), estudiante. Trabajo en el **Módulo Salud** del proyecto
+"Red Inteligente de Servicios Digitales" (organización de GitHub `Seminario01`).
+
+- **SALUD-FRONTEND** (este repo): React 19 + Vite + Tailwind v4.
+- **SALUD-BACKEND** (repo hermano, en la carpeta de al lado): Flask + SQLAlchemy + PyMySQL + gunicorn.
+- Login Único: Keycloak, realm `rsd`.
+
+## Metodología de trabajo
+
+1. Los cambios se hacen en local (en la PC de Antonio).
+2. Se suben a GitHub, a la rama `denilson-dev`.
+3. Antonio entra al servidor por SSH y ahí hace `git pull` de esa rama.
+4. Se vuelve a levantar con docker compose en `~/proyecto-salud/SALUD-BACKEND/deploy`
+   (ese compose también construye este frontend).
+
+Nunca se edita código directamente en el servidor; todo pasa por git.
+
+## Reglas
+
+- Trabajar siempre en la rama `denilson-dev`. Nunca en `main`.
+- Explicar en español, paso a paso y simple.
+- Al dar comandos, decir siempre dónde van: en la PC o en el servidor (por SSH).
+  Cada comando debe empezar con `cd` a su carpeta, por ejemplo:
+  `cd ~/proyecto-salud/SALUD-BACKEND/deploy && docker compose ps`
+- Nunca poner API keys ni contraseñas en el código, commits ni documentos
+  (van solo en `deploy/.env` del servidor, que no se sube). Todo lo que llega al
+  navegador es público, incluidas las variables `VITE_*`.
+- No tocar los contenedores `tesis-*` (son de otro proyecto que corre en el mismo servidor).
+
+## Actualizar el servidor (por SSH)
+
+```bash
+cd ~/proyecto-salud/SALUD-BACKEND && git pull origin denilson-dev
+cd ~/proyecto-salud/SALUD-FRONTEND && git pull origin denilson-dev
+cd ~/proyecto-salud/SALUD-BACKEND/deploy && docker compose up -d --build
+cd ~/proyecto-salud/SALUD-BACKEND/deploy && docker compose ps
+```
+
+## Convenciones
+
+- Todas las peticiones van por `src/api/client.js` (axios con el access token).
+- Los errores se muestran con `mensajeError(err)` de ese mismo archivo: usa el mensaje
+  del backend y, si no viene, uno en español según el código. No mostrar `err.message`.
+- Antes de hacer commit: `npx eslint src` y `npm run build`.
