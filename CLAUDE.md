@@ -20,6 +20,8 @@ Nunca se edita código directamente en el servidor; todo pasa por git.
 ## Reglas
 
 - Trabajar siempre en la rama `denilson-dev`. Nunca en `main`.
+- No unir (merge) nada de las ramas de los compañeros (`jeffry-dev`, `amilcar-dev`, `sandy-dev`) ni de
+  `main` hasta nuevo aviso de Antonio: se trabaja solo en `denilson-dev`.
 - Explicar en español, paso a paso y simple.
 - Al dar comandos, decir siempre dónde van: en la PC o en el servidor (por SSH).
   Cada comando debe empezar con `cd` a su carpeta, por ejemplo:
