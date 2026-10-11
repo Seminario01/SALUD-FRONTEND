@@ -212,8 +212,9 @@ export default function DetalleCuenta({ id, servicios, gestiona, verPaciente, on
               )}
 
               {cuenta.numero_referencia && (
-                <div className="text-sm border rounded-lg p-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="text-sm border rounded-lg p-3 grid grid-cols-2 sm:grid-cols-5 gap-2">
                   <div><p className="text-xs text-slate-500">Referencia de pago</p><p className="font-mono font-semibold">{cuenta.numero_referencia}</p></div>
+                  <div><p className="text-xs text-slate-500">Ref. Tributario</p><p className="font-mono">{cuenta.referencia_tributario ?? "—"}</p></div>
                   <div><p className="text-xs text-slate-500">Vence</p><p>{formatoDia(cuenta.fecha_vencimiento)}</p></div>
                   <div><p className="text-xs text-slate-500">Autorización</p><p className="font-mono">{cuenta.numero_autorizacion ?? "—"}</p></div>
                   <div><p className="text-xs text-slate-500">Pagado el</p><p>{cuenta.fecha_pago ? fechaHora(cuenta.fecha_pago) : "—"}</p></div>
