@@ -4,6 +4,7 @@ import { ESTADO_CUENTA, descripcionCuenta, quetzales } from "../utils/caja";
 import EstadoPago from "../components/EstadoPago";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
+import { REGLAS, reglasNacimiento, siCambio } from "../utils/validacion";
 
 const COLOR_HOSPITALIZACION = {
   PENDIENTE: "bg-yellow-100 text-yellow-800",
@@ -91,13 +92,14 @@ function FormularioEdicion({ paciente, puedeTodo, onGuardado, onCancelar }) {
       {puedeTodo && (
         <>
           <label className="text-sm md:col-span-2">Nombre completo *
-            <input name="nombre_completo" value={datos.nombre_completo} onChange={cambiar} required className={campo} />
+            <input name="nombre_completo" value={datos.nombre_completo} onChange={cambiar} required
+              {...siCambio(datos.nombre_completo, paciente.nombre_completo, REGLAS.nombre)} className={campo} />
           </label>
           <label className="text-sm">CUI / DPI
-            <input name="cui" value={datos.cui} onChange={cambiar} maxLength={13} className={campo} />
+            <input name="cui" value={datos.cui} onChange={cambiar} {...siCambio(datos.cui, paciente.cui, REGLAS.cui)} className={campo} />
           </label>
           <label className="text-sm">Fecha de nacimiento
-            <input type="date" name="fecha_nacimiento" value={datos.fecha_nacimiento} onChange={cambiar} className={campo} />
+            <input type="date" name="fecha_nacimiento" value={datos.fecha_nacimiento} onChange={cambiar} {...reglasNacimiento()} className={campo} />
           </label>
           <label className="text-sm">Género
             <select name="genero" value={datos.genero} onChange={cambiar} className={campo}>
@@ -108,7 +110,8 @@ function FormularioEdicion({ paciente, puedeTodo, onGuardado, onCancelar }) {
         </>
       )}
       <label className="text-sm">Teléfono
-        <input name="telefono" value={datos.telefono} onChange={cambiar} maxLength={20} className={campo} />
+        <input name="telefono" value={datos.telefono} onChange={cambiar} maxLength={20}
+          {...siCambio(datos.telefono, paciente.telefono, REGLAS.telefono)} className={campo} />
       </label>
       <label className="text-sm">Tipo de seguro
         <select name="tipo_seguro" value={datos.tipo_seguro} onChange={cambiar} className={campo}>
@@ -117,7 +120,7 @@ function FormularioEdicion({ paciente, puedeTodo, onGuardado, onCancelar }) {
         </select>
       </label>
       <label className="text-sm md:col-span-2">Cuidador / responsable
-        <input name="cuidador" value={datos.cuidador} onChange={cambiar} className={campo} />
+        <input name="cuidador" value={datos.cuidador} onChange={cambiar} {...REGLAS.cuidador} className={campo} />
       </label>
       {puedeTodo && (
         <label className="text-sm md:col-span-3">
