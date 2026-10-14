@@ -6,6 +6,7 @@ import useRoles from "../hooks/useRoles";
 import Paginacion from "../components/Paginacion";
 import usePaginacion from "../hooks/usePaginacion";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
+import { reglasCita } from "../utils/validacion";
 
 const colores = {
   pendiente: "bg-yellow-100 text-yellow-800",
@@ -71,7 +72,7 @@ function FormularioCita({ esPersonal, pacientes, aviso, onCreada }) {
         )}
         <label className="text-sm">
           Fecha y hora *
-          <input type="datetime-local" value={fechaHora} onChange={(e) => setFechaHora(e.target.value)} required className={campo} />
+          <input type="datetime-local" value={fechaHora} onChange={(e) => setFechaHora(e.target.value)} required {...reglasCita()} className={campo} />
         </label>
         <label className="text-sm">
           Motivo

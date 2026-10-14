@@ -15,3 +15,10 @@ export const reglasNacimiento = () => ({ min: "1900-01-01", max: hoyISO() });
 
 // Al editar, un dato antiguo que no se cambió no se vuelve a validar (igual que el backend)
 export const siCambio = (valor, original, reglas) => (valor === (original ?? "") ? {} : reglas);
+
+// Cita: desde ahora hasta un año adelante, en el formato de <input type="datetime-local">
+const local = (d) => `${d.toLocaleDateString("en-CA")}T${d.toTimeString().slice(0, 5)}`;
+export const reglasCita = () => {
+  const ahora = new Date();
+  return { min: local(ahora), max: local(new Date(ahora.getTime() + 366 * 24 * 3600 * 1000)) };
+};
