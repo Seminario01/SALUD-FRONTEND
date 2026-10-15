@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
+import { UNIDADES } from "../utils/validacion";
 
 const TIPOS = {
   cama: "Camas",
@@ -53,13 +54,13 @@ function TarjetaRecurso({ recurso, editable, soloDisponible, verCenso, onGuardad
         <form onSubmit={guardar} className="mt-3 flex items-end gap-2 flex-wrap">
           <label className="text-xs">
             Disponibles
-            <input type="number" min="0" value={disponible} onChange={(e) => setDisponible(e.target.value)}
+            <input type="number" min="0" max={soloDisponible ? recurso.total : total || 0} value={disponible} onChange={(e) => setDisponible(e.target.value)}
               className="border rounded px-2 py-1 w-20 block" />
           </label>
           {!soloDisponible && (
             <label className="text-xs">
               Total
-              <input type="number" min="0" value={total} onChange={(e) => setTotal(e.target.value)}
+              <input type="number" min="0" max={UNIDADES.max} value={total} onChange={(e) => setTotal(e.target.value)}
                 className="border rounded px-2 py-1 w-20 block" />
             </label>
           )}
@@ -117,15 +118,15 @@ function FormularioRecurso({ onCreado }) {
         </label>
         <label className="text-sm">
           Descripción
-          <input name="descripcion" value={datos.descripcion} onChange={cambiar} placeholder="Ej.: Área de pediatría" className={campo} />
+          <input name="descripcion" value={datos.descripcion} onChange={cambiar} maxLength={200} placeholder="Ej.: Área de pediatría" className={campo} />
         </label>
         <label className="text-sm">
           Disponibles
-          <input type="number" min="0" name="disponible" value={datos.disponible} onChange={cambiar} className={campo} />
+          <input type="number" min="0" max={datos.total || 0} name="disponible" value={datos.disponible} onChange={cambiar} className={campo} />
         </label>
         <label className="text-sm">
           Total
-          <input type="number" min="0" name="total" value={datos.total} onChange={cambiar} className={campo} />
+          <input type="number" min="0" max={UNIDADES.max} name="total" value={datos.total} onChange={cambiar} className={campo} />
         </label>
       </div>
       <div className="mt-3 flex items-center gap-3">

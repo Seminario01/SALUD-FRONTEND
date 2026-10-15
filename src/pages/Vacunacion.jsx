@@ -126,6 +126,7 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
           <input
             value={datos.vacunas_pendientes}
             onChange={(e) => setDatos({ ...datos, vacunas_pendientes: e.target.value })}
+            maxLength={2000}
             placeholder="Ej.: Refuerzo COVID, Influenza"
             className={campo}
           />

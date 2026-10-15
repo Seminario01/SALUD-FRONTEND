@@ -8,6 +8,7 @@ import usePaginacion from "../hooks/usePaginacion";
 import DetalleCuenta from "../components/DetalleCuenta";
 import { CATEGORIA, ESTADO_CUENTA, quetzales } from "../utils/caja";
 import { fechaHora } from "../utils/hospitalizacion";
+import { DINERO } from "../utils/validacion";
 
 function AbrirAmbulatoria({ onAbierta, onCerrar }) {
   const { pacientes } = usePacientesSeleccionables(true);
@@ -55,7 +56,7 @@ function FilaServicio({ s, edita, onGuardado }) {
       <td className="p-2 text-right tabular-nums">
         {edita ? (
           <span className="inline-flex items-center gap-1">
-            Q<input type="number" min="0" step="0.01" value={costo} onChange={(e) => setCosto(e.target.value)}
+            Q<input type="number" {...DINERO} value={costo} onChange={(e) => setCosto(e.target.value)}
               className="border rounded px-2 py-0.5 w-24 text-right" aria-label={`Tarifa de ${s.nombre}`} />
             {Number(costo) !== s.costo && (
               <button onClick={() => guardar({ costo: Number(costo) })} className="text-xs px-2 py-1 rounded bg-blue-700 text-white">Guardar</button>
@@ -100,7 +101,7 @@ function NuevoServicio({ onCreado }) {
           {["LABORATORIO", "IMAGEN", "PROCEDIMIENTO"].map((c) => <option key={c} value={c}>{CATEGORIA[c]}</option>)}
         </select>
       </label>
-      <label className="text-sm w-28">Tarifa (Q)<input type="number" min="0" step="0.01" value={datos.costo} onChange={cambiar("costo")} required className={campo} /></label>
+      <label className="text-sm w-28">Tarifa (Q)<input type="number" {...DINERO} value={datos.costo} onChange={cambiar("costo")} required className={campo} /></label>
       <button type="submit" className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800">Agregar servicio</button>
       {error && <span className="text-sm text-red-600 w-full">{error}</span>}
     </form>

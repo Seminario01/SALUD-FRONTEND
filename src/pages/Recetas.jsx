@@ -133,7 +133,7 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
                   {insuficiente && <p className="text-xs text-amber-700 mt-0.5">Farmacia solo tiene {m.existencia}; podrá despacharse cuando haya existencia.</p>}
                 </td>
                 <td className="py-1 pr-2">
-                  <input type="number" min="1" value={f.cantidad} onChange={(e) => cambiarFila(i, "cantidad", e.target.value)} required className={campo} aria-label={`Cantidad ${i + 1}`} />
+                  <input type="number" min="1" max="1000" value={f.cantidad} onChange={(e) => cambiarFila(i, "cantidad", e.target.value)} required className={campo} aria-label={`Cantidad ${i + 1}`} />
                 </td>
                 <td className="py-1 pr-2">
                   <input value={f.dosis} onChange={(e) => cambiarFila(i, "dosis", e.target.value)} maxLength={200} placeholder="1 tableta cada 8 horas por 5 días" className={campo} aria-label={`Dosis ${i + 1}`} />

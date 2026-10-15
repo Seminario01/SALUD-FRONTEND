@@ -22,3 +22,14 @@ export const reglasCita = () => {
   const ahora = new Date();
   return { min: local(ahora), max: local(new Date(ahora.getTime() + 366 * 24 * 3600 * 1000)) };
 };
+
+// Mismos límites que el backend para montos, cantidades y signos vitales
+export const DINERO = { min: 0, max: 99999999.99, step: 0.01 };
+export const UNIDADES = { min: 0, max: 1000000, step: 1 };
+export const TEXTO_LARGO = 4000;
+export const SIGNOS = {
+  presion: { pattern: "\\d{2,3}/\\d{2,3}", maxLength: 7, title: "Formato 120/80" },
+  temperatura: { min: 30, max: 45, step: 0.1, title: "Entre 30 y 45 °C" },
+  frecuencia: { min: 20, max: 250, step: 1, title: "Entre 20 y 250 lpm" },
+  saturacion: { min: 50, max: 100, step: 1, title: "Entre 50 y 100 %" },
+};

@@ -3,6 +3,7 @@ import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import Paginacion from "../components/Paginacion";
 import usePaginacion from "../hooks/usePaginacion";
+import { DINERO, UNIDADES } from "../utils/validacion";
 
 const COLOR_MOVIMIENTO = {
   ENTRADA: "text-green-700",
@@ -48,11 +49,11 @@ function FormularioMedicamento({ onCreado, onCerrar }) {
       <h2 className="font-bold text-gray-700 mb-3">Agregar medicamento</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <label className="text-sm">Código *<input value={datos.codigo} onChange={cambiar("codigo")} required maxLength={20} placeholder="MED-016" className={campo} /></label>
-        <label className="text-sm">Nombre *<input value={datos.nombre} onChange={cambiar("nombre")} required maxLength={150} className={campo} /></label>
+        <label className="text-sm">Nombre *<input value={datos.nombre} onChange={cambiar("nombre")} required maxLength={100} className={campo} /></label>
         <label className="text-sm">Presentación<input value={datos.presentacion} onChange={cambiar("presentacion")} maxLength={100} placeholder="Tableta 500 mg" className={campo} /></label>
-        <label className="text-sm">Existencia inicial<input type="number" min="0" value={datos.existencia} onChange={cambiar("existencia")} className={campo} /></label>
-        <label className="text-sm">Stock mínimo<input type="number" min="0" value={datos.stock_minimo} onChange={cambiar("stock_minimo")} className={campo} /></label>
-        <label className="text-sm">Precio unitario (Q)<input type="number" min="0" step="0.01" value={datos.precio} onChange={cambiar("precio")} className={campo} /></label>
+        <label className="text-sm">Existencia inicial<input type="number" {...UNIDADES} value={datos.existencia} onChange={cambiar("existencia")} className={campo} /></label>
+        <label className="text-sm">Stock mínimo<input type="number" {...UNIDADES} value={datos.stock_minimo} onChange={cambiar("stock_minimo")} className={campo} /></label>
+        <label className="text-sm">Precio unitario (Q)<input type="number" {...DINERO} value={datos.precio} onChange={cambiar("precio")} className={campo} /></label>
       </div>
       <div className="mt-3 flex items-center gap-3">
         <button type="submit" disabled={enviando} className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800 disabled:opacity-50">
@@ -109,7 +110,7 @@ function DetalleMedicamento({ medicamento, gestiona, onActualizado }) {
             </select>
           </label>
           <label className="text-sm">Cantidad
-            <input type="number" value={cantidad} onChange={(e) => setCantidad(e.target.value)} required min={tipo === "ENTRADA" ? 1 : undefined}
+            <input type="number" value={cantidad} onChange={(e) => setCantidad(e.target.value)} required min={tipo === "ENTRADA" ? 1 : -UNIDADES.max} max={UNIDADES.max}
               placeholder={tipo === "AJUSTE" ? "-5 ó 5" : ""} className="border rounded px-2 py-1 block w-28 bg-white" />
           </label>
           <label className="text-sm flex-1 min-w-48">Observación

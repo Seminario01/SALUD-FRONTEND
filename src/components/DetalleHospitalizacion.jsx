@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import { AREAS, ESTADO_HOSPITALIZACION, TIPOS_EGRESO, fechaHora, textoDias } from "../utils/hospitalizacion";
+import { SIGNOS } from "../utils/validacion";
 
 const campo = "border rounded px-3 py-1.5 w-full";
 
@@ -47,16 +48,16 @@ function FormularioNota({ id, onGuardada }) {
         placeholder="Evolución, cuidados o hallazgos" className={`${campo} bg-white`} aria-label="Nota" />
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
         <label className="text-xs text-slate-600">Presión arterial
-          <input value={datos.presion} onChange={cambiar("presion")} placeholder="120/80" className={`${campo} bg-white`} />
+          <input value={datos.presion} onChange={cambiar("presion")} {...SIGNOS.presion} placeholder="120/80" className={`${campo} bg-white`} />
         </label>
         <label className="text-xs text-slate-600">Temperatura (°C)
-          <input type="number" step="0.1" value={datos.temperatura} onChange={cambiar("temperatura")} className={`${campo} bg-white`} />
+          <input type="number" {...SIGNOS.temperatura} value={datos.temperatura} onChange={cambiar("temperatura")} className={`${campo} bg-white`} />
         </label>
         <label className="text-xs text-slate-600">Frec. cardiaca (lpm)
-          <input type="number" value={datos.frecuencia_cardiaca} onChange={cambiar("frecuencia_cardiaca")} className={`${campo} bg-white`} />
+          <input type="number" {...SIGNOS.frecuencia} value={datos.frecuencia_cardiaca} onChange={cambiar("frecuencia_cardiaca")} className={`${campo} bg-white`} />
         </label>
         <label className="text-xs text-slate-600">Saturación (%)
-          <input type="number" value={datos.saturacion} onChange={cambiar("saturacion")} className={`${campo} bg-white`} />
+          <input type="number" {...SIGNOS.saturacion} value={datos.saturacion} onChange={cambiar("saturacion")} className={`${campo} bg-white`} />
         </label>
       </div>
       <div className="flex items-center gap-3 mt-2">

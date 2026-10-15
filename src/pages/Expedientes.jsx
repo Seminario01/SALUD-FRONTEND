@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
+import { TEXTO_LARGO } from "../utils/validacion";
 
 // Un expediente clínico es información sensible, siempre ligada a UN paciente:
 // el backend expone GET /expedientes/<paciente_id> (médico, admin o el propio
@@ -61,7 +62,7 @@ function FormularioAtencion({ pacienteId, onRegistrada }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <label className="text-sm">
           Diagnóstico *
-          <input name="diagnostico" value={datos.diagnostico} onChange={cambiar} required className={campo} />
+          <input name="diagnostico" value={datos.diagnostico} onChange={cambiar} required maxLength={TEXTO_LARGO} className={campo} />
         </label>
         <label className="text-sm">
           Cita asociada (opcional)
@@ -76,11 +77,11 @@ function FormularioAtencion({ pacienteId, onRegistrada }) {
         </label>
         <label className="text-sm md:col-span-2">
           Tratamiento
-          <textarea name="tratamiento" value={datos.tratamiento} onChange={cambiar} rows={2} className={campo} />
+          <textarea name="tratamiento" value={datos.tratamiento} onChange={cambiar} rows={2} maxLength={TEXTO_LARGO} className={campo} />
         </label>
         <label className="text-sm md:col-span-2">
           Notas
-          <textarea name="notas" value={datos.notas} onChange={cambiar} rows={2} className={campo} />
+          <textarea name="notas" value={datos.notas} onChange={cambiar} rows={2} maxLength={TEXTO_LARGO} className={campo} />
         </label>
       </div>
       <div className="mt-3 flex items-center gap-3">
