@@ -261,7 +261,7 @@ export default function FichaPaciente() {
               {antecedentes?.cargando ? "Consultando..." : "Consultar"}</button>}
           >
             {antecedentes?.error && <p className="text-sm text-slate-600">{antecedentes.error}</p>}
-            {a && !a.tieneAntecedentes && <p className="text-sm text-green-800">Sin antecedentes registrados. Atención normal.</p>}
+            {a && !a.tieneAntecedentes && <p className="text-sm text-slate-700">Sin antecedentes activos encontrados en Seguridad. No es una certificación; la atención continúa con normalidad.</p>}
             {a?.tieneAntecedentes && (
               <div className={`text-sm rounded-lg p-3 ${a.requiereCustodia ? "bg-red-50 text-red-800" : "bg-amber-50 text-amber-900"}`}>
                 <p>{a.tipoAntecedente} · riesgo <b>{a.nivelRiesgo}</b></p>

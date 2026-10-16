@@ -117,7 +117,7 @@ function ResultadoAntecedentes({ consulta, onCerrar }) {
     ? "bg-slate-50 border-slate-200"
     : datos?.tieneAntecedentes
       ? alto ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"
-      : "bg-green-50 border-green-200";
+      : "bg-slate-50 border-slate-200";
   return (
     <div id="resultado-antecedentes" className={`border rounded-xl p-4 mb-4 text-sm scroll-mt-4 ${estilo}`}>
       <div className="flex justify-between gap-3">
@@ -127,7 +127,7 @@ function ResultadoAntecedentes({ consulta, onCerrar }) {
       {cargando && <p className="text-slate-500 mt-1">Consultando al módulo de Seguridad...</p>}
       {error && <p className="text-slate-600 mt-1">{error}</p>}
       {datos && !datos.tieneAntecedentes && (
-        <p className="text-green-800 mt-1">Sin antecedentes registrados. Atención normal.</p>
+        <p className="text-slate-700 mt-1">Sin antecedentes activos encontrados en Seguridad. No es una certificación; la atención continúa con normalidad.</p>
       )}
       {datos?.tieneAntecedentes && (
         <div className="mt-1 space-y-0.5 text-slate-700">
