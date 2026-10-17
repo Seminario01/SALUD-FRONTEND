@@ -6,6 +6,7 @@ import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import DetalleHospitalizacion from "../components/DetalleHospitalizacion";
 import { AREAS, ESTADO_CAMA, TIPOS_EGRESO, fechaHora, haceCuanto, textoDias } from "../utils/hospitalizacion";
 import BuscadorPaciente from "../components/BuscadorPaciente";
+import { useAvisos } from "../components/Avisos";
 
 const campo = "border rounded px-3 py-1.5 w-full";
 
@@ -95,6 +96,7 @@ function OrdenPendiente({ orden, camas, permisos, clinico, onCambio }) {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
   const disponibles = camas.filter((c) => c.area === orden.area && c.estado === "DISPONIBLE");
+  const avisos = useAvisos();
 
   function accion(peticion, mensaje) {
     setEnviando(true);
@@ -140,13 +142,19 @@ function OrdenPendiente({ orden, camas, permisos, clinico, onCambio }) {
             <button onClick={() => setAnulando(true)} className="text-xs px-3 py-1.5 rounded border text-red-700 hover:bg-red-50 ml-auto">Anular orden</button>
           )}
           {permisos.ordenar && anulando && (
-            <form className="flex flex-wrap items-center gap-2 ml-auto" onSubmit={(e) => {
+            <form className="flex flex-wrap items-center gap-2 ml-auto" onSubmit={async (e) => {
               e.preventDefault();
+              const si = await avisos.confirmar({
+                titulo: `¿Anular la orden de ingreso de ${orden.paciente}?`,
+                mensaje: [`Área: ${orden.area}`, `Motivo: ${motivo}`, "La orden sale de la lista de pendientes y no se puede deshacer."],
+                confirmar: "Sí, anular", peligro: true,
+              });
+              if (!si) return;
               accion(client.post(`/hospitalizaciones/${orden.id}/anular`, { motivo }), `Orden de ${orden.paciente} anulada.`);
             }}>
               <input value={motivo} onChange={(e) => setMotivo(e.target.value)} required maxLength={255} placeholder="Motivo"
                 className="border rounded px-2 py-1 text-sm w-56" aria-label="Motivo de la anulación" />
-              <button type="submit" disabled={enviando} className="text-xs px-3 py-1.5 rounded border text-red-700 hover:bg-red-50">Confirmar</button>
+              <button type="submit" disabled={enviando} className="text-xs px-3 py-1.5 rounded border text-red-700 hover:bg-red-50">Anular orden</button>
               <button type="button" onClick={() => setAnulando(false)} className="text-xs px-3 py-1.5 rounded border hover:bg-gray-100">Cancelar</button>
             </form>
           )}
@@ -277,7 +285,7 @@ export default function Hospitalizacion() {
   const [lista, setLista] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
-  const [aviso, setAviso] = useState(null);
+  const avisos = useAvisos();
   const [pestana, setPestana] = useState("curso");
   const [ordenando, setOrdenando] = useState(Boolean(params.get("paciente")));
   const [detalle, setDetalle] = useState(null);
@@ -293,7 +301,7 @@ export default function Hospitalizacion() {
   useEffect(() => { cargar(); }, [cargar]);
 
   function cambio(mensaje) {
-    setAviso(mensaje);
+    avisos.exito(mensaje);
     setCamaSel(null);
     cargar();
   }
@@ -325,7 +333,7 @@ export default function Hospitalizacion() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Hospitalización</h1>
         {permisos.ordenar && !ordenando && (
-          <button onClick={() => { setOrdenando(true); setAviso(null); }} className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800">Ordenar ingreso</button>
+          <button onClick={() => { setOrdenando(true); }} className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800">Ordenar ingreso</button>
         )}
       </div>
 
@@ -333,7 +341,6 @@ export default function Hospitalizacion() {
         <FormularioIngreso pacienteInicial={params.get("paciente") ?? ""} onCerrar={() => setOrdenando(false)}
           onCreado={(m) => { setOrdenando(false); cambio(m); }} />
       )}
-      {aviso && <p className="mb-4 text-sm text-green-800 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{aviso}</p>}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Tarjeta titulo="Pacientes hospitalizados" valor={activos.length} color="text-blue-700" />

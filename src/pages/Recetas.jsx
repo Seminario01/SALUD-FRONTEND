@@ -9,6 +9,8 @@ import usePaginacion from "../hooks/usePaginacion";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import BuscadorPaciente from "../components/BuscadorPaciente";
 import { Link } from "react-router-dom";
+import { useAvisos } from "../components/Avisos";
+import BotonesExportar from "../components/Exportar";
 
 const COLOR_ESTADO = {
   PENDIENTE: "bg-yellow-100 text-yellow-800",
@@ -34,7 +36,7 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
   const [indicaciones, setIndicaciones] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
-  const [exito, setExito] = useState(null);
+  const avisos = useAvisos();
 
   useEffect(() => {
     client.get("/medicamentos").then((r) => setMedicamentos(r.data.data)).catch(() => setMedicamentos([]));
@@ -64,7 +66,6 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
     e.preventDefault();
     setEnviando(true);
     setError(null);
-    setExito(null);
     client
       .post("/recetas", {
         paciente_id: Number(pacienteId),
@@ -73,7 +74,7 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
         items: filas.map((f) => ({ medicamento_id: Number(f.medicamento_id), cantidad: Number(f.cantidad), dosis: f.dosis })),
       })
       .then((res) => {
-        setExito(`Receta No. ${res.data.data.id} emitida. Farmacia ya puede despacharla.`);
+        avisos.exito(`Receta No. ${res.data.data.id} emitida. Farmacia ya puede despacharla.`);
         setFilas([filaVacia()]);
         setIndicaciones("");
         onCreada();
@@ -160,7 +161,6 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
         <button type="submit" disabled={enviando || !completas} className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800 disabled:opacity-50">
           {enviando ? "Emitiendo..." : "Emitir receta"}
         </button>
-        {exito && <span className="text-sm text-green-700">{exito}</span>}
         {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
     </form>
@@ -239,7 +239,7 @@ function TarjetaReceta({ receta, mostrarPaciente, puedeDespachar, puedeAnular, o
           {puedeAnular && anulando && (
             <form onSubmit={(e) => { e.preventDefault(); onAnular(receta, motivo); }} className="flex flex-wrap items-center gap-2">
               <input value={motivo} onChange={(e) => setMotivo(e.target.value)} required maxLength={255} placeholder="Motivo de la anulación" className="border rounded px-2 py-1 text-sm w-64" aria-label="Motivo de la anulación" />
-              <button type="submit" disabled={ocupado} className={`${boton} text-red-700`}>Confirmar anulación</button>
+              <button type="submit" disabled={ocupado} className={`${boton} text-red-700`}>Anular receta</button>
               <button type="button" onClick={() => setAnulando(false)} className={boton}>Cancelar</button>
             </form>
           )}
@@ -266,8 +266,8 @@ export default function Recetas() {
   const [estado, setEstado] = useState(puedeDespachar ? "PENDIENTE" : "");
   const [texto, setTexto] = useState("");
   const [ocupado, setOcupado] = useState(null);
-  const [aviso, setAviso] = useState(null);
   const [errorAccion, setErrorAccion] = useState(null);
+  const avisos = useAvisos();
 
   const cargar = useCallback(() => {
     client
@@ -285,7 +285,7 @@ export default function Recetas() {
       const t = texto.toLowerCase();
       const enPaciente = (r.paciente ?? "").toLowerCase().includes(t);
       const enMedicamento = r.items.some((it) => (it.medicamento ?? "").toLowerCase().includes(t));
-      const dpi = t.replace(/D/g, "");
+      const dpi = t.replace(/\D/g, "");
       const enDpi = dpi.length >= 3 && String(r.paciente_cui ?? "").includes(dpi);
       if (!enPaciente && !enMedicamento && !enDpi && String(r.id) !== t) return false;
     }
@@ -294,24 +294,38 @@ export default function Recetas() {
   const pag = usePaginacion(filtradas, 10);
   const cuenta = (e) => recetas.filter((r) => r.estado === e).length;
 
-  function despachar(receta) {
+  async function despachar(receta) {
+    const si = await avisos.confirmar({
+      titulo: `¿Despachar la receta No. ${receta.id}?`,
+      mensaje: [
+        receta.paciente && `Paciente: ${receta.paciente}`,
+        receta.items.map((it) => `${it.cantidad} × ${it.medicamento}`).join(" · "),
+        "Se descontará del inventario y la receta ya no se podrá anular.",
+      ],
+      confirmar: "Despachar",
+    });
+    if (!si) return;
     setOcupado(receta.id);
-    setAviso(null);
     setErrorAccion(null);
     client
       .post(`/recetas/${receta.id}/despachar`)
-      .then(() => { setAviso(`Receta No. ${receta.id} despachada. El inventario se actualizó.`); cargar(); })
+      .then(() => { avisos.exito(`Receta No. ${receta.id} despachada. El inventario se actualizó.`); cargar(); })
       .catch((err) => setErrorAccion(mensajeError(err)))
       .finally(() => setOcupado(null));
   }
 
-  function anular(receta, motivo) {
+  async function anular(receta, motivo) {
+    const si = await avisos.confirmar({
+      titulo: `¿Anular la receta No. ${receta.id}?`,
+      mensaje: [`Motivo: ${motivo}`, "La receta queda anulada y Farmacia ya no podrá despacharla. Esta acción no se puede deshacer."],
+      confirmar: "Sí, anular", peligro: true,
+    });
+    if (!si) return;
     setOcupado(receta.id);
-    setAviso(null);
     setErrorAccion(null);
     client
       .post(`/recetas/${receta.id}/anular`, { motivo })
-      .then(() => { setAviso(`Receta No. ${receta.id} anulada.`); cargar(); })
+      .then(() => { avisos.exito(`Receta No. ${receta.id} anulada.`); cargar(); })
       .catch((err) => setErrorAccion(mensajeError(err)))
       .finally(() => setOcupado(null));
   }
@@ -336,7 +350,6 @@ export default function Recetas() {
 
       {error && <p className="mb-4 text-red-600 text-sm">No se pudieron cargar las recetas: {error}</p>}
       {errorAccion && <p className="mb-4 text-red-600 text-sm">{errorAccion}</p>}
-      {aviso && <p className="mb-4 text-sm text-green-800 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{aviso}</p>}
 
       {!error && recetas.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -346,6 +359,19 @@ export default function Recetas() {
           {pestana("", "Todas")}
           {esPersonal && (
             <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Paciente, DPI, medicamento o No." className="border rounded px-3 py-1.5 text-sm ml-auto w-72" aria-label="Buscar receta" />
+          )}
+          {esPersonal && (
+            <BotonesExportar nombre="recetas" titulo="Recetas" filas={filtradas} columnas={[
+              { titulo: "No.", valor: (r) => r.id, ancho: 7 },
+              { titulo: "Fecha", valor: (r) => String(r.fecha ?? "").replace("T", " ").slice(0, 16), ancho: 17 },
+              { titulo: "Paciente", valor: (r) => r.paciente, ancho: 30 },
+              { titulo: "DPI", valor: (r) => r.paciente_cui ?? "", ancho: 16 },
+              { titulo: "Médico", valor: (r) => r.medico ?? "", ancho: 24 },
+              { titulo: "Medicamentos", valor: (r) => r.items.map((it) => `${it.cantidad} × ${it.medicamento}${it.dosis ? ` (${it.dosis})` : ""}`).join("; "), ancho: 50 },
+              { titulo: "Estado", valor: (r) => NOMBRE_ESTADO[r.estado] ?? r.estado, ancho: 12 },
+              { titulo: "Despachada el", valor: (r) => String(r.fecha_despacho ?? "").replace("T", " ").slice(0, 16), ancho: 17 },
+              { titulo: "Motivo de anulación", valor: (r) => r.motivo_anulacion ?? "", ancho: 30 },
+            ]} />
           )}
         </div>
       )}

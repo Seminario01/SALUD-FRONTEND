@@ -4,6 +4,7 @@ import client, { mensajeError } from "../api/client";
 import { CATEGORIA, ESTADO_CUENTA, descripcionCuenta, quetzales } from "../utils/caja";
 import { fechaHora } from "../utils/hospitalizacion";
 import { formatoDia } from "../utils/fechas";
+import { useAvisos } from "./Avisos";
 
 const campo = "border rounded px-3 py-1.5 w-full bg-white";
 
@@ -56,9 +57,16 @@ function Descuento({ cuenta, onHecho }) {
   const [monto, setMonto] = useState("");
   const [motivo, setMotivo] = useState("");
   const [error, setError] = useState(null);
+  const avisos = useAvisos();
 
-  function enviar(e) {
+  async function enviar(e) {
     e.preventDefault();
+    const si = await avisos.confirmar({
+      titulo: `¿Aplicar un descuento de ${quetzales(Number(monto))}?`,
+      mensaje: [`Cuenta No. ${cuenta.id} · ${cuenta.paciente}`, `Motivo: ${motivo}`, `Saldo actual: ${quetzales(cuenta.saldo)}`],
+      confirmar: "Aplicar descuento",
+    });
+    if (!si) return;
     setError(null);
     client
       .post(`/cuentas/${cuenta.id}/descuentos`, { monto: Number(monto), motivo })
@@ -87,9 +95,17 @@ function FilaMovimiento({ m, puedeAnular, cuentaId, onHecho }) {
   const [motivo, setMotivo] = useState("");
   const [error, setError] = useState(null);
   const negativo = m.tipo !== "CARGO";
+  const avisos = useAvisos();
 
-  function anular(e) {
+  async function anular(e) {
     e.preventDefault();
+    const si = await avisos.confirmar({
+      titulo: "¿Anular este movimiento?",
+      mensaje: [`${m.descripcion} · ${quetzales(m.monto)}`, `Motivo: ${motivo}`,
+        "El movimiento queda tachado en el estado de cuenta y ya no suma al saldo."],
+      confirmar: "Sí, anular", peligro: true,
+    });
+    if (!si) return;
     client
       .post(`/cuentas/${cuentaId}/movimientos/${m.id}/anular`, { motivo })
       .then((r) => onHecho("Movimiento anulado.", r.data.data))
@@ -107,7 +123,7 @@ function FilaMovimiento({ m, puedeAnular, cuentaId, onHecho }) {
           <form onSubmit={anular} className="flex items-center gap-2 mt-1">
             <input value={motivo} onChange={(e) => setMotivo(e.target.value)} required maxLength={200} placeholder="Motivo"
               className="border rounded px-2 py-0.5 text-xs w-48" aria-label="Motivo de la anulación" />
-            <button type="submit" className="text-xs px-2 py-0.5 rounded border text-red-700 hover:bg-red-50">Confirmar</button>
+            <button type="submit" className="text-xs px-2 py-0.5 rounded border text-red-700 hover:bg-red-50">Anular</button>
             <button type="button" onClick={() => setAnulando(false)} className="text-xs px-2 py-0.5 rounded border">Cancelar</button>
             {error && <span className="text-xs text-red-600">{error}</span>}
           </form>
@@ -131,9 +147,9 @@ function FilaMovimiento({ m, puedeAnular, cuentaId, onHecho }) {
 export default function DetalleCuenta({ id, servicios, gestiona, verPaciente, onCerrar, onCambio }) {
   const [cuenta, setCuenta] = useState(null);
   const [error, setError] = useState(null);
-  const [aviso, setAviso] = useState(null);
   const [errorAccion, setErrorAccion] = useState(null);
   const [ocupado, setOcupado] = useState(false);
+  const avisos = useAvisos();
 
   const cargar = useCallback(() => {
     client.get(`/cuentas/${id}`).then((r) => { setCuenta(r.data.data); setError(null); }).catch((err) => setError(mensajeError(err)));
@@ -149,19 +165,31 @@ export default function DetalleCuenta({ id, servicios, gestiona, verPaciente, on
 
   // Las acciones devuelven la cuenta actualizada: se muestra de inmediato, sin otra consulta
   function hecho(mensaje, datos) {
-    setAviso(mensaje);
+    avisos.exito(mensaje);
     setErrorAccion(null);
     if (datos) setCuenta(datos); else cargar();
     onCambio();
   }
 
-  function accion(ruta) {
+  async function accion(ruta) {
+    if (ruta === "cerrar") {
+      const si = await avisos.confirmar({
+        titulo: `¿Cerrar la cuenta No. ${cuenta.id}?`,
+        mensaje: [
+          cuenta.saldo > 0
+            ? `Se enviará a Tributario el cobro de ${quetzales(cuenta.saldo)} a nombre de ${cuenta.paciente}.`
+            : `El saldo es ${quetzales(cuenta.saldo)}: la cuenta queda exonerada, sin enviar cobro.`,
+          "Después de cerrarla ya no se pueden agregar cargos ni descuentos.",
+        ],
+        confirmar: cuenta.saldo > 0 ? "Cerrar y enviar cobro" : "Cerrar cuenta",
+      });
+      if (!si) return;
+    }
     setOcupado(true);
     setErrorAccion(null);
-    setAviso(null);
     client
       .post(`/cuentas/${id}/${ruta}`)
-      .then((r) => { setCuenta(r.data.data); setAviso(r.data.message); onCambio(); })
+      .then((r) => { setCuenta(r.data.data); avisos.exito(r.data.message); onCambio(); })
       .catch((err) => setErrorAccion(mensajeError(err)))
       .finally(() => setOcupado(false));
   }
@@ -195,7 +223,6 @@ export default function DetalleCuenta({ id, servicios, gestiona, verPaciente, on
         <div className="p-5 space-y-5">
           {error && <p className="text-sm text-red-600">{error}</p>}
           {!cuenta && !error && <p className="text-sm text-slate-400">Cargando...</p>}
-          {aviso && <p className="text-sm text-green-800 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{aviso}</p>}
           {errorAccion && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{errorAccion}</p>}
 
           {cuenta && (

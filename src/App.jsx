@@ -1,4 +1,7 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { useAuth } from "react-oidc-context";
+import { tomarDestino } from "./utils/volver";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
@@ -17,11 +20,25 @@ import Inventario from "./pages/Inventario";
 import Hospitalizacion from "./pages/Hospitalizacion";
 import Caja from "./pages/Caja";
 import NoEncontrado from "./pages/NoEncontrado";
+import Bitacora from "./pages/Bitacora";
 import { ConstanciaVacunacion, EstadoCuentaImpreso, RecetaImpresa } from "./pages/Documentos";
+
+// Al regresar del Login Único se vuelve a la página que se había pedido (receta, ficha, etc.)
+function VolverTrasLogin() {
+  const auth = useAuth();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!auth.isAuthenticated) return;
+    const destino = tomarDestino();
+    if (destino) navigate(destino, { replace: true });
+  }, [auth.isAuthenticated, navigate]);
+  return null;
+}
 
 export default function App() {
   return (
     <BrowserRouter>
+      <VolverTrasLogin />
       <Routes>
         <Route path="/login" element={<Login />} />
         {/* Pantalla de sala de espera: a pantalla completa, sin el menú */}
@@ -50,6 +67,7 @@ export default function App() {
           <Route path="/hospitalizacion" element={<Hospitalizacion />} />
           <Route path="/caja" element={<Caja />} />
           <Route path="/integraciones" element={<Integraciones />} />
+          <Route path="/bitacora" element={<Bitacora />} />
           <Route path="*" element={<NoEncontrado />} />
         </Route>
       </Routes>

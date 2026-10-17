@@ -4,6 +4,7 @@ import useRoles from "../hooks/useRoles";
 import Paginacion from "../components/Paginacion";
 import usePaginacion from "../hooks/usePaginacion";
 import { DINERO, UNIDADES } from "../utils/validacion";
+import { useAvisos } from "../components/Avisos";
 
 const COLOR_MOVIMIENTO = {
   ENTRADA: "text-green-700",
@@ -158,7 +159,7 @@ export default function Inventario() {
   const [soloBajos, setSoloBajos] = useState(false);
   const [abierto, setAbierto] = useState(null);
   const [agregando, setAgregando] = useState(false);
-  const [aviso, setAviso] = useState(null);
+  const avisos = useAvisos();
 
   const cargar = useCallback(() => {
     client
@@ -188,7 +189,7 @@ export default function Inventario() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Inventario de farmacia</h1>
         {gestiona && !agregando && (
-          <button onClick={() => { setAgregando(true); setAviso(null); }} className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800">
+          <button onClick={() => { setAgregando(true); }} className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800">
             Agregar medicamento
           </button>
         )}
@@ -197,12 +198,11 @@ export default function Inventario() {
       {agregando && (
         <FormularioMedicamento
           onCerrar={() => setAgregando(false)}
-          onCreado={(m) => { setAgregando(false); setAviso(`${m.nombre} agregado al inventario.`); cargar(); }}
+          onCreado={(m) => { setAgregando(false); avisos.exito(`${m.nombre} agregado al inventario.`); cargar(); }}
         />
       )}
 
       {error && <p className="mb-4 text-red-600 text-sm">No se pudo cargar el inventario: {error}</p>}
-      {aviso && <p className="mb-4 text-sm text-green-800 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{aviso}</p>}
 
       {!error && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">

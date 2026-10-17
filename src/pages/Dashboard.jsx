@@ -8,6 +8,7 @@ import ResumenFarmacia from "../components/ResumenFarmacia";
 import AlertasSeguridad from "../components/AlertasSeguridad";
 import useRoles from "../hooks/useRoles";
 import { BotonImprimir, EncabezadoImpreso, PieImpreso } from "../components/Impresion";
+import BotonesExportar from "../components/Exportar";
 
 function TarjetaResumen({ titulo, valor, detalle, to, color }) {
   const contenido = (
@@ -59,12 +60,50 @@ export default function Dashboard() {
   const camasDisponibles = recursos.find((r) => r.tipo === "cama");
   const hospital = indicadores?.hospitalizacion;
 
+  // Informe de gestión para Excel: un renglón por indicador (Área, Indicador, Valor, Detalle)
+  const presupuesto = indicadores?.presupuesto_servicio_social;
+  const filasInforme = !indicadores ? [] : [
+    ["Pacientes", "Pacientes registrados", indicadores.pacientes_totales, "Total en la base de datos"],
+    ["Citas", "Citas pendientes", citas.pendientes ?? 0, ""],
+    ["Citas", "Citas atendidas", citas.atendidas ?? 0, ""],
+    ["Citas", "Citas canceladas", citas.canceladas ?? 0, ""],
+    ["Turnos", "Turnos en espera", turnos.en_espera ?? 0, ""],
+    ["Turnos", "Turnos atendidos", turnos.atendidos ?? 0, ""],
+    ["Vacunación", "Vacunación pendiente", vacunacion.pendiente ?? 0, ""],
+    ["Vacunación", "Estudiantes con esquema completo", vacunacion.estudiantes_vacunados ?? 0, ""],
+    ...(hospital?.camas_total > 0 ? [
+      ["Hospitalización", "Camas disponibles", hospital.camas_disponibles, `de ${hospital.camas_total} camas`],
+      ["Hospitalización", "Ocupación (%)", hospital.ocupacion_porcentaje, ""],
+      ["Hospitalización", "Pacientes hospitalizados", hospital.hospitalizados, ""],
+      ["Hospitalización", "Egresos (últimos 30 días)", hospital.egresos_ultimos_30_dias, ""],
+      ["Hospitalización", "Órdenes pendientes de cama", hospital.ordenes_pendientes, ""],
+    ] : []),
+    ...recursos.map((rec) => ["Recursos", `${rec.tipo} disponibles`, rec.disponible, `de ${rec.total}`]),
+    ...(presupuesto ? [
+      ["Presupuesto", "Monto asignado (Q)", presupuesto.monto_asignado, presupuesto.periodo],
+      ["Presupuesto", "Ejecutado en servicio social (Q)", presupuesto.monto_ejecutado_servicio_social, presupuesto.periodo],
+    ] : []),
+    ...(puede("cuentas.ver") && indicadores.cuentas ? [
+      ["Caja", "Cuentas abiertas", indicadores.cuentas.cuentas_abiertas, ""],
+      ["Caja", "Por cobrar en Tributario (Q)", indicadores.cuentas.monto_por_cobrar, `${indicadores.cuentas.cuentas_por_cobrar} cuenta(s)`],
+      ["Caja", "Cobrado en 30 días (Q)", indicadores.cuentas.cobrado_30_dias, "Pagos confirmados por Tributario"],
+    ] : []),
+  ];
+
   return (
     <div className="p-6 print:p-0">
       <EncabezadoImpreso titulo="Informe de gestión" detalle="Indicadores del Módulo de Salud" />
       <div className="flex items-start justify-between gap-3">
         <h1 className="text-2xl font-bold text-gray-800 mb-1 print:hidden">Módulo de Salud</h1>
-        <BotonImprimir texto="Imprimir informe / PDF" />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <BotonesExportar nombre="informe_gestion" titulo="Informe de gestión" filas={filasInforme} columnas={[
+            { titulo: "Área", valor: (f) => f[0], ancho: 18 },
+            { titulo: "Indicador", valor: (f) => f[1], ancho: 36 },
+            { titulo: "Valor", valor: (f) => f[2], ancho: 14 },
+            { titulo: "Detalle", valor: (f) => f[3], ancho: 36 },
+          ]} />
+          <BotonImprimir texto="Imprimir informe / PDF" />
+        </div>
       </div>
       <p className="text-gray-500 mb-6">
         {esAuditor && !esPersonal

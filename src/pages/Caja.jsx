@@ -6,10 +6,12 @@ import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import Paginacion from "../components/Paginacion";
 import usePaginacion from "../hooks/usePaginacion";
 import DetalleCuenta from "../components/DetalleCuenta";
-import { CATEGORIA, ESTADO_CUENTA, quetzales } from "../utils/caja";
+import { CATEGORIA, ESTADO_CUENTA, descripcionCuenta, quetzales } from "../utils/caja";
 import { fechaHora } from "../utils/hospitalizacion";
 import { DINERO } from "../utils/validacion";
 import BuscadorPaciente from "../components/BuscadorPaciente";
+import { useAvisos } from "../components/Avisos";
+import BotonesExportar from "../components/Exportar";
 
 function AbrirAmbulatoria({ onAbierta, onCerrar }) {
   const { pacientes } = usePacientesSeleccionables(true);
@@ -115,7 +117,7 @@ export default function Caja() {
   const [servicios, setServicios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
-  const [aviso, setAviso] = useState(null);
+  const avisos = useAvisos();
   const [pestana, setPestana] = useState("ABIERTA");
   const [texto, setTexto] = useState("");
   const [abriendo, setAbriendo] = useState(false);
@@ -137,7 +139,7 @@ export default function Caja() {
     if (pestana === "CERRADAS" ? !["PAGADA", "EXONERADA"].includes(c.estado) : pestana !== "TODAS" && c.estado !== pestana) return false;
     if (texto) {
       const t = texto.toLowerCase();
-      const dpi = t.replace(/D/g, "");
+      const dpi = t.replace(/\D/g, "");
       return (c.paciente ?? "").toLowerCase().includes(t) || (c.numero_referencia ?? "").toLowerCase().includes(t) || String(c.id) === t
         || (dpi.length >= 3 && String(c.paciente_cui ?? "").includes(dpi));
     }
@@ -165,15 +167,14 @@ export default function Caja() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Caja y cuentas</h1>
         {gestiona && !abriendo && (
-          <button onClick={() => { setAbriendo(true); setAviso(null); }} className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800">Abrir cuenta ambulatoria</button>
+          <button onClick={() => { setAbriendo(true); }} className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800">Abrir cuenta ambulatoria</button>
         )}
       </div>
 
       {abriendo && (
         <AbrirAmbulatoria onCerrar={() => setAbriendo(false)}
-          onAbierta={(c) => { setAbriendo(false); setAviso(`Cuenta No. ${c.id} abierta para ${c.paciente}.`); cargar(); abrir(c.id); }} />
+          onAbierta={(c) => { setAbriendo(false); avisos.exito(`Cuenta No. ${c.id} abierta para ${c.paciente}.`); cargar(); abrir(c.id); }} />
       )}
-      {aviso && <p className="mb-4 text-sm text-green-800 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{aviso}</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white border rounded-lg p-4 shadow-sm">
@@ -202,8 +203,23 @@ export default function Caja() {
           {tab("TARIFAS", "Tarifas")}
         </div>
         {pestana !== "TARIFAS" && (
-          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Paciente, DPI, referencia o No." aria-label="Buscar cuenta"
-            className="border rounded px-3 py-1.5 text-sm w-64 mb-2" />
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Paciente, DPI, referencia o No." aria-label="Buscar cuenta"
+              className="border rounded px-3 py-1.5 text-sm w-64" />
+            <BotonesExportar nombre="cuentas" titulo="Caja y cuentas" filas={filtradas} columnas={[
+              { titulo: "No.", valor: (c) => c.id, ancho: 7 },
+              { titulo: "Paciente", valor: (c) => c.paciente, ancho: 32 },
+              { titulo: "DPI", valor: (c) => c.paciente_cui ?? "", ancho: 16 },
+              { titulo: "Tipo", valor: (c) => descripcionCuenta(c), ancho: 26 },
+              { titulo: "Estado", valor: (c) => ESTADO_CUENTA[c.estado]?.texto ?? c.estado, ancho: 12 },
+              { titulo: "Abierta el", valor: (c) => String(c.fecha_apertura ?? "").replace("T", " ").slice(0, 16), ancho: 17 },
+              { titulo: "Cargos (Q)", valor: (c) => c.cargos, ancho: 12 },
+              { titulo: "Descuentos (Q)", valor: (c) => c.descuentos, ancho: 14 },
+              { titulo: "Pagos (Q)", valor: (c) => c.pagos, ancho: 12 },
+              { titulo: "Saldo (Q)", valor: (c) => c.saldo, ancho: 12 },
+              { titulo: "Referencia de pago", valor: (c) => c.numero_referencia ?? "", ancho: 18 },
+            ]} />
+          </div>
         )}
       </div>
 
@@ -217,10 +233,10 @@ export default function Caja() {
               </tr>
             </thead>
             <tbody>
-              {servicios.map((s) => <FilaServicio key={`${s.id}-${version}`} s={s} edita={editaTarifas} onGuardado={(m) => { setAviso(m); cargar(); }} />)}
+              {servicios.map((s) => <FilaServicio key={`${s.id}-${version}`} s={s} edita={editaTarifas} onGuardado={(m) => { avisos.exito(m); cargar(); }} />)}
             </tbody>
           </table>
-          {editaTarifas && <NuevoServicio onCreado={(m) => { setAviso(m); cargar(); }} />}
+          {editaTarifas && <NuevoServicio onCreado={(m) => { avisos.exito(m); cargar(); }} />}
         </div>
       ) : (
         <>

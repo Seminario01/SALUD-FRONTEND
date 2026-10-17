@@ -4,6 +4,7 @@ import useRoles from "../hooks/useRoles";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import { TEXTO_LARGO } from "../utils/validacion";
 import BuscadorPaciente from "../components/BuscadorPaciente";
+import { useAvisos } from "../components/Avisos";
 
 // Un expediente clínico es información sensible, siempre ligada a UN paciente:
 // el backend expone GET /expedientes/<paciente_id> (médico, admin o el propio
@@ -20,7 +21,7 @@ function FormularioAtencion({ pacienteId, onRegistrada }) {
   const [citas, setCitas] = useState([]);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
-  const [exito, setExito] = useState(null);
+  const avisos = useAvisos();
 
   // Citas de ESTE paciente, para asociar la atención (opcional)
   useEffect(() => {
@@ -38,7 +39,6 @@ function FormularioAtencion({ pacienteId, onRegistrada }) {
     e.preventDefault();
     setEnviando(true);
     setError(null);
-    setExito(null);
     const cuerpo = {
       diagnostico: datos.diagnostico,
       tratamiento: datos.tratamiento || undefined,
@@ -48,7 +48,7 @@ function FormularioAtencion({ pacienteId, onRegistrada }) {
     client
       .post(`/expedientes/${pacienteId}/atenciones`, cuerpo)
       .then(() => {
-        setExito("Atención registrada en el expediente.");
+        avisos.exito("Atención registrada en el expediente.");
         setDatos(VACIO);
         onRegistrada();
       })
@@ -93,7 +93,6 @@ function FormularioAtencion({ pacienteId, onRegistrada }) {
         >
           {enviando ? "Guardando..." : "Registrar atención"}
         </button>
-        {exito && <span className="text-sm text-green-700">{exito}</span>}
         {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
     </form>

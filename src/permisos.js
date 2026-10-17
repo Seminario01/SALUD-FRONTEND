@@ -52,6 +52,7 @@ export const PERMISOS = {
   "presupuesto.editar": [ADM],
   "integraciones.ver": [JEF, ADM],
   "integraciones.demo": [JEF, ADM],
+  "bitacora.ver": [ADM],
 };
 
 // Nombre del puesto para mostrar, en orden de prioridad (el primero que tenga el usuario).

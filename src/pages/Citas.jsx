@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import EstadoPago from "../components/EstadoPago";
 import { formatoDia } from "../utils/fechas";
 import client, { mensajeError } from "../api/client";
+import { useAvisos } from "../components/Avisos";
+import BotonesExportar from "../components/Exportar";
 import useRoles from "../hooks/useRoles";
 import Paginacion from "../components/Paginacion";
 import usePaginacion from "../hooks/usePaginacion";
@@ -27,7 +29,7 @@ function FormularioCita({ esPersonal, pacientes, aviso, onCreada }) {
   const [motivo, setMotivo] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
-  const [exito, setExito] = useState(null);
+  const avisos = useAvisos();
 
   // Un ciudadano solo tiene su propio registro: se selecciona solo
   const seleccionado = pacienteId || (!esPersonal && pacientes[0]?.id) || "";
@@ -36,11 +38,10 @@ function FormularioCita({ esPersonal, pacientes, aviso, onCreada }) {
     e.preventDefault();
     setEnviando(true);
     setError(null);
-    setExito(null);
     client
       .post("/citas", { paciente_id: Number(seleccionado), fecha_hora: fechaHora, motivo })
       .then((res) => {
-        setExito(`Cita agendada (ID ${res.data.data.id}).`);
+        avisos.exito(`Cita No. ${res.data.data.id} agendada para el ${formatoFecha(fechaHora)}.`);
         setFechaHora("");
         setMotivo("");
         onCreada();
@@ -83,7 +84,6 @@ function FormularioCita({ esPersonal, pacientes, aviso, onCreada }) {
         >
           {enviando ? "Guardando..." : "Agendar"}
         </button>
-        {exito && <span className="text-sm text-green-700">{exito}</span>}
         {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
     </form>
@@ -112,7 +112,7 @@ export default function Citas() {
       const t = texto.toLowerCase();
       const paciente = pacientes.find((p) => p.id === c.paciente_id);
       const nombre = (paciente?.nombre_completo ?? "").toLowerCase();
-      const enDpi = t.replace(/D/g, "").length >= 3 && String(paciente?.cui ?? "").includes(t.replace(/D/g, ""));
+      const enDpi = t.replace(/\D/g, "").length >= 3 && String(paciente?.cui ?? "").includes(t.replace(/\D/g, ""));
       if (!nombre.includes(t) && !enDpi && !(c.motivo ?? "").toLowerCase().includes(t)) return false;
     }
     return true;
@@ -139,9 +139,13 @@ export default function Citas() {
     cargar();
   }, [cargar]);
 
+  const avisos = useAvisos();
+
   function cambiarEstado(cita, estado) {
     setErrorAccion(null);
-    client.put(`/citas/${cita.id}`, { estado }).then(cargar).catch((err) => setErrorAccion(mensajeError(err)));
+    client.put(`/citas/${cita.id}`, { estado })
+      .then(() => { avisos.exito(`Cita No. ${cita.id} marcada como ${estado}.`); cargar(); })
+      .catch((err) => setErrorAccion(mensajeError(err)));
   }
 
   // Tributario: Salud registra el cobro (obligación) y después consulta si se pagó
@@ -182,10 +186,19 @@ export default function Citas() {
       .finally(() => setVerificando(null));
   }
 
-  function cancelar(cita) {
-    if (!window.confirm(`¿Cancelar la cita del ${formatoFecha(cita.fecha_hora)}?`)) return;
+  async function cancelar(cita) {
+    const paciente = pacientes.find((p) => p.id === cita.paciente_id)?.nombre_completo;
+    const si = await avisos.confirmar({
+      titulo: `¿Cancelar la cita No. ${cita.id}?`,
+      mensaje: [paciente && `Paciente: ${paciente}`, `Fecha: ${formatoFecha(cita.fecha_hora)}`,
+        cita.motivo && `Motivo: ${cita.motivo}`, "El horario queda libre para otro paciente."],
+      confirmar: "Sí, cancelar la cita", cancelar: "No, mantenerla", peligro: true,
+    });
+    if (!si) return;
     setErrorAccion(null);
-    client.delete(`/citas/${cita.id}`).then(cargar).catch((err) => setErrorAccion(mensajeError(err)));
+    client.delete(`/citas/${cita.id}`)
+      .then(() => { avisos.exito(`Cita No. ${cita.id} cancelada.`); cargar(); })
+      .catch((err) => setErrorAccion(mensajeError(err)));
   }
 
   if (cargando) return <p className="p-6">Cargando...</p>;
@@ -223,6 +236,18 @@ export default function Citas() {
               className="text-sm px-3 py-1.5 rounded border hover:bg-gray-100">Quitar filtros</button>
           )}
           <span className="text-sm text-slate-500 ml-auto">{filtradas.length} cita(s)</span>
+          {esPersonal && (
+            <BotonesExportar nombre="citas" titulo="Citas médicas" filas={filtradas} columnas={[
+              { titulo: "No.", valor: (c) => c.id, ancho: 7 },
+              { titulo: "Fecha y hora", valor: (c) => String(c.fecha_hora ?? "").replace("T", " ").slice(0, 16), ancho: 17 },
+              { titulo: "Paciente", valor: (c) => nombrePaciente(c.paciente_id), ancho: 32 },
+              { titulo: "DPI", valor: (c) => pacientes.find((p) => p.id === c.paciente_id)?.cui ?? "", ancho: 16 },
+              { titulo: "Motivo", valor: (c) => c.motivo, ancho: 36 },
+              { titulo: "Estado", valor: (c) => c.estado, ancho: 12 },
+              { titulo: "Cobro", valor: (c) => (c.pago_confirmado ? "PAGADO" : c.estado_cobro ?? ""), ancho: 12 },
+              { titulo: "Referencia de pago", valor: (c) => c.numero_referencia ?? "", ancho: 18 },
+            ]} />
+          )}
         </div>
       )}
 

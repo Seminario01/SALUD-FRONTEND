@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import { UNIDADES } from "../utils/validacion";
+import { useAvisos } from "../components/Avisos";
 
 const TIPOS = {
   cama: "Camas",
@@ -80,7 +81,7 @@ function FormularioRecurso({ onCreado }) {
   const [datos, setDatos] = useState(VACIO);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
-  const [exito, setExito] = useState(null);
+  const avisos = useAvisos();
 
   function cambiar(e) {
     setDatos({ ...datos, [e.target.name]: e.target.value });
@@ -90,11 +91,10 @@ function FormularioRecurso({ onCreado }) {
     e.preventDefault();
     setEnviando(true);
     setError(null);
-    setExito(null);
     client
       .post("/recursos", { ...datos, disponible: Number(datos.disponible), total: Number(datos.total) })
       .then(() => {
-        setExito("Recurso agregado.");
+        avisos.exito("Recurso agregado.");
         setDatos(VACIO);
         onCreado();
       })
@@ -134,7 +134,6 @@ function FormularioRecurso({ onCreado }) {
           className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800 disabled:opacity-50">
           {enviando ? "Guardando..." : "Agregar"}
         </button>
-        {exito && <span className="text-sm text-green-700">{exito}</span>}
         {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
     </form>

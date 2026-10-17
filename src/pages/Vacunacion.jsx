@@ -4,6 +4,7 @@ import useRoles from "../hooks/useRoles";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import BuscadorPaciente from "../components/BuscadorPaciente";
 import { Link } from "react-router-dom";
+import { useAvisos } from "../components/Avisos";
 
 const Si = ({ valor }) => (
   <span className={`px-2 py-0.5 rounded text-sm ${valor ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
@@ -28,12 +29,11 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
   const existente = buscar(pacienteId);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
-  const [exito, setExito] = useState(null);
+  const avisos = useAvisos();
 
   function elegirPaciente(id) {
     setPacienteId(id);
     setDatos(datosDe(buscar(id)));
-    setExito(null);
     setError(null);
     setEducacion(null);
   }
@@ -58,13 +58,12 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
     e.preventDefault();
     setEnviando(true);
     setError(null);
-    setExito(null);
     const peticion = existente
       ? client.put(`/vacunacion/${pacienteId}`, datos)
       : client.post("/vacunacion", { paciente_id: Number(pacienteId), ...datos });
     peticion
       .then(() => {
-        setExito(existente ? "Registro actualizado." : "Registro de vacunación creado.");
+        avisos.exito(existente ? "Registro actualizado." : "Registro de vacunación creado.");
         onGuardado();
       })
       .catch((err) => setError(mensajeError(err)))
@@ -137,7 +136,6 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
         >
           {enviando ? "Guardando..." : existente ? "Actualizar" : "Registrar"}
         </button>
-        {exito && <span className="text-sm text-green-700">{exito}</span>}
         {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
     </form>
@@ -204,11 +202,19 @@ function VacunacionPersonal({ registra, anula }) {
   }, [cargar]);
 
   const nombre = (id) => pacientes.find((p) => p.id === id)?.nombre_completo ?? `ID ${id}`;
+  const avisos = useAvisos();
 
-  function eliminar(r) {
-    if (!window.confirm(`¿Anular el registro de vacunación de ${nombre(r.paciente_id)}? Use esta opción solo si se creó por error.`)) return;
+  async function eliminar(r) {
+    const si = await avisos.confirmar({
+      titulo: `¿Anular el registro de vacunación de ${nombre(r.paciente_id)}?`,
+      mensaje: ["Use esta opción solo si el registro se creó por error.", "Se borra el registro del paciente y no se puede deshacer."],
+      confirmar: "Sí, anular", peligro: true,
+    });
+    if (!si) return;
     setErrorAccion(null);
-    client.delete(`/vacunacion/${r.paciente_id}`).then(cargar).catch((err) => setErrorAccion(mensajeError(err)));
+    client.delete(`/vacunacion/${r.paciente_id}`)
+      .then(() => { avisos.exito(`Registro de vacunación de ${nombre(r.paciente_id)} anulado.`); cargar(); })
+      .catch((err) => setErrorAccion(mensajeError(err)));
   }
 
   if (cargando) return <p className="p-6">Cargando...</p>;

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import useRoles from "../hooks/useRoles";
+import BusquedaGlobal, { BotonBuscar } from "./BusquedaGlobal";
 
 // Ícono del módulo (cruz médica), dibujado aquí mismo
 export function LogoSalud({ className = "h-8 w-8" }) {
@@ -18,6 +19,8 @@ export default function Layout() {
   const auth = useAuth();
   const r = useRoles();
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [buscando, setBuscando] = useState(false);
+  const buscar = () => { setMenuAbierto(false); setBuscando(true); };
   const perfil = auth.user?.profile;
 
 
@@ -35,6 +38,7 @@ export default function Layout() {
     { to: "/inventario", texto: "Inventario", ver: r.puede("inventario.ver"), grupo: true },
     { to: "/recursos", texto: "Recursos", ver: r.puede("recursos.ver"), grupo: true },
     { to: "/integraciones", texto: "Integraciones", ver: r.puede("integraciones.ver"), grupo: true },
+    { to: "/bitacora", texto: "Bitácora de accesos", ver: r.puede("bitacora.ver"), grupo: true },
   ].filter((e) => e.ver);
   // Con muchas opciones, las de gestión van en un menú "Gestión" para que el encabezado quepa
   const agrupar = enlaces.length > 7;
@@ -106,6 +110,12 @@ export default function Layout() {
           </nav>
 
           <div className="ml-auto hidden xl:flex items-center gap-3">
+            {r.puede("pacientes.ver") && (
+              <>
+                <div className="2xl:hidden"><BotonBuscar compacto onClick={buscar} /></div>
+                <div className="hidden 2xl:block w-56"><BotonBuscar onClick={buscar} /></div>
+              </>
+            )}
             <div className="text-right leading-tight whitespace-nowrap">
               <p className="text-sm font-medium">{perfil?.name || perfil?.preferred_username}</p>
               {r.puesto && (
@@ -121,8 +131,9 @@ export default function Layout() {
           </div>
 
           {/* Celular / tableta */}
+          {r.puede("pacientes.ver") && <div className="ml-auto xl:hidden"><BotonBuscar compacto onClick={buscar} /></div>}
           <button
-            className="ml-auto xl:hidden p-2 rounded-lg hover:bg-white/10"
+            className={`${r.puede("pacientes.ver") ? "" : "ml-auto "}xl:hidden p-2 rounded-lg hover:bg-white/10`}
             onClick={() => setMenuAbierto(!menuAbierto)}
             aria-label="Abrir menú"
             aria-expanded={menuAbierto}
@@ -154,6 +165,8 @@ export default function Layout() {
           </div>
         )}
       </header>
+
+      {r.puede("pacientes.ver") && <BusquedaGlobal abierto={buscando} setAbierto={setBuscando} />}
 
       <main className="flex-1 w-full max-w-7xl mx-auto sm:px-2">
         <Outlet />

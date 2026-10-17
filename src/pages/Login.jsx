@@ -1,14 +1,16 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import { LogoSalud } from "../components/Layout";
+import { recordarDestino } from "../utils/volver";
 
 // Sin campos de usuario ni contraseña: la pantalla de login la provee el
 // Login Único para los cinco módulos. Aquí solo hay un botón que redirige.
 export default function Login() {
   const auth = useAuth();
+  const desde = useLocation().state?.desde;
 
   if (auth.isLoading) return <p className="p-6">Cargando...</p>;
-  if (auth.isAuthenticated) return <Navigate to="/" replace />;
+  if (auth.isAuthenticated) return <Navigate to={desde || "/"} replace />;
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -48,7 +50,7 @@ export default function Login() {
           )}
 
           <button
-            onClick={() => auth.signinRedirect()}
+            onClick={() => { recordarDestino(desde); auth.signinRedirect(); }}
             className="w-full bg-blue-700 text-white py-2.5 rounded-lg font-medium hover:bg-blue-800 transition shadow-sm"
           >
             Iniciar sesión con el Login Único

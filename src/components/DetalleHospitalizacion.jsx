@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import { AREAS, ESTADO_HOSPITALIZACION, TIPOS_EGRESO, fechaHora, textoDias } from "../utils/hospitalizacion";
 import { SIGNOS } from "../utils/validacion";
+import { useAvisos } from "./Avisos";
 
 const campo = "border rounded px-3 py-1.5 w-full";
 
@@ -116,9 +117,16 @@ function Egreso({ hosp, onHecho }) {
   const [resumen, setResumen] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
+  const avisos = useAvisos();
 
-  function egresar(e) {
+  async function egresar(e) {
     e.preventDefault();
+    const si = await avisos.confirmar({
+      titulo: `¿Dar egreso a ${hosp.paciente}?`,
+      mensaje: [`Tipo de egreso: ${TIPOS_EGRESO[tipo] ?? tipo}`, "La cama queda en limpieza y la hospitalización se cierra. Después, Caja podrá cerrar la cuenta."],
+      confirmar: "Dar egreso",
+    });
+    if (!si) return;
     setEnviando(true);
     setError(null);
     client
@@ -158,7 +166,7 @@ function Egreso({ hosp, onHecho }) {
 export default function DetalleHospitalizacion({ id, camas, permisos, onCerrar, onCambio }) {
   const [hosp, setHosp] = useState(null);
   const [error, setError] = useState(null);
-  const [aviso, setAviso] = useState(null);
+  const avisos = useAvisos();
 
   const cargar = useCallback(() => {
     client
@@ -176,7 +184,7 @@ export default function DetalleHospitalizacion({ id, camas, permisos, onCerrar, 
   }, [onCerrar]);
 
   function hecho(mensaje) {
-    setAviso(mensaje);
+    avisos.exito(mensaje);
     cargar();
     onCambio();
   }
@@ -208,7 +216,6 @@ export default function DetalleHospitalizacion({ id, camas, permisos, onCerrar, 
         <div className="p-5 space-y-5">
           {error && <p className="text-sm text-red-600">{error}</p>}
           {!hosp && !error && <p className="text-sm text-slate-400">Cargando...</p>}
-          {aviso && <p className="text-sm text-green-800 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{aviso}</p>}
 
           {hosp && (
             <>

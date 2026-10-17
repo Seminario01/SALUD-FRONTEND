@@ -111,3 +111,8 @@ main tbody tr:hover {
     text-decoration: none !important;
   }
 }
+
+/* Avisos que aparecen abajo a la derecha (components/Avisos.jsx) */
+@keyframes aviso-entra { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.aviso-entra { animation: aviso-entra 0.2s ease-out; }
+@media (prefers-reduced-motion: reduce) { .aviso-entra { animation: none; } }

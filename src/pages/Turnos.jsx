@@ -3,6 +3,7 @@ import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import BuscadorPaciente from "../components/BuscadorPaciente";
+import { useAvisos } from "../components/Avisos";
 
 const TIPOS = {
   consulta_general: "Consulta general",
@@ -25,18 +26,17 @@ function FormularioTurno({ onCreado }) {
   const [prioridad, setPrioridad] = useState("normal");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
-  const [exito, setExito] = useState(null);
+  const avisos = useAvisos();
 
   function enviar(e) {
     e.preventDefault();
     setEnviando(true);
     setError(null);
-    setExito(null);
     client
       .post("/turnos", { paciente_id: Number(pacienteId), tipo_atencion: tipo, prioridad })
       .then((res) => {
         const t = res.data.data;
-        setExito(`Turno N° ${t.numero_turno} generado (${t.posicion_en_fila} en espera).`);
+        avisos.exito(`Turno N° ${t.numero_turno} generado (${t.posicion_en_fila} en espera).`);
         setPacienteId("");
         onCreado();
       })
@@ -79,7 +79,6 @@ function FormularioTurno({ onCreado }) {
         >
           {enviando ? "Generando..." : "Generar turno"}
         </button>
-        {exito && <span className="text-sm text-green-700">{exito}</span>}
         {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
     </form>

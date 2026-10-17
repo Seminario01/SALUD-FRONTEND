@@ -18,7 +18,7 @@ function edad(nacimiento) {
 
 export default function BuscadorPaciente({
   pacientes, valor, onCambio, requerido = false, deshabilitado = false,
-  placeholder = "Escriba el nombre o el DPI", etiquetaAria = "Paciente", className = "",
+  placeholder = "Escriba el nombre o el DPI", etiquetaAria = "Paciente", className = "", autoFocus = false,
 }) {
   const [texto, setTexto] = useState("");
   const [abierto, setAbierto] = useState(false);
@@ -93,6 +93,7 @@ export default function BuscadorPaciente({
         onKeyDown={teclado}
         required={requerido}
         disabled={deshabilitado}
+        autoFocus={autoFocus}
         placeholder={placeholder}
         aria-label={etiquetaAria}
         role="combobox"

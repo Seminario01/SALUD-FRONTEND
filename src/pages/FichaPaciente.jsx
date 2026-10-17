@@ -6,6 +6,7 @@ import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import { REGLAS, reglasNacimiento, siCambio } from "../utils/validacion";
 import { BotonImprimir, EncabezadoImpreso, PieImpreso } from "../components/Impresion";
+import { useAvisos } from "../components/Avisos";
 
 const COLOR_HOSPITALIZACION = {
   PENDIENTE: "bg-yellow-100 text-yellow-800",
@@ -156,7 +157,7 @@ export default function FichaPaciente() {
   const [paciente, setPaciente] = useState(undefined);
   const [error, setError] = useState(null);
   const [editando, setEditando] = useState(false);
-  const [aviso, setAviso] = useState(null);
+  const avisos = useAvisos();
   const [citas, setCitas] = useState(null);
   const [vacunacion, setVacunacion] = useState(undefined);
   const [atenciones, setAtenciones] = useState(null);
@@ -220,7 +221,12 @@ export default function FichaPaciente() {
       <EncabezadoImpreso titulo="Expediente del paciente" detalle={`${paciente.nombre_completo} · DPI ${paciente.cui || "sin registrar"}`} />
       <div className="flex items-center justify-between gap-3 print:hidden">
         <Link to="/pacientes" className="text-sm text-blue-700 hover:underline">← Pacientes</Link>
-        <BotonImprimir texto="Imprimir expediente / PDF" />
+        <div className="flex flex-wrap items-center gap-2">
+          {puede("bitacora.ver") && (
+            <Link to={`/bitacora?paciente=${id}`} className="text-sm px-3 py-1.5 rounded border hover:bg-slate-50">Quién vio este expediente</Link>
+          )}
+          <BotonImprimir texto="Imprimir expediente / PDF" />
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -229,12 +235,11 @@ export default function FichaPaciente() {
           {paciente.tiene_cuenta ? "Cuenta del Login Único vinculada" : "Sin cuenta vinculada"}
         </span>
       </div>
-      {aviso && <p className="text-sm text-green-800 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{aviso}</p>}
 
       <Seccion
         titulo="Datos del paciente"
         accion={(puedeEditarTodo) && !editando && (
-          <button onClick={() => { setEditando(true); setAviso(null); }} className="text-sm px-3 py-1 rounded border hover:bg-gray-100">Editar</button>
+          <button onClick={() => { setEditando(true); }} className="text-sm px-3 py-1 rounded border hover:bg-gray-100">Editar</button>
         )}
       >
         {editando ? (
@@ -242,7 +247,7 @@ export default function FichaPaciente() {
             paciente={paciente}
             puedeTodo={puedeEditarTodo}
             onCancelar={() => setEditando(false)}
-            onGuardado={() => { setEditando(false); setAviso("Datos actualizados."); cargar(); }}
+            onGuardado={() => { setEditando(false); avisos.exito("Datos actualizados."); cargar(); }}
           />
         ) : (
           <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3 text-sm">
