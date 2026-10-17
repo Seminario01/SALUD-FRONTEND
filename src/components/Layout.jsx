@@ -56,7 +56,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow">
+      <header className="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
           <div className="flex items-center gap-2 shrink-0">
             <LogoSalud className="h-8 w-8 text-white" />

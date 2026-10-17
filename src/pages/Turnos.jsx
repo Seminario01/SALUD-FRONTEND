@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
+import BuscadorPaciente from "../components/BuscadorPaciente";
 
 const TIPOS = {
   consulta_general: "Consulta general",
@@ -52,12 +53,7 @@ function FormularioTurno({ onCreado }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <label className="text-sm">
           Paciente *
-          <select value={pacienteId} onChange={(e) => setPacienteId(e.target.value)} required className={campo}>
-            <option value="">Seleccione...</option>
-            {pacientes.map((p) => (
-              <option key={p.id} value={p.id}>{p.nombre_completo} (ID {p.id})</option>
-            ))}
-          </select>
+          <BuscadorPaciente pacientes={pacientes} valor={pacienteId} onCambio={setPacienteId} requerido />
         </label>
         <label className="text-sm">
           Tipo de atención

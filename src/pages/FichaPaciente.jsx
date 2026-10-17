@@ -5,6 +5,7 @@ import EstadoPago from "../components/EstadoPago";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import { REGLAS, reglasNacimiento, siCambio } from "../utils/validacion";
+import { BotonImprimir, EncabezadoImpreso, PieImpreso } from "../components/Impresion";
 
 const COLOR_HOSPITALIZACION = {
   PENDIENTE: "bg-yellow-100 text-yellow-800",
@@ -44,12 +45,12 @@ const COLOR_ESTADO = {
   cancelada: "bg-red-100 text-red-800",
 };
 
-function Seccion({ titulo, accion, children }) {
+function Seccion({ titulo, accion, children, className = "" }) {
   return (
-    <section className="bg-white border rounded-lg p-5 shadow-sm">
+    <section className={`bg-white border rounded-lg p-5 shadow-sm ${className}`}>
       <div className="flex items-center justify-between gap-3 mb-3">
         <h2 className="font-bold text-slate-700">{titulo}</h2>
-        {accion}
+        <div className="no-imprimir">{accion}</div>
       </div>
       {children}
     </section>
@@ -215,12 +216,16 @@ export default function FichaPaciente() {
   const a = antecedentes?.datos;
 
   return (
-    <div className="p-6 space-y-4">
-      <Link to="/pacientes" className="text-sm text-blue-700 hover:underline">← Pacientes</Link>
+    <div className="p-6 space-y-4 print:p-0">
+      <EncabezadoImpreso titulo="Expediente del paciente" detalle={`${paciente.nombre_completo} · DPI ${paciente.cui || "sin registrar"}`} />
+      <div className="flex items-center justify-between gap-3 print:hidden">
+        <Link to="/pacientes" className="text-sm text-blue-700 hover:underline">← Pacientes</Link>
+        <BotonImprimir texto="Imprimir expediente / PDF" />
+      </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold">{paciente.nombre_completo}</h1>
-        <span className={`text-xs rounded-full px-2 py-0.5 ${paciente.tiene_cuenta ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-600"}`}>
+        <span className={`print:hidden text-xs rounded-full px-2 py-0.5 ${paciente.tiene_cuenta ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-600"}`}>
           {paciente.tiene_cuenta ? "Cuenta del Login Único vinculada" : "Sin cuenta vinculada"}
         </span>
       </div>
@@ -255,6 +260,7 @@ export default function FichaPaciente() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {puedeAntecedentes && (
           <Seccion
+            className="print:hidden"
             titulo="Antecedentes (Seguridad)"
             accion={<button onClick={consultarAntecedentes} disabled={antecedentes?.cargando}
               className="text-sm px-3 py-1 rounded border hover:bg-gray-100 disabled:opacity-50">
@@ -282,6 +288,7 @@ export default function FichaPaciente() {
               </p>
               <p>Estudiante: {vacunacion.es_estudiante ? "Sí" : "No"}</p>
               {vacunacion.vacunas_pendientes && <p>Pendientes: {vacunacion.vacunas_pendientes}</p>}
+              <Link to={`/imprimir/vacunacion/${id}`} className="no-imprimir inline-block mt-1 text-blue-700 hover:underline">Constancia de vacunación (PDF)</Link>
             </div>
           )}
         </Seccion>
@@ -296,8 +303,8 @@ export default function FichaPaciente() {
           <table className="w-full text-left">
             <thead><tr><th className="p-2">Fecha</th><th className="p-2">Motivo</th><th className="p-2">Estado</th><th className="p-2">Pago</th></tr></thead>
             <tbody>
-              {citas.slice(0, 8).map((c) => (
-                <tr key={c.id}>
+              {citas.map((c, i) => (
+                <tr key={c.id} className={i >= 8 ? "hidden print:table-row" : ""}>
                   <td className="p-2">{fecha(c.fecha_hora)}</td>
                   <td className="p-2">{c.motivo || "—"}</td>
                   <td className="p-2"><span className={`px-2 py-0.5 rounded text-xs ${COLOR_ESTADO[c.estado] ?? "bg-gray-100"}`}>{c.estado}</span></td>
@@ -307,7 +314,7 @@ export default function FichaPaciente() {
             </tbody>
           </table>
         )}
-        {citas?.length > 8 && <p className="text-xs text-slate-400 mt-2">Mostrando las 8 más recientes de {citas.length}.</p>}
+        {citas?.length > 8 && <p className="text-xs text-slate-400 mt-2 print:hidden">Mostrando las 8 más recientes de {citas.length}.</p>}
       </Seccion>
       )}
 
@@ -316,8 +323,8 @@ export default function FichaPaciente() {
           {atenciones === null && <p className="text-sm text-slate-400">Cargando...</p>}
           {atenciones?.length === 0 && <p className="text-sm text-slate-500">Sin atenciones registradas.</p>}
           <div className="space-y-2">
-            {atenciones?.slice(0, 5).map((e) => (
-              <div key={e.id} className="border-l-4 border-blue-200 pl-3">
+            {atenciones?.map((e, i) => (
+              <div key={e.id} className={`border-l-4 border-blue-200 pl-3 ${i >= 5 ? "hidden print:block" : ""}`}>
                 <p className="text-xs text-slate-400">{fecha(e.fecha_atencion)}</p>
                 <p className="font-medium text-slate-800">{e.diagnostico}</p>
                 {e.tratamiento && <p className="text-sm text-slate-600">{e.tratamiento}</p>}
@@ -335,8 +342,8 @@ export default function FichaPaciente() {
             <table className="w-full text-left">
               <thead><tr><th className="p-2">Ingreso</th><th className="p-2">Área y cama</th>{puedeVerClinico && <th className="p-2">Diagnóstico</th>}<th className="p-2">Estado</th></tr></thead>
               <tbody>
-                {hospitalizaciones.slice(0, 5).map((h) => (
-                  <tr key={h.id}>
+                {hospitalizaciones.map((h, i) => (
+                  <tr key={h.id} className={i >= 5 ? "hidden print:table-row" : ""}>
                     <td className="p-2">{fecha(h.fecha_ingreso ?? h.fecha_orden)}</td>
                     <td className="p-2">{h.area}{h.cama ? ` · ${h.cama}` : ""}</td>
                     {puedeVerClinico && <td className="p-2">{h.diagnostico}</td>}
@@ -355,15 +362,16 @@ export default function FichaPaciente() {
           {cuentas?.length === 0 && <p className="text-sm text-slate-500">Sin cuentas.</p>}
           {cuentas?.length > 0 && (
             <table className="w-full text-left">
-              <thead><tr><th className="p-2">No.</th><th className="p-2">Cuenta</th><th className="p-2">Estado</th><th className="p-2 text-right">Saldo</th><th className="p-2">Referencia</th></tr></thead>
+              <thead><tr><th className="p-2">No.</th><th className="p-2">Cuenta</th><th className="p-2">Estado</th><th className="p-2 text-right">Saldo</th><th className="p-2">Referencia</th><th className="p-2 no-imprimir"></th></tr></thead>
               <tbody>
-                {cuentas.slice(0, 6).map((c) => (
-                  <tr key={c.id}>
+                {cuentas.map((c, i) => (
+                  <tr key={c.id} className={i >= 6 ? "hidden print:table-row" : ""}>
                     <td className="p-2"><Link to={`/caja?cuenta=${c.id}`} className="text-blue-700 hover:underline tabular-nums">{c.id}</Link></td>
                     <td className="p-2">{descripcionCuenta(c)}</td>
                     <td className="p-2"><span className={`px-2 py-0.5 rounded text-xs ${ESTADO_CUENTA[c.estado]?.clase ?? "bg-gray-100"}`}>{ESTADO_CUENTA[c.estado]?.texto ?? c.estado}</span></td>
                     <td className="p-2 text-right tabular-nums">{quetzales(c.saldo)}</td>
                     <td className="p-2 font-mono text-xs">{c.numero_referencia ?? "—"}</td>
+                    <td className="p-2 no-imprimir"><Link to={`/imprimir/cuenta/${c.id}`} className="text-xs text-blue-700 hover:underline whitespace-nowrap">Estado de cuenta</Link></td>
                   </tr>
                 ))}
               </tbody>
@@ -378,22 +386,24 @@ export default function FichaPaciente() {
           {recetas?.length === 0 && <p className="text-sm text-slate-500">Sin recetas.</p>}
           {recetas?.length > 0 && (
             <table className="w-full text-left">
-              <thead><tr><th className="p-2">No.</th><th className="p-2">Fecha</th><th className="p-2">Medicamentos</th><th className="p-2">Estado</th></tr></thead>
+              <thead><tr><th className="p-2">No.</th><th className="p-2">Fecha</th><th className="p-2">Medicamentos</th><th className="p-2">Estado</th><th className="p-2 no-imprimir"></th></tr></thead>
               <tbody>
-                {recetas.slice(0, 6).map((r) => (
-                  <tr key={r.id}>
+                {recetas.map((r, i) => (
+                  <tr key={r.id} className={i >= 6 ? "hidden print:table-row" : ""}>
                     <td className="p-2 tabular-nums">{r.id}</td>
                     <td className="p-2">{fecha(r.fecha)}</td>
                     <td className="p-2">{r.items.map((it) => `${it.medicamento} ×${it.cantidad}`).join(", ")}</td>
                     <td className="p-2"><span className={`px-2 py-0.5 rounded text-xs ${COLOR_RECETA[r.estado] ?? "bg-gray-100"}`}>{r.estado.toLowerCase()}</span></td>
+                    <td className="p-2 no-imprimir"><Link to={`/imprimir/receta/${r.id}`} className="text-xs text-blue-700 hover:underline whitespace-nowrap">Receta</Link></td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
-          {recetas?.length > 6 && <p className="text-xs text-slate-400 mt-2">Mostrando las 6 más recientes de {recetas.length}.</p>}
+          {recetas?.length > 6 && <p className="text-xs text-slate-400 mt-2 print:hidden">Mostrando las 6 más recientes de {recetas.length}.</p>}
         </Seccion>
       )}
+      <PieImpreso />
     </div>
   );
 }

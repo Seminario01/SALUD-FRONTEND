@@ -7,6 +7,8 @@ import { PUESTOS } from "../permisos";
 import Paginacion from "../components/Paginacion";
 import usePaginacion from "../hooks/usePaginacion";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
+import BuscadorPaciente from "../components/BuscadorPaciente";
+import { Link } from "react-router-dom";
 
 const COLOR_ESTADO = {
   PENDIENTE: "bg-yellow-100 text-yellow-800",
@@ -88,12 +90,7 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <label className="text-sm">
           Paciente *
-          <select value={pacienteId} onChange={(e) => cambiarPaciente(e.target.value)} required className={campo}>
-            <option value="">Seleccione...</option>
-            {pacientes.map((p) => (
-              <option key={p.id} value={p.id}>{p.nombre_completo} (CUI {p.cui})</option>
-            ))}
-          </select>
+          <BuscadorPaciente pacientes={pacientes} valor={pacienteId} onCambio={cambiarPaciente} requerido />
         </label>
         <label className="text-sm">
           Atención / diagnóstico
@@ -188,6 +185,9 @@ function TarjetaReceta({ receta, mostrarPaciente, puedeDespachar, puedeAnular, o
           <p className="text-xs text-slate-500">
             {formatoFecha(receta.fecha)}{receta.medico ? ` · Dr(a). ${receta.medico}` : ""}
           </p>
+          <Link to={`/imprimir/receta/${receta.id}`} className="inline-flex items-center gap-1 mt-1 text-xs text-blue-700 hover:underline">
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z" /></svg> Imprimir / PDF
+          </Link>
         </div>
         <span className={`px-2 py-1 rounded text-xs font-medium ${COLOR_ESTADO[receta.estado] ?? "bg-gray-100"}`}>
           {NOMBRE_ESTADO[receta.estado] ?? receta.estado}
@@ -285,7 +285,9 @@ export default function Recetas() {
       const t = texto.toLowerCase();
       const enPaciente = (r.paciente ?? "").toLowerCase().includes(t);
       const enMedicamento = r.items.some((it) => (it.medicamento ?? "").toLowerCase().includes(t));
-      if (!enPaciente && !enMedicamento && String(r.id) !== t) return false;
+      const dpi = t.replace(/D/g, "");
+      const enDpi = dpi.length >= 3 && String(r.paciente_cui ?? "").includes(dpi);
+      if (!enPaciente && !enMedicamento && !enDpi && String(r.id) !== t) return false;
     }
     return true;
   });
@@ -343,7 +345,7 @@ export default function Recetas() {
           {pestana("ANULADA", "Anuladas")}
           {pestana("", "Todas")}
           {esPersonal && (
-            <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Buscar paciente, medicamento o No." className="border rounded px-3 py-1.5 text-sm ml-auto w-72" aria-label="Buscar receta" />
+            <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Paciente, DPI, medicamento o No." className="border rounded px-3 py-1.5 text-sm ml-auto w-72" aria-label="Buscar receta" />
           )}
         </div>
       )}

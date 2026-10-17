@@ -9,6 +9,7 @@ import DetalleCuenta from "../components/DetalleCuenta";
 import { CATEGORIA, ESTADO_CUENTA, quetzales } from "../utils/caja";
 import { fechaHora } from "../utils/hospitalizacion";
 import { DINERO } from "../utils/validacion";
+import BuscadorPaciente from "../components/BuscadorPaciente";
 
 function AbrirAmbulatoria({ onAbierta, onCerrar }) {
   const { pacientes } = usePacientesSeleccionables(true);
@@ -27,10 +28,7 @@ function AbrirAmbulatoria({ onAbierta, onCerrar }) {
   return (
     <form onSubmit={enviar} className="bg-white border rounded-lg p-4 shadow-sm mb-6 flex flex-wrap items-end gap-3">
       <label className="text-sm flex-1 min-w-64">Paciente
-        <select value={pacienteId} onChange={(e) => setPacienteId(e.target.value)} required className="border rounded px-3 py-1.5 w-full" aria-label="Paciente de la cuenta">
-          <option value="">Seleccione...</option>
-          {pacientes.map((p) => <option key={p.id} value={p.id}>{p.nombre_completo} (CUI {p.cui})</option>)}
-        </select>
+        <BuscadorPaciente pacientes={pacientes} valor={pacienteId} onCambio={setPacienteId} requerido etiquetaAria="Paciente de la cuenta" />
       </label>
       <button type="submit" className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800">Abrir cuenta</button>
       <button type="button" onClick={onCerrar} className="px-4 py-1.5 rounded border hover:bg-gray-100">Cancelar</button>
@@ -139,7 +137,9 @@ export default function Caja() {
     if (pestana === "CERRADAS" ? !["PAGADA", "EXONERADA"].includes(c.estado) : pestana !== "TODAS" && c.estado !== pestana) return false;
     if (texto) {
       const t = texto.toLowerCase();
-      return (c.paciente ?? "").toLowerCase().includes(t) || (c.numero_referencia ?? "").toLowerCase().includes(t) || String(c.id) === t;
+      const dpi = t.replace(/D/g, "");
+      return (c.paciente ?? "").toLowerCase().includes(t) || (c.numero_referencia ?? "").toLowerCase().includes(t) || String(c.id) === t
+        || (dpi.length >= 3 && String(c.paciente_cui ?? "").includes(dpi));
     }
     return true;
   });
@@ -202,7 +202,7 @@ export default function Caja() {
           {tab("TARIFAS", "Tarifas")}
         </div>
         {pestana !== "TARIFAS" && (
-          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Paciente, referencia o No." aria-label="Buscar cuenta"
+          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Paciente, DPI, referencia o No." aria-label="Buscar cuenta"
             className="border rounded px-3 py-1.5 text-sm w-64 mb-2" />
         )}
       </div>

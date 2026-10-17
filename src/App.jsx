@@ -17,6 +17,7 @@ import Inventario from "./pages/Inventario";
 import Hospitalizacion from "./pages/Hospitalizacion";
 import Caja from "./pages/Caja";
 import NoEncontrado from "./pages/NoEncontrado";
+import { ConstanciaVacunacion, EstadoCuentaImpreso, RecetaImpresa } from "./pages/Documentos";
 
 export default function App() {
   return (
@@ -25,6 +26,10 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         {/* Pantalla de sala de espera: a pantalla completa, sin el menú */}
         <Route path="/turnos/pantalla" element={<ProtectedRoute><PantallaTurnos /></ProtectedRoute>} />
+        {/* Documentos para imprimir o guardar como PDF: sin el menú */}
+        <Route path="/imprimir/receta/:id" element={<ProtectedRoute><RecetaImpresa /></ProtectedRoute>} />
+        <Route path="/imprimir/cuenta/:id" element={<ProtectedRoute><EstadoCuentaImpreso /></ProtectedRoute>} />
+        <Route path="/imprimir/vacunacion/:id" element={<ProtectedRoute><ConstanciaVacunacion /></ProtectedRoute>} />
         <Route
           element={
             <ProtectedRoute>

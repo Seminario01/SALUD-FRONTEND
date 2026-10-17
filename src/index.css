@@ -81,3 +81,33 @@ main tbody tr:hover {
     white-space: nowrap;
   }
 }
+
+/* ---------- Impresión / Guardar como PDF ---------- */
+@page {
+  size: letter;
+  margin: 1.4cm 1.5cm;
+}
+
+@media print {
+  html, body {
+    @apply bg-white text-black;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* En papel no hay nada que presionar ni escribir */
+  button, input, select, textarea, .no-imprimir {
+    display: none !important;
+  }
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  main .bg-white.border, section, table, tr, dl {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}

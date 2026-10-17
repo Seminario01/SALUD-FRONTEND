@@ -3,6 +3,7 @@ import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import { TEXTO_LARGO } from "../utils/validacion";
+import BuscadorPaciente from "../components/BuscadorPaciente";
 
 // Un expediente clínico es información sensible, siempre ligada a UN paciente:
 // el backend expone GET /expedientes/<paciente_id> (médico, admin o el propio
@@ -167,16 +168,7 @@ export default function Expedientes() {
       {puedeVerTodos && (
         <label className="text-sm block mb-6 max-w-md">
           Paciente
-          <select
-            value={elegido}
-            onChange={(e) => { setElegido(e.target.value); setRegistros(null); }}
-            className="border rounded px-3 py-1.5 w-full"
-          >
-            <option value="">Seleccione un paciente...</option>
-            {pacientes.map((p) => (
-              <option key={p.id} value={p.id}>{p.nombre_completo} (ID {p.id})</option>
-            ))}
-          </select>
+          <BuscadorPaciente pacientes={pacientes} valor={elegido} onCambio={(id) => { setElegido(id); setRegistros(null); }} />
         </label>
       )}
 

@@ -7,6 +7,7 @@ import Paginacion from "../components/Paginacion";
 import usePaginacion from "../hooks/usePaginacion";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import { reglasCita } from "../utils/validacion";
+import BuscadorPaciente from "../components/BuscadorPaciente";
 
 const colores = {
   pendiente: "bg-yellow-100 text-yellow-800",
@@ -58,12 +59,7 @@ function FormularioCita({ esPersonal, pacientes, aviso, onCreada }) {
         {esPersonal ? (
           <label className="text-sm">
             Paciente *
-            <select value={seleccionado} onChange={(e) => setPacienteId(e.target.value)} required className={campo}>
-              <option value="">Seleccione...</option>
-              {pacientes.map((p) => (
-                <option key={p.id} value={p.id}>{p.nombre_completo} (ID {p.id})</option>
-              ))}
-            </select>
+            <BuscadorPaciente pacientes={pacientes} valor={seleccionado} onCambio={setPacienteId} requerido />
           </label>
         ) : (
           <p className="text-sm self-end pb-2">
@@ -114,8 +110,10 @@ export default function Citas() {
     if (hasta && dia > hasta) return false;
     if (texto) {
       const t = texto.toLowerCase();
-      const nombre = (pacientes.find((p) => p.id === c.paciente_id)?.nombre_completo ?? "").toLowerCase();
-      if (!nombre.includes(t) && !(c.motivo ?? "").toLowerCase().includes(t)) return false;
+      const paciente = pacientes.find((p) => p.id === c.paciente_id);
+      const nombre = (paciente?.nombre_completo ?? "").toLowerCase();
+      const enDpi = t.replace(/D/g, "").length >= 3 && String(paciente?.cui ?? "").includes(t.replace(/D/g, ""));
+      if (!nombre.includes(t) && !enDpi && !(c.motivo ?? "").toLowerCase().includes(t)) return false;
     }
     return true;
   });
@@ -217,8 +215,8 @@ export default function Citas() {
           <label className="text-sm">Hasta
             <input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} className="border rounded px-2 py-1 block" />
           </label>
-          <label className="text-sm">{esPersonal ? "Paciente o motivo" : "Motivo"}
-            <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Buscar..." className="border rounded px-2 py-1 block w-52" />
+          <label className="text-sm">{esPersonal ? "Buscar" : "Motivo"}
+            <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Nombre, DPI o motivo" className="border rounded px-2 py-1 block w-52" />
           </label>
           {hayFiltros && (
             <button onClick={() => { setFiltroEstado(""); setDesde(""); setHasta(""); setTexto(""); }}

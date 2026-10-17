@@ -7,6 +7,7 @@ import ResumenCitas from "../components/ResumenCitas";
 import ResumenFarmacia from "../components/ResumenFarmacia";
 import AlertasSeguridad from "../components/AlertasSeguridad";
 import useRoles from "../hooks/useRoles";
+import { BotonImprimir, EncabezadoImpreso, PieImpreso } from "../components/Impresion";
 
 function TarjetaResumen({ titulo, valor, detalle, to, color }) {
   const contenido = (
@@ -59,8 +60,12 @@ export default function Dashboard() {
   const hospital = indicadores?.hospitalizacion;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-1">Módulo de Salud</h1>
+    <div className="p-6 print:p-0">
+      <EncabezadoImpreso titulo="Informe de gestión" detalle="Indicadores del Módulo de Salud" />
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="text-2xl font-bold text-gray-800 mb-1 print:hidden">Módulo de Salud</h1>
+        <BotonImprimir texto="Imprimir informe / PDF" />
+      </div>
       <p className="text-gray-500 mb-6">
         {esAuditor && !esPersonal
           ? "Indicadores agregados del Módulo de Salud"
@@ -184,6 +189,7 @@ export default function Dashboard() {
       {puede("citas.ver") && <ResumenCitas />}
       {puede("inventario.ver") && <ResumenFarmacia verRecetas={puede("recetas.despachar", "recetas.anular")} />}
       {puede("integraciones.ver") && <EstadoIntegraciones />}
+      <PieImpreso />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import useRoles from "../hooks/useRoles";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import DetalleHospitalizacion from "../components/DetalleHospitalizacion";
 import { AREAS, ESTADO_CAMA, TIPOS_EGRESO, fechaHora, haceCuanto, textoDias } from "../utils/hospitalizacion";
+import BuscadorPaciente from "../components/BuscadorPaciente";
 
 const campo = "border rounded px-3 py-1.5 w-full";
 
@@ -55,10 +56,7 @@ function FormularioIngreso({ pacienteInicial, onCreado, onCerrar }) {
       <h2 className="font-bold text-gray-700 mb-3">Ordenar ingreso</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <label className="text-sm">Paciente *
-          <select value={pacienteId} onChange={(e) => cambiarPaciente(e.target.value)} required className={campo}>
-            <option value="">Seleccione...</option>
-            {pacientes.map((p) => <option key={p.id} value={p.id}>{p.nombre_completo} (CUI {p.cui})</option>)}
-          </select>
+          <BuscadorPaciente pacientes={pacientes} valor={pacienteId} onCambio={cambiarPaciente} requerido />
         </label>
         <label className="text-sm">Área *
           <select value={area} onChange={(e) => setArea(e.target.value)} className={campo}>

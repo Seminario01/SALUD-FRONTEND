@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
+import BuscadorPaciente from "../components/BuscadorPaciente";
+import { Link } from "react-router-dom";
 
 const Si = ({ valor }) => (
   <span className={`px-2 py-0.5 rounded text-sm ${valor ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
@@ -78,12 +80,7 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
         <label className="text-sm">
           Paciente *
-          <select value={pacienteId} onChange={(e) => elegirPaciente(e.target.value)} required className={campo}>
-            <option value="">Seleccione...</option>
-            {pacientes.map((p) => (
-              <option key={p.id} value={p.id}>{p.nombre_completo} (ID {p.id})</option>
-            ))}
-          </select>
+          <BuscadorPaciente pacientes={pacientes} valor={pacienteId} onCambio={elegirPaciente} requerido />
         </label>
         <label className="text-sm flex items-center gap-2 pb-2">
           <input
@@ -242,6 +239,7 @@ function VacunacionPersonal({ registra, anula }) {
               <th className="p-2">Estudiante</th>
               <th className="p-2">Esquema completo</th>
               <th className="p-2">Pendientes</th>
+              <th className="p-2">Constancia</th>
               {(registra || anula) && <th className="p-2">Acciones</th>}
             </tr>
           </thead>
@@ -252,6 +250,11 @@ function VacunacionPersonal({ registra, anula }) {
                 <td className="p-2">{v.es_estudiante ? "Sí" : "No"}</td>
                 <td className="p-2"><Si valor={v.esquema_completo} /></td>
                 <td className="p-2">{v.vacunas_pendientes || "—"}</td>
+                <td className="p-2">
+                  <Link to={`/imprimir/vacunacion/${v.paciente_id}`} className="inline-flex items-center gap-1 text-xs text-blue-700 hover:underline whitespace-nowrap">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z" /></svg> PDF
+                  </Link>
+                </td>
                 {(registra || anula) && (
                   <td className="p-2 space-x-1">
                     {registra && (
