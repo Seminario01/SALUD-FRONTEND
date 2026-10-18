@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import EstadoPago from "../components/EstadoPago";
 import { formatoDia } from "../utils/fechas";
 import client, { mensajeError } from "../api/client";
@@ -96,6 +97,7 @@ export default function Citas() {
   const gestiona = puede("citas.gestionar");      // agenda, confirma y cancela de cualquiera
   const verificaPagos = puede("pagos.verificar"); // Caja, Recepción, Administración
   const { pacientes, aviso } = usePacientesSeleccionables(esPersonal);
+  const navigate = useNavigate();
   const nombrePaciente = (id) => pacientes.find((p) => p.id === id)?.nombre_completo ?? `ID ${id}`;
   const [citas, setCitas] = useState([]);
   // --- Filtros (en el navegador) ---
@@ -242,6 +244,7 @@ export default function Citas() {
               { titulo: "Fecha y hora", valor: (c) => String(c.fecha_hora ?? "").replace("T", " ").slice(0, 16), ancho: 17 },
               { titulo: "Paciente", valor: (c) => nombrePaciente(c.paciente_id), ancho: 32 },
               { titulo: "DPI", valor: (c) => pacientes.find((p) => p.id === c.paciente_id)?.cui ?? "", ancho: 16 },
+              { titulo: "Médico", valor: (c) => c.medico_nombre ?? "", ancho: 26 },
               { titulo: "Motivo", valor: (c) => c.motivo, ancho: 36 },
               { titulo: "Estado", valor: (c) => c.estado, ancho: 12 },
               { titulo: "Cobro", valor: (c) => (c.pago_confirmado ? "PAGADO" : c.estado_cobro ?? ""), ancho: 12 },
@@ -270,8 +273,13 @@ export default function Citas() {
             {pag.items.map((c) => {
               const activa = c.estado === "pendiente" || c.estado === "confirmada";
               return (
-                <tr key={c.id} className="border-b hover:bg-gray-50">
-                  <td className="p-2">{formatoFecha(c.fecha_hora)}</td>
+                <tr key={c.id} title="Ver el detalle de la cita"
+                  onClick={(e) => { if (!e.target.closest("button, a, input, select")) navigate(`/citas/${c.id}`); }}
+                  className="border-b hover:bg-blue-50/60 cursor-pointer">
+                  <td className="p-2">
+                    <Link to={`/citas/${c.id}`} className="text-blue-800 hover:underline">{formatoFecha(c.fecha_hora)}</Link>
+                    {c.medico_nombre && <span className="block text-xs text-slate-500">Dr(a). {c.medico_nombre}</span>}
+                  </td>
                   {esPersonal && <td className="p-2 font-medium text-slate-700">{nombrePaciente(c.paciente_id)}</td>}
                   <td className="p-2">{c.motivo}</td>
                   <td className="p-2">

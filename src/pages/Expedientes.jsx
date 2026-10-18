@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
@@ -125,7 +126,8 @@ export default function Expedientes() {
   const puedeVerTodos = puede("expediente.ver"); // Recepción, Caja y Farmacia NO ven expedientes
   const registra = puede("expediente.registrar");
   const { pacientes, aviso } = usePacientesSeleccionables(puedeVerTodos);
-  const [elegido, setElegido] = useState("");
+  const [params] = useSearchParams();
+  const [elegido, setElegido] = useState(params.get("paciente") ?? "");
   // El ciudadano solo tiene su propio registro: se elige solo
   const pacienteId = puedeVerTodos ? elegido : pacientes[0]?.id ?? "";
 
