@@ -7,6 +7,7 @@ import useRoles from "../hooks/useRoles";
 import { REGLAS, reglasNacimiento, siCambio } from "../utils/validacion";
 import { BotonImprimir, EncabezadoImpreso, PieImpreso } from "../components/Impresion";
 import { useAvisos } from "../components/Avisos";
+import SignosVitales from "../components/SignosVitales";
 
 const COLOR_HOSPITALIZACION = {
   PENDIENTE: "bg-yellow-100 text-yellow-800",
@@ -336,6 +337,12 @@ export default function FichaPaciente() {
               </div>
             ))}
           </div>
+        </Seccion>
+      )}
+
+      {puedeVerClinico && (
+        <Seccion titulo="Signos vitales">
+          <SignosVitales pacienteId={id} />
         </Seccion>
       )}
 

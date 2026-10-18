@@ -32,4 +32,5 @@ export const SIGNOS = {
   temperatura: { min: 30, max: 45, step: 0.1, title: "Entre 30 y 45 °C" },
   frecuencia: { min: 20, max: 250, step: 1, title: "Entre 20 y 250 lpm" },
   saturacion: { min: 50, max: 100, step: 1, title: "Entre 50 y 100 %" },
+  peso: { min: 0.5, max: 400, step: 0.1, title: "Entre 0.5 y 400 kg" },
 };

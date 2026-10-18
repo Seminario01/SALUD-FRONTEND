@@ -13,6 +13,7 @@ function SignosVitales({ nota }) {
     nota.temperatura != null && `T ${nota.temperatura.toFixed(1)} °C`,
     nota.frecuencia_cardiaca != null && `FC ${nota.frecuencia_cardiaca} lpm`,
     nota.saturacion != null && `SpO₂ ${nota.saturacion} %`,
+    nota.peso != null && `Peso ${nota.peso.toFixed(1)} kg`,
   ].filter(Boolean);
   if (!signos.length) return null;
   return (
@@ -25,7 +26,7 @@ function SignosVitales({ nota }) {
 }
 
 function FormularioNota({ id, onGuardada }) {
-  const VACIO = { nota: "", presion: "", temperatura: "", frecuencia_cardiaca: "", saturacion: "" };
+  const VACIO = { nota: "", presion: "", temperatura: "", frecuencia_cardiaca: "", saturacion: "", peso: "" };
   const [datos, setDatos] = useState(VACIO);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
@@ -47,7 +48,7 @@ function FormularioNota({ id, onGuardada }) {
       <h4 className="text-sm font-semibold text-slate-700 mb-2">Nueva nota</h4>
       <textarea value={datos.nota} onChange={cambiar("nota")} required rows={2} maxLength={2000}
         placeholder="Evolución, cuidados o hallazgos" className={`${campo} bg-white`} aria-label="Nota" />
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-2">
         <label className="text-xs text-slate-600">Presión arterial
           <input value={datos.presion} onChange={cambiar("presion")} {...SIGNOS.presion} placeholder="120/80" className={`${campo} bg-white`} />
         </label>
@@ -59,6 +60,9 @@ function FormularioNota({ id, onGuardada }) {
         </label>
         <label className="text-xs text-slate-600">Saturación (%)
           <input type="number" {...SIGNOS.saturacion} value={datos.saturacion} onChange={cambiar("saturacion")} className={`${campo} bg-white`} />
+        </label>
+        <label className="text-xs text-slate-600">Peso (kg)
+          <input type="number" {...SIGNOS.peso} value={datos.peso} onChange={cambiar("peso")} className={`${campo} bg-white`} />
         </label>
       </div>
       <div className="flex items-center gap-3 mt-2">
