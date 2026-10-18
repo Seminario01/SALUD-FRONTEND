@@ -20,7 +20,32 @@ function formatoFecha(texto) {
 }
 
 const campo = "border rounded px-3 py-1.5 w-full";
-const VACIO = { codigo: "", nombre: "", presentacion: "", existencia: "", stock_minimo: "", precio: "" };
+const VACIO = { codigo: "", nombre: "", presentacion: "", existencia: "", stock_minimo: "", precio: "", numero_lote: "", fecha_vencimiento: "" };
+const hoyISO = () => new Date().toLocaleDateString("en-CA");
+const formatoDia = (iso) => (iso ? new Date(`${iso}T12:00:00`).toLocaleDateString("es-GT") : "—");
+
+const ESTADO_LOTE = {
+  VENCIDO: { texto: "Vencido", clase: "bg-red-100 text-red-800" },
+  POR_VENCER: { texto: "Por vencer", clase: "bg-amber-100 text-amber-800" },
+  VIGENTE: { texto: "Vigente", clase: "bg-green-100 text-green-800" },
+};
+
+// Lote y vencimiento de una entrada (opcionales; si hay número de lote, la fecha es obligatoria)
+function CamposLote({ datos, cambiar, ancho = "" }) {
+  return (
+    <>
+      <label className={`text-sm ${ancho}`}>No. de lote
+        <input value={datos.numero_lote} onChange={cambiar("numero_lote")} maxLength={50} placeholder="L2026-0815" className={`${campo} bg-white`} />
+      </label>
+      <label className={`text-sm ${ancho}`}>Vence
+        <input type="date" value={datos.fecha_vencimiento} onChange={cambiar("fecha_vencimiento")} min={hoyISO()}
+          required={!!datos.numero_lote} className={`${campo} bg-white`} />
+      </label>
+    </>
+  );
+}
+
+const datosLote = (d) => (d.fecha_vencimiento ? { numero_lote: d.numero_lote || undefined, fecha_vencimiento: d.fecha_vencimiento } : {});
 
 function FormularioMedicamento({ onCreado, onCerrar }) {
   const [datos, setDatos] = useState(VACIO);
@@ -40,6 +65,7 @@ function FormularioMedicamento({ onCreado, onCerrar }) {
         existencia: Number(datos.existencia || 0),
         stock_minimo: Number(datos.stock_minimo || 0),
         precio: datos.precio === "" ? null : Number(datos.precio),
+        ...datosLote(datos),
       })
       .then((r) => onCreado(r.data.data))
       .catch((err) => setError(mensajeError(err)))
@@ -56,6 +82,7 @@ function FormularioMedicamento({ onCreado, onCerrar }) {
         <label className="text-sm">Existencia inicial<input type="number" {...UNIDADES} value={datos.existencia} onChange={cambiar("existencia")} className={campo} /></label>
         <label className="text-sm">Stock mínimo<input type="number" {...UNIDADES} value={datos.stock_minimo} onChange={cambiar("stock_minimo")} className={campo} /></label>
         <label className="text-sm">Precio unitario (Q)<input type="number" {...DINERO} value={datos.precio} onChange={cambiar("precio")} className={campo} /></label>
+        {Number(datos.existencia) > 0 && <CamposLote datos={datos} cambiar={cambiar} />}
       </div>
       <div className="mt-3 flex items-center gap-3">
         <button type="submit" disabled={enviando} className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800 disabled:opacity-50">
@@ -70,18 +97,40 @@ function FormularioMedicamento({ onCreado, onCerrar }) {
 
 function DetalleMedicamento({ medicamento, gestiona, onActualizado }) {
   const [movimientos, setMovimientos] = useState(null);
+  const [lotes, setLotes] = useState(null);
   const [tipo, setTipo] = useState("ENTRADA");
   const [cantidad, setCantidad] = useState("");
   const [observacion, setObservacion] = useState("");
+  const [lote, setLote] = useState({ numero_lote: "", fecha_vencimiento: "" });
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
+  const avisos = useAvisos();
+  const cambiarLote = (c) => (e) => setLote((d) => ({ ...d, [c]: e.target.value }));
 
   const cargar = useCallback(() => {
     client
       .get(`/medicamentos/${medicamento.id}/movimientos`)
       .then((r) => setMovimientos(r.data.data))
       .catch(() => setMovimientos([]));
+    client
+      .get(`/medicamentos/${medicamento.id}/lotes`)
+      .then((r) => setLotes(r.data.data))
+      .catch(() => setLotes([]));
   }, [medicamento.id]);
+
+  async function darDeBaja(l) {
+    const si = await avisos.confirmar({
+      titulo: `¿Dar de baja el lote ${l.numero_lote || l.id}?`,
+      mensaje: [`${medicamento.nombre} · ${l.cantidad} unidad(es) · vence el ${formatoDia(l.fecha_vencimiento)}`,
+        "Se descuentan del inventario con un ajuste. Esta acción no se puede deshacer."],
+      confirmar: "Dar de baja", peligro: true,
+    });
+    if (!si) return;
+    client
+      .post(`/medicamentos/${medicamento.id}/lotes/${l.id}/baja`, { motivo: l.estado === "VENCIDO" ? "Vencido" : "Baja del lote" })
+      .then((r) => { avisos.exito(r.data.message); cargar(); onActualizado(); })
+      .catch((err) => avisos.error(mensajeError(err)));
+  }
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -90,10 +139,11 @@ function DetalleMedicamento({ medicamento, gestiona, onActualizado }) {
     setEnviando(true);
     setError(null);
     client
-      .post(`/medicamentos/${medicamento.id}/movimientos`, { tipo, cantidad: Number(cantidad), observacion })
+      .post(`/medicamentos/${medicamento.id}/movimientos`, { tipo, cantidad: Number(cantidad), observacion, ...(tipo === "ENTRADA" ? datosLote(lote) : {}) })
       .then(() => {
         setCantidad("");
         setObservacion("");
+        setLote({ numero_lote: "", fecha_vencimiento: "" });
         cargar();
         onActualizado();
       })
@@ -117,13 +167,50 @@ function DetalleMedicamento({ medicamento, gestiona, onActualizado }) {
           </label>
           <label className="text-sm flex-1 min-w-48">Observación
             <input value={observacion} onChange={(e) => setObservacion(e.target.value)} maxLength={255}
-              placeholder={tipo === "ENTRADA" ? "Factura, lote o proveedor" : "Motivo del ajuste"} className="border rounded px-2 py-1 block w-full bg-white" />
+              placeholder={tipo === "ENTRADA" ? "Factura o proveedor" : "Motivo del ajuste"} className="border rounded px-2 py-1 block w-full bg-white" />
           </label>
+          {tipo === "ENTRADA" && <CamposLote datos={lote} cambiar={cambiarLote} ancho="w-40" />}
           <button type="submit" disabled={enviando} className="bg-blue-700 text-white text-sm px-4 py-1.5 rounded hover:bg-blue-800 disabled:opacity-50">
             {enviando ? "Registrando..." : "Registrar"}
           </button>
           {error && <span className="text-sm text-red-600 w-full">{error}</span>}
         </form>
+      )}
+      <h3 className="text-sm font-semibold text-slate-600 mb-1">Lotes</h3>
+      {lotes === null && <p className="text-sm text-slate-400">Cargando...</p>}
+      {lotes?.length === 0 && (
+        <p className="text-sm text-slate-500 mb-3">Sin lotes registrados{medicamento.existencia ? ` (las ${medicamento.existencia} unidades están sin lote)` : ""}.</p>
+      )}
+      {lotes?.length > 0 && (
+        <table className="w-full text-sm mb-3">
+          <thead>
+            <tr className="text-left text-slate-500">
+              <th className="py-1 font-medium">Lote</th><th className="py-1 font-medium">Vence</th>
+              <th className="py-1 font-medium text-right">Quedan</th><th className="py-1 font-medium pl-4">Estado</th><th />
+            </tr>
+          </thead>
+          <tbody>
+            {lotes.map((l) => (
+              <tr key={l.id} className="border-t border-slate-200">
+                <td className="py-1 font-mono text-xs">{l.numero_lote || `#${l.id}`}</td>
+                <td className="py-1">{formatoDia(l.fecha_vencimiento)}
+                  <span className="text-xs text-slate-500"> · {l.dias_para_vencer < 0 ? `hace ${-l.dias_para_vencer} días` : l.dias_para_vencer === 0 ? "hoy" : `en ${l.dias_para_vencer} días`}</span>
+                </td>
+                <td className="py-1 text-right tabular-nums">{l.cantidad} <span className="text-xs text-slate-400">de {l.cantidad_inicial}</span></td>
+                <td className="py-1 pl-4"><span className={`px-2 py-0.5 rounded text-xs ${ESTADO_LOTE[l.estado]?.clase}`}>{ESTADO_LOTE[l.estado]?.texto}</span></td>
+                <td className="py-1 text-right">
+                  {gestiona && <button onClick={() => darDeBaja(l)} className="text-xs text-red-700 hover:underline">Dar de baja</button>}
+                </td>
+              </tr>
+            ))}
+            {medicamento.sin_lote > 0 && (
+              <tr className="border-t border-slate-200 text-slate-500">
+                <td className="py-1 text-xs" colSpan={2}>Sin lote (inventario anterior)</td>
+                <td className="py-1 text-right tabular-nums">{medicamento.sin_lote}</td><td colSpan={2} />
+              </tr>
+            )}
+          </tbody>
+        </table>
       )}
       <h3 className="text-sm font-semibold text-slate-600 mb-1">Kardex</h3>
       {movimientos === null && <p className="text-sm text-slate-400">Cargando...</p>}
@@ -158,6 +245,7 @@ export default function Inventario() {
   const [error, setError] = useState(null);
   const [texto, setTexto] = useState("");
   const [soloBajos, setSoloBajos] = useState(false);
+  const [soloVencer, setSoloVencer] = useState(false);
   const [abierto, setAbierto] = useState(null);
   const [agregando, setAgregando] = useState(false);
   const avisos = useAvisos();
@@ -173,8 +261,10 @@ export default function Inventario() {
   useEffect(() => { cargar(); }, [cargar]);
 
   const bajos = medicamentos.filter((m) => m.bajo_minimo);
+  const conVencimiento = medicamentos.filter((m) => m.vencidas || m.por_vencer);
   const filtrados = medicamentos.filter((m) => {
     if (soloBajos && !m.bajo_minimo) return false;
+    if (soloVencer && !(m.vencidas || m.por_vencer)) return false;
     if (texto) {
       const t = texto.toLowerCase();
       return m.nombre.toLowerCase().includes(t) || m.codigo.toLowerCase().includes(t);
@@ -206,7 +296,7 @@ export default function Inventario() {
       {error && <p className="mb-4 text-red-600 text-sm">No se pudo cargar el inventario: {error}</p>}
 
       {!error && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
           <div className="bg-white border rounded-lg p-4 shadow-sm">
             <p className="text-sm text-gray-500">Medicamentos en catálogo</p>
             <p className="text-3xl font-bold text-blue-700">{medicamentos.length}</p>
@@ -215,6 +305,15 @@ export default function Inventario() {
             <p className="text-sm text-gray-500">Bajo el mínimo</p>
             <p className={`text-3xl font-bold ${bajos.length ? "text-red-700" : "text-green-700"}`}>{bajos.length}</p>
             <p className="text-xs text-gray-400 mt-1">{bajos.length ? "Requieren reabastecimiento" : "Existencias suficientes"}</p>
+          </button>
+          <button onClick={() => setSoloVencer(true)} className="bg-white border rounded-lg p-4 shadow-sm text-left hover:shadow-md transition-shadow">
+            <p className="text-sm text-gray-500">Vencidos o por vencer</p>
+            <p className={`text-3xl font-bold ${conVencimiento.length ? "text-amber-700" : "text-green-700"}`}>{conVencimiento.length}</p>
+            <p className="text-xs text-gray-400 mt-1">
+              {conVencimiento.length
+                ? `${conVencimiento.reduce((s, m) => s + m.vencidas, 0)} unidades vencidas · ${conVencimiento.reduce((s, m) => s + m.por_vencer, 0)} vencen en 60 días`
+                : "Ningún lote vence en los próximos 60 días"}
+            </p>
           </button>
           <div className="bg-white border rounded-lg p-4 shadow-sm">
             <p className="text-sm text-gray-500">Unidades en existencia</p>
@@ -230,6 +329,10 @@ export default function Inventario() {
             <input type="checkbox" checked={soloBajos} onChange={(e) => setSoloBajos(e.target.checked)} />
             Solo bajo el mínimo
           </label>
+          <label className="text-sm flex items-center gap-2">
+            <input type="checkbox" checked={soloVencer} onChange={(e) => setSoloVencer(e.target.checked)} />
+            Solo vencidos o por vencer
+          </label>
           <span className="text-sm text-slate-500 ml-auto">{filtrados.length} medicamento(s)</span>
           <BotonesExportar nombre={soloBajos ? "medicamentos_por_reabastecer" : "inventario"} titulo={soloBajos ? "Medicamentos por reabastecer" : "Inventario de farmacia"}
             filas={filtrados} columnas={[
@@ -239,6 +342,9 @@ export default function Inventario() {
               { titulo: "Existencia", valor: (m) => m.existencia, ancho: 11 },
               { titulo: "Mínimo", valor: (m) => m.stock_minimo, ancho: 9 },
               { titulo: "Faltan para el mínimo", valor: (m) => Math.max(0, (m.stock_minimo ?? 0) - m.existencia), ancho: 20 },
+              { titulo: "Vencidas", valor: (m) => m.vencidas, ancho: 10 },
+              { titulo: "Por vencer (60 días)", valor: (m) => m.por_vencer, ancho: 18 },
+              { titulo: "Próximo vencimiento", valor: (m) => m.proximo_vencimiento ?? "", ancho: 18 },
               { titulo: "Precio (Q)", valor: (m) => m.precio ?? "", ancho: 11 },
               { titulo: "Estado", valor: (m) => (m.existencia === 0 ? "Agotado" : m.bajo_minimo ? "Bajo mínimo" : "Disponible"), ancho: 13 },
             ]} />
@@ -256,6 +362,7 @@ export default function Inventario() {
                 <th className="p-2">Medicamento</th>
                 <th className="p-2 text-right">Existencia</th>
                 <th className="p-2 text-right">Mínimo</th>
+                <th className="p-2">Vence</th>
                 <th className="p-2 text-right">Precio</th>
                 <th className="p-2">Estado</th>
                 <th className="p-2"></th>
@@ -271,6 +378,11 @@ export default function Inventario() {
                   </td>
                   <td className={`p-2 text-right tabular-nums ${m.bajo_minimo ? "text-red-700 font-semibold" : ""}`}>{m.existencia}</td>
                   <td className="p-2 text-right tabular-nums text-slate-500">{m.stock_minimo}</td>
+                  <td className="p-2 text-sm">
+                    {m.proximo_vencimiento ? formatoDia(m.proximo_vencimiento) : <span className="text-slate-400">—</span>}
+                    {m.vencidas > 0 && <span className="block text-xs text-red-700">{m.vencidas} vencida(s)</span>}
+                    {!m.vencidas && m.por_vencer > 0 && <span className="block text-xs text-amber-700">{m.por_vencer} por vencer</span>}
+                  </td>
                   <td className="p-2 text-right tabular-nums text-slate-600">{m.precio != null ? `Q${m.precio.toFixed(2)}` : "—"}</td>
                   <td className="p-2">
                     {m.existencia === 0 ? (
@@ -289,7 +401,7 @@ export default function Inventario() {
                 </tr>
                 {abierto === m.id && (
                   <tr>
-                    <td colSpan={7} className="p-0">
+                    <td colSpan={8} className="p-0">
                       <DetalleMedicamento medicamento={m} gestiona={gestiona} onActualizado={cargar} />
                     </td>
                   </tr>

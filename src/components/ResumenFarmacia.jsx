@@ -6,12 +6,14 @@ import client from "../api/client";
 export default function ResumenFarmacia({ verRecetas }) {
   const [pendientes, setPendientes] = useState(null);
   const [bajos, setBajos] = useState(null);
+  const [porVencer, setPorVencer] = useState([]);
 
   useEffect(() => {
     if (verRecetas) {
       client.get("/recetas", { params: { estado: "PENDIENTE" } }).then((r) => setPendientes(r.data.data)).catch(() => setPendientes([]));
     }
     client.get("/medicamentos", { params: { bajo_minimo: 1 } }).then((r) => setBajos(r.data.data)).catch(() => setBajos([]));
+    client.get("/medicamentos", { params: { por_vencer: 1 } }).then((r) => setPorVencer(r.data.data)).catch(() => setPorVencer([]));
   }, [verRecetas]);
 
   if (bajos === null) return null;
@@ -65,6 +67,22 @@ export default function ResumenFarmacia({ verRecetas }) {
             );
           })}
         </ul>
+        {porVencer.length > 0 && (
+          <div className="mt-4 pt-3 border-t">
+            <h3 className="text-sm font-semibold text-slate-700 mb-2">Vencidos o por vencer (60 días)</h3>
+            <ul className="space-y-1 text-sm">
+              {porVencer.slice(0, 5).map((m) => (
+                <li key={m.id} className="flex justify-between gap-3">
+                  <span className="text-slate-700 truncate">{m.nombre}</span>
+                  <span className={`shrink-0 text-xs ${m.vencidas ? "text-red-700" : "text-amber-700"}`}>
+                    {m.vencidas ? `${m.vencidas} vencida(s)` : `${m.por_vencer} vence(n) el ${new Date(`${m.proximo_vencimiento}T12:00:00`).toLocaleDateString("es-GT")}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {porVencer.length > 5 && <p className="text-xs text-slate-400 mt-1">y {porVencer.length - 5} más.</p>}
+          </div>
+        )}
       </div>
     </div>
   );
