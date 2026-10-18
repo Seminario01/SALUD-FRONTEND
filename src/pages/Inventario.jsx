@@ -5,6 +5,7 @@ import Paginacion from "../components/Paginacion";
 import usePaginacion from "../hooks/usePaginacion";
 import { DINERO, UNIDADES } from "../utils/validacion";
 import { useAvisos } from "../components/Avisos";
+import BotonesExportar from "../components/Exportar";
 
 const COLOR_MOVIMIENTO = {
   ENTRADA: "text-green-700",
@@ -230,6 +231,17 @@ export default function Inventario() {
             Solo bajo el mínimo
           </label>
           <span className="text-sm text-slate-500 ml-auto">{filtrados.length} medicamento(s)</span>
+          <BotonesExportar nombre={soloBajos ? "medicamentos_por_reabastecer" : "inventario"} titulo={soloBajos ? "Medicamentos por reabastecer" : "Inventario de farmacia"}
+            filas={filtrados} columnas={[
+              { titulo: "Código", valor: (m) => m.codigo, ancho: 12 },
+              { titulo: "Medicamento", valor: (m) => m.nombre, ancho: 30 },
+              { titulo: "Presentación", valor: (m) => m.presentacion ?? "", ancho: 22 },
+              { titulo: "Existencia", valor: (m) => m.existencia, ancho: 11 },
+              { titulo: "Mínimo", valor: (m) => m.stock_minimo, ancho: 9 },
+              { titulo: "Faltan para el mínimo", valor: (m) => Math.max(0, (m.stock_minimo ?? 0) - m.existencia), ancho: 20 },
+              { titulo: "Precio (Q)", valor: (m) => m.precio ?? "", ancho: 11 },
+              { titulo: "Estado", valor: (m) => (m.existencia === 0 ? "Agotado" : m.bajo_minimo ? "Bajo mínimo" : "Disponible"), ancho: 13 },
+            ]} />
         </div>
       )}
 
