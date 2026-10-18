@@ -62,16 +62,18 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
     if (!valor) { setAtenciones([]); setExpedienteId(""); }
   }
 
-  function enviar(e) {
-    e.preventDefault();
+  const paciente = pacientes.find((p) => String(p.id) === String(pacienteId));
+
+  function emitir(confirmarAlergia = false) {
     setEnviando(true);
     setError(null);
-    client
+    return client
       .post("/recetas", {
         paciente_id: Number(pacienteId),
         expediente_id: expedienteId ? Number(expedienteId) : undefined,
         indicaciones,
         items: filas.map((f) => ({ medicamento_id: Number(f.medicamento_id), cantidad: Number(f.cantidad), dosis: f.dosis })),
+        ...(confirmarAlergia ? { confirmar_alergia: true } : {}),
       })
       .then((res) => {
         avisos.exito(`Receta No. ${res.data.data.id} emitida. Farmacia ya puede despacharla.`);
@@ -79,8 +81,30 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
         setIndicaciones("");
         onCreada();
       })
-      .catch((err) => setError(mensajeError(err)))
+      .catch(async (err) => {
+        const datos = err.response?.data;
+        if (err.response?.status === 409 && datos?.error === "alergia") {
+          setEnviando(false);
+          const si = await avisos.confirmar({
+            titulo: "⚠ Posible alergia",
+            mensaje: [
+              `Alergias registradas del paciente: ${datos.alergias_paciente}.`,
+              ...datos.alergias.map((c) => `${c.medicamento} choca con: ${c.alergias.join(", ")}.`),
+              "¿Emitir la receta de todas formas? Quedará marcada para que Farmacia lo vea.",
+            ],
+            confirmar: "Sí, recetar igual", cancelar: "Revisar la receta", peligro: true,
+          });
+          if (si) return emitir(true);
+          return;
+        }
+        setError(mensajeError(err));
+      })
       .finally(() => setEnviando(false));
+  }
+
+  function enviar(e) {
+    e.preventDefault();
+    emitir();
   }
 
   const campo = "border rounded px-3 py-1.5 w-full";
@@ -92,6 +116,11 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
         <label className="text-sm">
           Paciente *
           <BuscadorPaciente pacientes={pacientes} valor={pacienteId} onCambio={cambiarPaciente} requerido />
+          {paciente?.alergias && (
+            <p role="alert" className="mt-1 rounded bg-red-50 border border-red-200 px-2 py-1 text-xs text-red-900">
+              <span className="font-semibold">⚠ Alergias:</span> {paciente.alergias}
+            </p>
+          )}
         </label>
         <label className="text-sm">
           Atención / diagnóstico
@@ -223,6 +252,11 @@ function TarjetaReceta({ receta, mostrarPaciente, puedeDespachar, puedeAnular, o
         </tbody>
       </table>
 
+      {receta.alerta_alergia && (
+        <p className="text-sm mt-2 rounded bg-red-50 border border-red-200 px-2 py-1 text-red-900">
+          <span className="font-semibold">⚠ Recetado pese a alergia registrada</span> — {receta.alerta_alergia}
+        </p>
+      )}
       {receta.indicaciones && <p className="text-sm text-slate-600 mt-2"><span className="font-medium">Indicaciones:</span> {receta.indicaciones}</p>}
       {receta.estado === "DESPACHADA" && <p className="text-xs text-green-700 mt-2">Despachada el {formatoFecha(receta.fecha_despacho)}</p>}
       {receta.estado === "ANULADA" && <p className="text-xs text-red-700 mt-2">Anulada: {receta.motivo_anulacion}</p>}

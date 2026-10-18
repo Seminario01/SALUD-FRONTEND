@@ -21,6 +21,7 @@ export const PERMISOS = {
   "pacientes.ver": [MED, ENF, REC, FAR, CAJA, JEF, ADM],
   "pacientes.registrar": [REC, ADM],
   "pacientes.antecedentes": [MED, ENF, REC, JEF],
+  "pacientes.alergias": [MED, ENF, REC],
   "citas.ver": [MED, ENF, REC, CAJA, JEF, ADM],
   "citas.gestionar": [MED, REC],
   "turnos.generar": [ENF, REC],

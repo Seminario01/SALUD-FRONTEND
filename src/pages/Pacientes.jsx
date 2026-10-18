@@ -5,6 +5,7 @@ import usePaginacion from "../hooks/usePaginacion";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import { REGLAS, reglasNacimiento } from "../utils/validacion";
+import { useAvisos } from "../components/Avisos";
 
 const PACIENTE_VACIO = {
   nombre_completo: "",
@@ -14,6 +15,7 @@ const PACIENTE_VACIO = {
   telefono: "",
   tipo_seguro: "",
   cuidador: "",
+  alergias: "",
 };
 
 function FormularioPaciente({ onCreado }) {
@@ -21,12 +23,37 @@ function FormularioPaciente({ onCreado }) {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
   const [exito, setExito] = useState(null);
+  const avisos = useAvisos();
 
   function cambiar(e) {
     setDatos({ ...datos, [e.target.name]: e.target.value });
   }
 
-  function enviar(e) {
+  // Antes de registrar: ¿ya existe alguien igual o muy parecido? (mismo CUI, mismo nombre,
+  // o nombre parecido con la misma fecha de nacimiento)
+  async function sinDuplicados(cuerpo) {
+    let parecidos;
+    try {
+      const r = await client.get("/pacientes/posibles-duplicados", {
+        params: { nombre_completo: cuerpo.nombre_completo, fecha_nacimiento: cuerpo.fecha_nacimiento, cui: cuerpo.cui },
+      });
+      parecidos = r.data.data;
+    } catch {
+      return true;   // si la revisión falla, no se bloquea el registro
+    }
+    if (!parecidos.length) return true;
+    return avisos.confirmar({
+      titulo: "¿Paciente ya registrado?",
+      mensaje: [
+        "Encontramos pacientes parecidos:",
+        ...parecidos.map((p) => `• ${p.nombre_completo} (ID ${p.id}${p.cui ? `, CUI ${p.cui}` : ""}${p.fecha_nacimiento ? `, nació ${p.fecha_nacimiento}` : ""}) — ${p.motivo}`),
+        "Revise la ficha antes de crear otro registro. ¿Registrar de todas formas?",
+      ],
+      confirmar: "Sí, es otra persona", cancelar: "No, revisar",
+    });
+  }
+
+  async function enviar(e) {
     e.preventDefault();
     setEnviando(true);
     setError(null);
@@ -34,6 +61,10 @@ function FormularioPaciente({ onCreado }) {
 
     // Solo se envían los campos con valor
     const cuerpo = Object.fromEntries(Object.entries(datos).filter(([, v]) => v !== ""));
+    if (!(await sinDuplicados(cuerpo))) {
+      setEnviando(false);
+      return;
+    }
     client
       .post("/pacientes", cuerpo)
       .then((res) => {
@@ -87,6 +118,10 @@ function FormularioPaciente({ onCreado }) {
         <label className="text-sm md:col-span-2">
           Cuidador / responsable
           <input name="cuidador" value={datos.cuidador} onChange={cambiar} {...REGLAS.cuidador} className={campo} />
+        </label>
+        <label className="text-sm">
+          Alergias
+          <input name="alergias" value={datos.alergias} onChange={cambiar} maxLength={500} placeholder="Ej.: Penicilina, AINE" className={campo} />
         </label>
       </div>
       <div className="mt-3 flex items-center gap-3">
@@ -239,6 +274,7 @@ export default function Pacientes() {
               <th className="p-2">CUI</th>
               <th className="p-2">Teléfono</th>
               <th className="p-2">Tipo de seguro</th>
+              <th className="p-2">Alergias</th>
               {puedeAntecedentes && <th className="p-2">Antecedentes (Seguridad)</th>}
             </tr>
           </thead>
@@ -252,6 +288,7 @@ export default function Pacientes() {
                 <td className="p-2">{p.cui}</td>
                 <td className="p-2">{p.telefono}</td>
                 <td className="p-2">{p.tipo_seguro}</td>
+                <td className="p-2">{p.alergias ? <span className="text-xs rounded bg-red-50 text-red-800 px-1.5 py-0.5">⚠ {p.alergias}</span> : <span className="text-slate-400">—</span>}</td>
                 {puedeAntecedentes && (
                   <td className="p-2">
                     <button

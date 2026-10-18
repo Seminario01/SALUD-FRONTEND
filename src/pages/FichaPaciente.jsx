@@ -7,6 +7,7 @@ import useRoles from "../hooks/useRoles";
 import { REGLAS, reglasNacimiento, siCambio } from "../utils/validacion";
 import { BotonImprimir, EncabezadoImpreso, PieImpreso } from "../components/Impresion";
 import { useAvisos } from "../components/Avisos";
+import AlergiasPaciente from "../components/Alergias";
 import SignosVitales from "../components/SignosVitales";
 
 const COLOR_HOSPITALIZACION = {
@@ -236,6 +237,8 @@ export default function FichaPaciente() {
           {paciente.tiene_cuenta ? "Cuenta del Login Único vinculada" : "Sin cuenta vinculada"}
         </span>
       </div>
+
+      <AlergiasPaciente paciente={paciente} onGuardado={cargar} />
 
       <Seccion
         titulo="Datos del paciente"

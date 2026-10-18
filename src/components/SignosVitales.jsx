@@ -33,21 +33,28 @@ export default function SignosVitales({ pacienteId }) {
   }
 
   const ultimo = (clave) => [...datos].reverse().find((d) => d[clave] != null);
+  // [título, valor, unidad, alerta del backend si ese último valor está fuera de rango]
+  const fila = (titulo, clave, unidad, formato = (v) => v) => {
+    const d = ultimo(clave);
+    return [titulo, d ? formato(d[clave]) : null, unidad, d?.alertas?.find((a) => a.signo === clave)];
+  };
   const resumen = [
-    ["Presión", ultimo("presion")?.presion, "mmHg"],
-    ["Temperatura", ultimo("temperatura")?.temperatura?.toFixed(1), "°C"],
-    ["Frec. cardiaca", ultimo("frecuencia_cardiaca")?.frecuencia_cardiaca, "lpm"],
-    ["Saturación", ultimo("saturacion")?.saturacion, "%"],
-    ["Peso", ultimo("peso")?.peso?.toFixed(1), "kg"],
+    fila("Presión", "presion", "mmHg"),
+    fila("Temperatura", "temperatura", "°C", (v) => v.toFixed(1)),
+    fila("Frec. cardiaca", "frecuencia_cardiaca", "lpm"),
+    fila("Saturación", "saturacion", "%"),
+    fila("Peso", "peso", "kg", (v) => v.toFixed(1)),
   ].filter(([, v]) => v != null);
 
   return (
     <div>
       <div className="flex flex-wrap gap-2 mb-3">
-        {resumen.map(([t, v, u]) => (
-          <div key={t} className="rounded-lg border px-3 py-1.5">
-            <p className="text-[11px] text-slate-500">{t} (último)</p>
-            <p className="font-semibold tabular-nums text-slate-800">{v} <span className="text-xs font-normal text-slate-500">{u}</span></p>
+        {resumen.map(([t, v, u, a]) => (
+          <div key={t} title={a?.texto} className={`rounded-lg border px-3 py-1.5 ${a ? "border-red-200 bg-red-50" : ""}`}>
+            <p className={`text-[11px] ${a ? "text-red-700" : "text-slate-500"}`}>{t} (último){a && (a.nivel === "alto" ? " · alto" : " · bajo")}</p>
+            <p className={`font-semibold tabular-nums ${a ? "text-red-800" : "text-slate-800"}`}>
+              {v} <span className={`text-xs font-normal ${a ? "text-red-700" : "text-slate-500"}`}>{u}</span>{a && <span aria-hidden="true"> {a.nivel === "alto" ? "↑" : "↓"}</span>}
+            </p>
           </div>
         ))}
       </div>

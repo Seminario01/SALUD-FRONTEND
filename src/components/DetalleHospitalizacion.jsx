@@ -8,19 +8,27 @@ import { useAvisos } from "./Avisos";
 const campo = "border rounded px-3 py-1.5 w-full";
 
 function SignosVitales({ nota }) {
+  // Signos fuera del rango normal (los calcula el backend): en rojo, con flecha arriba o abajo
+  const alerta = Object.fromEntries((nota.alertas || []).map((a) => [a.signo, a]));
   const signos = [
-    nota.presion && `PA ${nota.presion}`,
-    nota.temperatura != null && `T ${nota.temperatura.toFixed(1)} °C`,
-    nota.frecuencia_cardiaca != null && `FC ${nota.frecuencia_cardiaca} lpm`,
-    nota.saturacion != null && `SpO₂ ${nota.saturacion} %`,
-    nota.peso != null && `Peso ${nota.peso.toFixed(1)} kg`,
+    nota.presion && ["presion", `PA ${nota.presion}`],
+    nota.temperatura != null && ["temperatura", `T ${nota.temperatura.toFixed(1)} °C`],
+    nota.frecuencia_cardiaca != null && ["frecuencia_cardiaca", `FC ${nota.frecuencia_cardiaca} lpm`],
+    nota.saturacion != null && ["saturacion", `SpO₂ ${nota.saturacion} %`],
+    nota.peso != null && ["peso", `Peso ${nota.peso.toFixed(1)} kg`],
   ].filter(Boolean);
   if (!signos.length) return null;
   return (
     <div className="flex flex-wrap gap-1.5 mt-1.5">
-      {signos.map((s) => (
-        <span key={s} className="text-xs bg-slate-100 text-slate-700 rounded px-2 py-0.5 tabular-nums">{s}</span>
-      ))}
+      {signos.map(([clave, s]) => {
+        const a = alerta[clave];
+        return (
+          <span key={clave} title={a?.texto}
+            className={`text-xs rounded px-2 py-0.5 tabular-nums ${a ? "bg-red-100 text-red-800 font-semibold" : "bg-slate-100 text-slate-700"}`}>
+            {s}{a && <span aria-label={a.nivel === "alto" ? " alto" : " bajo"}> {a.nivel === "alto" ? "↑" : "↓"}</span>}
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -38,7 +46,7 @@ function FormularioNota({ id, onGuardada }) {
     setError(null);
     client
       .post(`/hospitalizaciones/${id}/notas`, datos)
-      .then(() => { setDatos(VACIO); onGuardada(); })
+      .then((res) => { setDatos(VACIO); onGuardada(res.data.data.alertas || []); })
       .catch((err) => setError(mensajeError(err)))
       .finally(() => setEnviando(false));
   }
@@ -187,8 +195,8 @@ export default function DetalleHospitalizacion({ id, camas, permisos, onCerrar, 
     return () => window.removeEventListener("keydown", cerrarConEscape);
   }, [onCerrar]);
 
-  function hecho(mensaje) {
-    avisos.exito(mensaje);
+  function hecho(mensaje, tipo = "exito") {
+    avisos[tipo](mensaje);
     cargar();
     onCambio();
   }
@@ -256,7 +264,9 @@ export default function DetalleHospitalizacion({ id, camas, permisos, onCerrar, 
               {"notas" in hosp && (
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Notas y signos vitales</h3>
-                  {activo && permisos.notas && <FormularioNota id={hosp.id} onGuardada={() => hecho("Nota registrada.")} />}
+                  {activo && permisos.notas && <FormularioNota id={hosp.id} onGuardada={(alertas) => alertas.length
+                    ? hecho(`Nota registrada. ⚠ Fuera de rango: ${alertas.map((a) => a.texto).join(", ")}.`, "error")
+                    : hecho("Nota registrada.")} />}
                   {hosp.notas.length === 0 && <p className="text-sm text-slate-500">Sin notas registradas.</p>}
                   <ol className="space-y-3">
                     {hosp.notas.map((n) => (
