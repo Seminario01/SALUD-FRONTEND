@@ -1,0 +1,35 @@
+# Revisión automática del frontend: corre sola en GitHub cada vez que se sube código.
+# Lo mismo que se hace a mano antes de cada commit: eslint, compilar y revisar librerías.
+name: Pruebas
+
+on:
+  push:
+    branches: [denilson-dev]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  revisar:
+    name: Lint, compilación y librerías
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22          # la misma del Dockerfile
+          cache: npm
+      - run: npm ci
+      - name: Lint (npx eslint src)
+        run: npx eslint src
+      - name: Compilar (npm run build)
+        run: npm run build
+      - name: Librerías sin vulnerabilidades altas o críticas
+        run: npm audit --audit-level=high
