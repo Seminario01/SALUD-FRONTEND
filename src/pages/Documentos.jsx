@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import { Dato, HojaDocumento, LineaFirma } from "../components/Impresion";
+import CodigoQR from "../components/CodigoQR";
 import { ESTADO_CUENTA, descripcionCuenta, quetzales } from "../utils/caja";
 
 // Documentos formales para imprimir o guardar como PDF:
@@ -93,12 +94,28 @@ export function RecetaImpresa() {
           {r.estado === "ANULADA" && r.motivo_anulacion && <p className="text-red-700 mb-2">Motivo de la anulación: {r.motivo_anulacion}</p>}
           {r.estado === "DESPACHADA" && <p className="text-green-800 mb-2">Despachada en farmacia el {fechaHora(r.fecha_despacho)}</p>}
 
-          <div className="flex justify-end">
+          <div className="flex items-end justify-between gap-6">
+            {r.codigo_verificacion ? <VerificacionQR codigo={r.codigo_verificacion} /> : <span />}
             <LineaFirma texto={`${r.medico || "Médico tratante"} · Firma y sello`} />
           </div>
         </>
       )}
     </HojaDocumento>
+  );
+}
+
+// QR de la receta: cualquier farmacia lo escanea y ve si es auténtica, si ya se despachó o si se anuló
+function VerificacionQR({ codigo }) {
+  const enlace = `${window.location.origin}/verificar/${codigo}`;
+  return (
+    <div className="flex items-center gap-3 mt-8">
+      <CodigoQR texto={enlace} tamano={96} etiqueta="Código QR para verificar esta receta" />
+      <div className="text-[11px] leading-snug text-slate-600 max-w-52">
+        <p className="font-semibold text-slate-700">Verifique esta receta</p>
+        <p>Escanee el código con el celular o entre a:</p>
+        <p className="font-mono text-[10px] break-all text-slate-800">{enlace.replace(/^https?:\/\//, "")}</p>
+      </div>
+    </div>
   );
 }
 
