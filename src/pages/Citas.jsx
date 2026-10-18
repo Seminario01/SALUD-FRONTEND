@@ -11,6 +11,7 @@ import usePaginacion from "../hooks/usePaginacion";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import { reglasCita } from "../utils/validacion";
 import BuscadorPaciente from "../components/BuscadorPaciente";
+import useMedicos from "../hooks/useMedicos";
 
 const colores = {
   pendiente: "bg-yellow-100 text-yellow-800",
@@ -24,8 +25,10 @@ function formatoFecha(texto) {
   return isNaN(fecha) ? texto : fecha.toLocaleString("es-GT", { dateStyle: "medium", timeStyle: "short" });
 }
 
-function FormularioCita({ esPersonal, pacientes, aviso, onCreada }) {
+function FormularioCita({ esPersonal, pacientes, citas, aviso, onCreada }) {
   const [pacienteId, setPacienteId] = useState("");
+  const [medicoSub, setMedicoSub] = useState("");
+  const medicos = useMedicos(esPersonal);
   const [fechaHora, setFechaHora] = useState("");
   const [motivo, setMotivo] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -40,7 +43,7 @@ function FormularioCita({ esPersonal, pacientes, aviso, onCreada }) {
     setEnviando(true);
     setError(null);
     client
-      .post("/citas", { paciente_id: Number(seleccionado), fecha_hora: fechaHora, motivo })
+      .post("/citas", { paciente_id: Number(seleccionado), fecha_hora: fechaHora, motivo, medico_sub: medicoSub || undefined })
       .then((res) => {
         avisos.exito(`Cita No. ${res.data.data.id} agendada para el ${formatoFecha(fechaHora)}.`);
         setFechaHora("");
@@ -53,11 +56,20 @@ function FormularioCita({ esPersonal, pacientes, aviso, onCreada }) {
 
   if (aviso) return <p className="mb-6 text-sm text-gray-600 bg-yellow-50 border border-yellow-200 rounded p-3">{aviso}</p>;
 
+  // Agenda del médico elegido ese día, para no empalmar citas (a menos de 30 minutos)
+  const diaElegido = fechaHora.slice(0, 10);
+  const delMedico = medicoSub && diaElegido
+    ? citas.filter((c) => c.medico_sub === medicoSub && c.estado !== "cancelada" && String(c.fecha_hora).startsWith(diaElegido))
+    : [];
+  const distancia = (c) => Math.abs(new Date(String(c.fecha_hora).replace(" ", "T")) - new Date(fechaHora));
+  const empalme = fechaHora && delMedico.filter((c) => distancia(c) < 30 * 60 * 1000)
+    .sort((a, b) => distancia(a) - distancia(b))[0];
+
   const campo = "border rounded px-3 py-1.5 w-full";
   return (
     <form onSubmit={enviar} className="bg-white border rounded-lg p-4 shadow-sm mb-6">
       <h2 className="font-bold text-gray-700 mb-3">Agendar cita</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className={`grid grid-cols-1 ${esPersonal ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-3"} gap-3`}>
         {esPersonal ? (
           <label className="text-sm">
             Paciente *
@@ -72,11 +84,29 @@ function FormularioCita({ esPersonal, pacientes, aviso, onCreada }) {
           Fecha y hora *
           <input type="datetime-local" value={fechaHora} onChange={(e) => setFechaHora(e.target.value)} required {...reglasCita()} className={campo} />
         </label>
+        {esPersonal && (
+          <label className="text-sm">
+            Médico
+            <select value={medicoSub} onChange={(e) => setMedicoSub(e.target.value)} className={`${campo} bg-white`}>
+              <option value="">Por asignar</option>
+              {medicos.map((m) => <option key={m.sub} value={m.sub}>Dr(a). {m.nombre}</option>)}
+            </select>
+          </label>
+        )}
         <label className="text-sm">
           Motivo
           <input value={motivo} onChange={(e) => setMotivo(e.target.value)} maxLength={300} className={campo} />
         </label>
       </div>
+      {medicoSub && diaElegido && (
+        <p className={`mt-2 text-xs ${empalme ? "text-amber-800" : "text-slate-500"}`}>
+          {empalme
+            ? `Atención: el médico ya tiene una cita a las ${String(empalme.fecha_hora).slice(11, 16)} ese día.`
+            : delMedico.length
+              ? `El médico tiene ${delMedico.length} cita(s) ese día: ${delMedico.map((c) => String(c.fecha_hora).slice(11, 16)).sort().join(", ")}.`
+              : "El médico no tiene otras citas ese día."}
+        </p>
+      )}
       <div className="mt-3 flex items-center gap-3">
         <button
           type="submit"
@@ -217,7 +247,7 @@ export default function Citas() {
         )}
       </div>
 
-      {(gestiona || esCiudadano) && <FormularioCita esPersonal={gestiona} pacientes={pacientes} aviso={aviso} onCreada={cargar} />}
+      {(gestiona || esCiudadano) && <FormularioCita esPersonal={gestiona} pacientes={pacientes} citas={citas} aviso={aviso} onCreada={cargar} />}
 
       {error && <p className="mb-4 text-red-600 text-sm">No se pudieron cargar las citas: {error}</p>}
       {errorAccion && <p className="mb-4 text-red-600 text-sm">{errorAccion}</p>}

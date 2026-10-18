@@ -5,6 +5,7 @@ import useRoles from "../hooks/useRoles";
 import { useAvisos } from "../components/Avisos";
 import { BotonImprimir, EncabezadoImpreso, PieImpreso } from "../components/Impresion";
 import { formatoDia } from "../utils/fechas";
+import useMedicos from "../hooks/useMedicos";
 
 // Detalle de una cita: paciente, médico, fecha, pago en Tributario, atención registrada e historial.
 // Se abre al hacer clic en una cita de la lista (/citas/:id).
@@ -72,6 +73,7 @@ export default function DetalleCita() {
   const [cita, setCita] = useState(null);
   const [error, setError] = useState(null);
   const [ocupado, setOcupado] = useState(false);
+  const medicos = useMedicos(gestiona);
 
   const cargar = useCallback(() => {
     client.get(`/citas/${id}`)
@@ -103,6 +105,8 @@ export default function DetalleCita() {
 
   const enviarCobro = () => ejecutar(client.post(`/citas/${id}/cobro`),
     (r) => `Cobro registrado en Tributario: referencia ${r.data.data.numeroReferencia}.`);
+  const asignarMedico = (sub) => ejecutar(client.put(`/citas/${id}`, { medico_sub: sub || null }),
+    () => (sub ? `Médico asignado: Dr(a). ${medicos.find((m) => m.sub === sub)?.nombre ?? ""}.` : "La cita quedó sin médico asignado."));
   const verificarPago = () => ejecutar(client.post(`/citas/${id}/verificar-pago`),
     (r) => (r.data.data.pagoConfirmado ? "Tributario confirmó el pago." : "Tributario aún no registra el pago."));
 
@@ -159,7 +163,21 @@ export default function DetalleCita() {
           <dl className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <dt className="text-xs text-slate-500">Médico</dt>
-              <dd className="font-medium">{cita.medico_nombre ? `Dr(a). ${cita.medico_nombre}` : <span className="text-slate-400 font-normal">Por asignar</span>}</dd>
+              <dd className="font-medium">
+                {gestiona && activa ? (
+                  <select value={cita.medico_sub ?? ""} onChange={(e) => asignarMedico(e.target.value)} disabled={ocupado}
+                    aria-label="Médico de la cita" className="border rounded px-2 py-1 w-full bg-white font-normal print:hidden">
+                    <option value="">Por asignar</option>
+                    {cita.medico_sub && !medicos.some((m) => m.sub === cita.medico_sub) && (
+                      <option value={cita.medico_sub}>Dr(a). {cita.medico_nombre ?? "sin nombre"}</option>
+                    )}
+                    {medicos.map((m) => <option key={m.sub} value={m.sub}>Dr(a). {m.nombre}</option>)}
+                  </select>
+                ) : null}
+                <span className={gestiona && activa ? "hidden print:inline" : ""}>
+                  {cita.medico_nombre ? `Dr(a). ${cita.medico_nombre}` : <span className="text-slate-400 font-normal">Por asignar</span>}
+                </span>
+              </dd>
             </div>
             <Dato etiqueta="Fecha y hora">{fechaCorta(cita.fecha_hora)}</Dato>
             <Dato etiqueta="Estado">{estado.texto}</Dato>
