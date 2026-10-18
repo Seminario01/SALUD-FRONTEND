@@ -1,11 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import client from "../api/client";
 import { LogoSalud } from "../components/Layout";
+import { activarAudio, anunciar, textoDelLlamado } from "../utils/anuncio";
 
 // Pantalla para la sala de espera (TV). Muestra SOLO números de turno, nunca
 // nombres: está a la vista de todos. Se actualiza sola cada pocos segundos.
 const REFRESCO_MS = 8000;
 const TIPOS = { consulta_general: "Consulta general", emergencia: "Emergencia", especialidad: "Especialidad" };
+const CLAVE_VOZ = "salud.pantalla.voz";
+
+function leerPreferencia() {
+  try { return localStorage.getItem(CLAVE_VOZ) === "si"; } catch { return false; }
+}
+function guardarPreferencia(si) {
+  try { localStorage.setItem(CLAVE_VOZ, si ? "si" : "no"); } catch { /* sin almacenamiento: solo dura esta visita */ }
+}
 
 function Reloj() {
   const [ahora, setAhora] = useState(new Date());
@@ -24,6 +33,49 @@ function Reloj() {
 export default function PantallaTurnos() {
   const [turnos, setTurnos] = useState([]);
   const [error, setError] = useState(false);
+  // La voz necesita que alguien toque la pantalla una vez (regla de los navegadores)
+  const [voz, setVoz] = useState(false);
+  const [pedirToque, setPedirToque] = useState(leerPreferencia);
+  const [completa, setCompleta] = useState(Boolean(document.fullscreenElement));
+  const anunciados = useRef(null);     // llamados ya anunciados: "id|hora del llamado"
+
+  useEffect(() => {
+    const cambio = () => setCompleta(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", cambio);
+    return () => document.removeEventListener("fullscreenchange", cambio);
+  }, []);
+
+  // Anuncia cada llamado nuevo (o vuelto a llamar). Al abrir la pantalla no repite los que ya estaban.
+  useEffect(() => {
+    const llamadosAhora = turnos.filter((t) => t.estado === "llamado");
+    const claves = llamadosAhora.map((t) => `${t.id}|${t.llamado_en ?? ""}`);
+    if (anunciados.current === null) {
+      anunciados.current = new Set(claves);
+      return;
+    }
+    const nuevos = llamadosAhora.filter((t, i) => !anunciados.current.has(claves[i]));
+    claves.forEach((c) => anunciados.current.add(c));
+    if (voz && nuevos.length) anunciar(nuevos.map(textoDelLlamado).join(" "));
+  }, [turnos, voz]);
+
+  function activarVoz() {
+    activarAudio();
+    setVoz(true);
+    setPedirToque(false);
+    guardarPreferencia(true);
+    anunciar("Anuncios por voz activados.");
+  }
+
+  function desactivarVoz() {
+    window.speechSynthesis?.cancel();
+    setVoz(false);
+    guardarPreferencia(false);
+  }
+
+  function pantallaCompleta() {
+    if (document.fullscreenElement) document.exitFullscreen?.();
+    else document.documentElement.requestFullscreen?.().catch(() => {});
+  }
 
   useEffect(() => {
     const cargar = () =>
@@ -36,7 +88,9 @@ export default function PantallaTurnos() {
     return () => clearInterval(t);
   }, []);
 
-  const llamados = turnos.filter((t) => t.estado === "llamado");
+  // El último llamado va primero (es el que se resalta)
+  const llamados = turnos.filter((t) => t.estado === "llamado")
+    .sort((a, b) => String(b.llamado_en ?? "").localeCompare(String(a.llamado_en ?? "")));
   const enAtencion = turnos.filter((t) => t.estado === "en_atencion");
   const enEspera = turnos.filter((t) => t.estado === "en_espera");
 
@@ -50,8 +104,26 @@ export default function PantallaTurnos() {
             <p className="text-blue-200">Módulo Salud · Red Inteligente de Servicios Digitales</p>
           </div>
         </div>
-        <Reloj />
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col gap-2 print:hidden">
+            <button type="button" onClick={voz ? desactivarVoz : activarVoz} aria-pressed={voz}
+              className={`text-sm rounded-lg px-3 py-1.5 border ${voz ? "bg-white/15 border-white/40" : "bg-amber-400 text-blue-950 border-amber-300 font-semibold"}`}>
+              {voz ? "🔊 Voz activada" : "🔇 Activar voz"}
+            </button>
+            <button type="button" onClick={pantallaCompleta} className="text-sm rounded-lg px-3 py-1.5 border border-white/40 bg-white/10 hover:bg-white/20">
+              {completa ? "Salir de pantalla completa" : "Pantalla completa"}
+            </button>
+          </div>
+          <Reloj />
+        </div>
       </header>
+
+      {pedirToque && !voz && (
+        <button type="button" onClick={activarVoz}
+          className="mt-6 w-full rounded-2xl bg-amber-400 text-blue-950 text-xl font-semibold py-4 hover:bg-amber-300">
+          Toque aquí para activar los anuncios por voz (el navegador lo pide cada vez que se abre la pantalla)
+        </button>
+      )}
 
       {error && <p className="mt-6 text-amber-300">Sin conexión con el sistema. Reintentando...</p>}
 

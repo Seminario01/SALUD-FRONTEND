@@ -25,7 +25,7 @@ import DetalleCita from "./pages/DetalleCita";
 import Recordatorios from "./pages/Recordatorios";
 import Agenda from "./pages/Agenda";
 import VerificarReceta from "./pages/VerificarReceta";
-import { ConstanciaVacunacion, EstadoCuentaImpreso, RecetaImpresa } from "./pages/Documentos";
+import { ConstanciaVacunacion, EstadoCuentaImpreso, RecetaImpresa, ResumenPaciente } from "./pages/Documentos";
 
 // Al regresar del Login Único se vuelve a la página que se había pedido (receta, ficha, etc.)
 function VolverTrasLogin() {
@@ -53,6 +53,7 @@ export default function App() {
         <Route path="/imprimir/receta/:id" element={<ProtectedRoute><RecetaImpresa /></ProtectedRoute>} />
         <Route path="/imprimir/cuenta/:id" element={<ProtectedRoute><EstadoCuentaImpreso /></ProtectedRoute>} />
         <Route path="/imprimir/vacunacion/:id" element={<ProtectedRoute><ConstanciaVacunacion /></ProtectedRoute>} />
+        <Route path="/imprimir/resumen/:id" element={<ProtectedRoute><ResumenPaciente /></ProtectedRoute>} />
         <Route
           element={
             <ProtectedRoute>

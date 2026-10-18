@@ -237,3 +237,158 @@ export function ConstanciaVacunacion() {
     </HojaDocumento>
   );
 }
+
+// ------------------------------------------------------------------ Resumen para referencia
+// Una hoja con lo esencial del paciente para referirlo a otro hospital. Se abre con ?vista
+// (sin imprimir de una vez) para que el médico escriba a dónde y por qué lo refiere.
+const ESTADO_HOSP = { PENDIENTE: "Orden de ingreso", ACTIVO: "Ingresado", EGRESADO: "Egresado", ANULADA: "Anulada" };
+
+function useResumen(id) {
+  const [estado, setEstado] = useState({ cargando: true });
+  useEffect(() => {
+    const opcional = (ruta, defecto) => client.get(ruta).then((r) => r.data.data).catch(() => defecto);
+    Promise.all([
+      client.get(`/pacientes/${id}`).then((r) => r.data.data),
+      client.get(`/expedientes/${id}`).then((r) => r.data.data),
+      opcional(`/pacientes/${id}/signos`, []),
+      opcional(`/vacunacion/${id}`, null),
+      opcional(`/recetas?paciente_id=${id}`, []),
+      opcional(`/hospitalizaciones?paciente_id=${id}`, []),
+    ])
+      .then(([paciente, atenciones, signos, vacunacion, recetas, hospitalizaciones]) =>
+        setEstado({ cargando: false, paciente, atenciones, signos, vacunacion, recetas, hospitalizaciones }))
+      .catch((err) => setEstado({ cargando: false, error: mensajeError(err) }));
+  }, [id]);
+  return estado;
+}
+
+function Apartado({ titulo, children }) {
+  return (
+    <section className="mb-4 break-inside-avoid">
+      <h2 className="text-[11px] uppercase tracking-wide font-semibold text-blue-900 border-b border-slate-200 pb-0.5 mb-1.5">{titulo}</h2>
+      {children}
+    </section>
+  );
+}
+
+const SIGNOS_RESUMEN = [
+  ["Presión", "presion", "mmHg"], ["Temperatura", "temperatura", "°C"], ["Frec. cardiaca", "frecuencia_cardiaca", "lpm"],
+  ["Saturación", "saturacion", "%"], ["Peso", "peso", "kg"],
+];
+
+export function ResumenPaciente() {
+  const { id } = useParams();
+  const { cargando, error, paciente: p, atenciones, signos, vacunacion: v, recetas, hospitalizaciones } = useResumen(id);
+  const [referido, setReferido] = useState({ destino: "", motivo: "" });
+  const anios = edad(p?.fecha_nacimiento);
+  // Último valor de cada signo (con su fecha y si estaba fuera de rango)
+  const ultimo = (clave) => [...(signos ?? [])].reverse().find((s) => s[clave] != null);
+  const signosUltimos = SIGNOS_RESUMEN.map(([t, c, u]) => [t, ultimo(c), c, u]).filter(([, s]) => s);
+  const recetasRecientes = (recetas ?? []).filter((r) => r.estado !== "ANULADA").slice(0, 5);
+  const hospitalizacionesValidas = (hospitalizaciones ?? []).filter((h) => h.estado !== "ANULADA");
+  const campoReferencia = "w-full border rounded px-2 py-1 text-sm text-slate-800 print:border-0 print:border-b print:border-slate-400 print:rounded-none print:px-0 print:resize-none print:placeholder:text-transparent";
+
+  return (
+    <HojaDocumento titulo="Resumen clínico para referencia" detalle={p ? `${p.nombre_completo} · DPI ${p.cui || "sin registrar"}` : null}
+      cargando={cargando} error={error}>
+      {p && (
+        <>
+          <dl className="grid grid-cols-3 gap-x-6 gap-y-2 mb-4">
+            <Dato etiqueta="Paciente">{p.nombre_completo}</Dato>
+            <Dato etiqueta="DPI">{p.cui}</Dato>
+            <Dato etiqueta="Edad">{anios !== null ? `${anios} años` : null}</Dato>
+            <Dato etiqueta="Género">{{ M: "Masculino", F: "Femenino" }[p.genero] ?? p.genero}</Dato>
+            <Dato etiqueta="Seguro">{p.tipo_seguro}</Dato>
+            <Dato etiqueta="Responsable y teléfono">{[p.cuidador, p.telefono].filter(Boolean).join(" · ") || null}</Dato>
+          </dl>
+
+          <div className={`rounded border-2 px-3 py-2 mb-4 ${p.alergias ? "border-red-700 text-red-800" : "border-slate-300 text-slate-700"}`}>
+            <span className="font-bold uppercase tracking-wide text-xs">Alergias: </span>
+            <span className="font-semibold">{p.alergias || "Sin alergias registradas"}</span>
+          </div>
+
+          <Apartado titulo="Referencia">
+            <div className="grid grid-cols-1 gap-2">
+              <label className="text-xs text-slate-500">Referido a (hospital o servicio)
+                <input value={referido.destino} onChange={(e) => setReferido({ ...referido, destino: e.target.value })} maxLength={150}
+                  placeholder="Ej.: Hospital Nacional, servicio de Cardiología" className={campoReferencia} />
+              </label>
+              <label className="text-xs text-slate-500">Motivo de la referencia
+                <textarea value={referido.motivo} onChange={(e) => setReferido({ ...referido, motivo: e.target.value })} rows={2} maxLength={1000}
+                  placeholder="Escriba el motivo antes de imprimir" className={campoReferencia} />
+              </label>
+            </div>
+          </Apartado>
+
+          <Apartado titulo="Últimos signos vitales">
+            {signosUltimos.length === 0 ? <p className="text-slate-500">Sin signos vitales registrados.</p> : (
+              <p className="flex flex-wrap gap-x-5 gap-y-1">
+                {signosUltimos.map(([t, s, c, u]) => {
+                  const fuera = s.alertas?.some((a) => a.signo === c);
+                  const valor = c === "temperatura" || c === "peso" ? Number(s[c]).toFixed(1) : s[c];
+                  return (
+                    <span key={c}>{t}: <b className={fuera ? "text-red-700" : ""}>{valor} {u}{fuera ? " (fuera de rango)" : ""}</b>
+                      <span className="text-[11px] text-slate-500"> · {fechaCorta(s.fecha)}</span></span>
+                  );
+                })}
+              </p>
+            )}
+          </Apartado>
+
+          <Apartado titulo="Atenciones recientes">
+            {atenciones.length === 0 ? <p className="text-slate-500">Sin atenciones registradas.</p> : (
+              <ul className="space-y-1.5">
+                {atenciones.slice(0, 5).map((a) => (
+                  <li key={a.id}>
+                    <span className="text-[11px] text-slate-500 tabular-nums">{fechaCorta(a.fecha_atencion)} · </span>
+                    <span className="font-semibold">{a.diagnostico}</span>
+                    {a.tratamiento && <span className="block text-slate-600">Tratamiento: {a.tratamiento}</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Apartado>
+
+          <Apartado titulo="Medicamentos recetados recientemente">
+            {recetasRecientes.length === 0 ? <p className="text-slate-500">Sin recetas.</p> : (
+              <ul className="space-y-0.5">
+                {recetasRecientes.map((r) => (
+                  <li key={r.id}>
+                    <span className="text-[11px] text-slate-500 tabular-nums">{fechaCorta(r.fecha)} · </span>
+                    {r.items.map((it) => `${it.medicamento} ×${it.cantidad}${it.dosis ? ` (${it.dosis})` : ""}`).join("; ")}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Apartado>
+
+          <div className="grid grid-cols-2 gap-6">
+            <Apartado titulo="Hospitalizaciones">
+              {hospitalizacionesValidas.length === 0 ? <p className="text-slate-500">Sin hospitalizaciones.</p> : (
+                <ul className="space-y-1">
+                  {hospitalizacionesValidas.slice(0, 3).map((h) => (
+                    <li key={h.id}>
+                      <span className="text-[11px] text-slate-500">
+                        {fechaCorta(h.fecha_ingreso ?? h.fecha_orden)}{h.fecha_egreso ? ` – ${fechaCorta(h.fecha_egreso)}` : ""} · {ESTADO_HOSP[h.estado] ?? h.estado}
+                      </span>
+                      <span className="block">{h.area}{h.diagnostico ? ` — ${h.diagnostico}` : ""}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Apartado>
+            <Apartado titulo="Vacunación">
+              {!v ? <p className="text-slate-500">Sin registro de vacunación.</p> : (
+                <p>{v.esquema_completo ? "Esquema completo" : "Esquema incompleto"}{v.vacunas_pendientes ? `. Pendientes: ${v.vacunas_pendientes}` : ""}</p>
+              )}
+            </Apartado>
+          </div>
+
+          <div className="flex justify-end">
+            <LineaFirma texto="Médico que refiere · Firma, sello y colegiado" />
+          </div>
+        </>
+      )}
+    </HojaDocumento>
+  );
+}

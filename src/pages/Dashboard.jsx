@@ -6,6 +6,7 @@ import EstadoIntegraciones from "../components/EstadoIntegraciones";
 import ResumenCitas from "../components/ResumenCitas";
 import GraficasGestion from "../components/GraficasGestion";
 import ResumenFarmacia from "../components/ResumenFarmacia";
+import DiagnosticosFrecuentes from "../components/DiagnosticosFrecuentes";
 import AlertasSeguridad from "../components/AlertasSeguridad";
 import useRoles from "../hooks/useRoles";
 import { BotonImprimir, EncabezadoImpreso, PieImpreso } from "../components/Impresion";
@@ -228,6 +229,7 @@ export default function Dashboard() {
       {puede("turnos.ver_cola") && <AlertasSeguridad />}
       {puede("citas.ver") && <ResumenCitas />}
       {puede("citas.ver") && <GraficasGestion verCobros={puede("cuentas.ver")} />}
+      {puede("reportes.ver") && <DiagnosticosFrecuentes />}
       {puede("inventario.ver") && <ResumenFarmacia verRecetas={puede("recetas.despachar", "recetas.anular")} />}
       {puede("integraciones.ver") && <EstadoIntegraciones />}
       <PieImpreso />

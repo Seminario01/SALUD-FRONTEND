@@ -227,6 +227,9 @@ export default function FichaPaciente() {
           {puede("bitacora.ver") && (
             <Link to={`/bitacora?paciente=${id}`} className="text-sm px-3 py-1.5 rounded border hover:bg-slate-50">Quién vio este expediente</Link>
           )}
+          {puedeVerClinico && (
+            <Link to={`/imprimir/resumen/${id}?vista`} className="text-sm px-3 py-1.5 rounded border hover:bg-slate-50">Resumen para referencia</Link>
+          )}
           <BotonImprimir texto="Imprimir expediente / PDF" />
         </div>
       </div>
