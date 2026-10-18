@@ -23,6 +23,7 @@ import NoEncontrado from "./pages/NoEncontrado";
 import Bitacora from "./pages/Bitacora";
 import DetalleCita from "./pages/DetalleCita";
 import Recordatorios from "./pages/Recordatorios";
+import Agenda from "./pages/Agenda";
 import { ConstanciaVacunacion, EstadoCuentaImpreso, RecetaImpresa } from "./pages/Documentos";
 
 // Al regresar del Login Único se vuelve a la página que se había pedido (receta, ficha, etc.)
@@ -61,6 +62,7 @@ export default function App() {
           <Route path="/pacientes/:id" element={<FichaPaciente />} />
           <Route path="/citas" element={<Citas />} />
           <Route path="/citas/recordatorios" element={<Recordatorios />} />
+          <Route path="/citas/agenda" element={<Agenda />} />
           <Route path="/citas/:id" element={<DetalleCita />} />
           <Route path="/turnos" element={<Turnos />} />
           <Route path="/recursos" element={<Recursos />} />

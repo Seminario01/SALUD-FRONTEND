@@ -241,9 +241,14 @@ export default function Citas() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h1 className="text-2xl font-bold text-gray-800">{esPersonal ? "Citas médicas" : "Mis citas"}</h1>
         {esPersonal && (
-          <Link to="/citas/recordatorios" className="text-sm px-3 py-1.5 rounded border border-blue-700 text-blue-800 hover:bg-blue-50">
-            Recordatorio de citas de mañana
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/citas/agenda" className="text-sm px-3 py-1.5 rounded border border-blue-700 text-blue-800 hover:bg-blue-50">
+              Agenda semanal
+            </Link>
+            <Link to="/citas/recordatorios" className="text-sm px-3 py-1.5 rounded border border-blue-700 text-blue-800 hover:bg-blue-50">
+              Recordatorio de citas de mañana
+            </Link>
+          </div>
         )}
       </div>
 
