@@ -4,6 +4,7 @@ import client from "../api/client";
 import MiResumen from "./MiResumen";
 import EstadoIntegraciones from "../components/EstadoIntegraciones";
 import ResumenCitas from "../components/ResumenCitas";
+import GraficasGestion from "../components/GraficasGestion";
 import ResumenFarmacia from "../components/ResumenFarmacia";
 import AlertasSeguridad from "../components/AlertasSeguridad";
 import useRoles from "../hooks/useRoles";
@@ -226,6 +227,7 @@ export default function Dashboard() {
       )}
       {puede("turnos.ver_cola") && <AlertasSeguridad />}
       {puede("citas.ver") && <ResumenCitas />}
+      {puede("citas.ver") && <GraficasGestion verCobros={puede("cuentas.ver")} />}
       {puede("inventario.ver") && <ResumenFarmacia verRecetas={puede("recetas.despachar", "recetas.anular")} />}
       {puede("integraciones.ver") && <EstadoIntegraciones />}
       <PieImpreso />
