@@ -47,6 +47,12 @@ cd ~/proyecto-salud/SALUD-BACKEND/deploy && docker compose ps
   del backend y, si no viene, uno en español según el código. No mostrar `err.message`.
 - Antes de hacer commit: `npx eslint src` y `npm run build`.
 
+## App instalable (PWA)
+
+`public/manifest.webmanifest`, íconos `public/icono-*.png` y `public/sw.js` (se registra solo en
+producción, en `main.jsx`). El service worker **no guarda datos**: solo muestra `sin-conexion.html`
+si no hay internet; páginas y API van siempre a la red. Si se cambia, subir `CACHE` de versión.
+
 ## Pruebas de pantallas (Playwright)
 
 `e2e/` con `@playwright/test` (versión fija): cada puesto de prueba entra por el Login Único y abre

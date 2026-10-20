@@ -15,3 +15,11 @@ createRoot(document.getElementById('root')).render(
     </AuthProvider>
   </StrictMode>,
 )
+
+// App instalable (PWA): el service worker solo muestra "Sin conexión" si se cae el internet;
+// no guarda datos. En desarrollo no se registra para no estorbar la recarga de Vite.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  })
+}
