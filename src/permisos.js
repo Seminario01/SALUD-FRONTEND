@@ -27,6 +27,7 @@ export const PERMISOS = {
   "turnos.generar": [ENF, REC],
   "turnos.atender": [MED, ENF],
   "turnos.ver_cola": [MED, ENF, REC, JEF, ADM],
+  "turnos.clasificar": [MED, ENF],
   "expediente.ver": [MED, ENF, JEF, ADM],
   "expediente.registrar": [MED],
   "vacunacion.ver": [MED, ENF, JEF, ADM],
