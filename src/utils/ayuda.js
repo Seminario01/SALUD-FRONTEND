@@ -7,6 +7,7 @@ export const AYUDA = {
     titulo: "Inicio",
     consejos: [
       { texto: "El tablero resume la operación: pacientes, citas pendientes, turnos en espera, vacunación, camas, presupuesto y caja (cada puesto ve lo suyo)." },
+      { si: "turnos.ver_cola", texto: "«Para atender ahora» resume urgencias en espera (triage rojo y naranja), laboratorio pendiente, resultados fuera de rango y lista de espera; cada tarjeta lleva a su pantalla." },
       { si: "inventario.ver", texto: "Farmacia ve aquí las recetas por despachar, los medicamentos bajo el mínimo y los que vencen en 60 días." },
       { si: "reportes.ver", texto: "En «Diagnósticos más frecuentes» elija el período; se puede bajar en Excel o CSV." },
       { texto: "La lupa del encabezado busca pacientes por nombre o DPI desde cualquier pantalla." },

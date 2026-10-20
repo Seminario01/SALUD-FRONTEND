@@ -29,6 +29,40 @@ function TarjetaResumen({ titulo, valor, detalle, to, color }) {
   );
 }
 
+// Lo que hay que atender ya (GET /panel -> atencion_hoy; cada puesto recibe solo lo suyo)
+function AtencionHoy({ datos }) {
+  const { triage, laboratorio, lista_espera: espera } = datos;
+  const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+  return (
+    <>
+      <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Para atender ahora</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {triage && (
+          <TarjetaResumen titulo="Urgencias en espera" valor={triage.urgentes_en_espera} to="/turnos"
+            color={triage.urgentes_en_espera ? "text-red-700" : "text-green-700"}
+            detalle={[triage.rojos_en_espera ? plural(triage.rojos_en_espera, "rojo (inmediato)", "rojos (inmediato)") : "Triage rojo y naranja",
+              triage.excedidos ? `⚠ ${plural(triage.excedidos, "pasó", "pasaron")} el tiempo recomendado` : null,
+              triage.sin_clasificar ? `${triage.sin_clasificar} sin clasificar` : null].filter(Boolean).join(" · ")} />
+        )}
+        {laboratorio && (
+          <TarjetaResumen titulo="Laboratorio por atender" valor={laboratorio.por_atender} to="/laboratorio"
+            color={laboratorio.urgentes ? "text-red-700" : "text-blue-700"}
+            detalle={`${plural(laboratorio.urgentes, "urgente", "urgentes")} · ${plural(laboratorio.muestras_tomadas, "con muestra tomada", "con muestra tomada")}`} />
+        )}
+        {laboratorio && (
+          <TarjetaResumen titulo="Resultados fuera de rango" valor={laboratorio.con_valores_fuera_de_rango_7_dias} to="/laboratorio"
+            color={laboratorio.con_valores_fuera_de_rango_7_dias ? "text-amber-600" : "text-green-700"}
+            detalle={`De ${plural(laboratorio.completadas_7_dias, "informe entregado", "informes entregados")} en 7 días`} />
+        )}
+        {espera && (
+          <TarjetaResumen titulo="Lista de espera de citas" valor={espera.esperando} to="/citas/lista-espera" color="text-purple-600"
+            detalle={espera.esperando ? `El primero espera desde hace ${plural(espera.dias_el_mas_antiguo, "día", "días")}` : "Nadie esperando cita"} />
+        )}
+      </div>
+    </>
+  );
+}
+
 export default function Dashboard() {
   const { esPersonal, esAuditor, puede } = useRoles();
   // Cada tarjeta enlaza a su pantalla solo si el puesto puede usarla.
@@ -154,6 +188,10 @@ export default function Dashboard() {
             color="text-purple-600"
           />
         </div>
+      )}
+
+      {indicadores?.atencion_hoy && Object.keys(indicadores.atencion_hoy).length > 0 && (
+        <AtencionHoy datos={indicadores.atencion_hoy} />
       )}
 
       <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Hospitalización y camas</h2>
