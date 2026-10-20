@@ -9,6 +9,7 @@ import { BotonImprimir, EncabezadoImpreso, PieImpreso } from "../components/Impr
 import { useAvisos } from "../components/Avisos";
 import AlergiasPaciente from "../components/Alergias";
 import SignosVitales from "../components/SignosVitales";
+import ConstanciasPaciente from "../components/ConstanciasPaciente";
 
 const COLOR_HOSPITALIZACION = {
   PENDIENTE: "bg-yellow-100 text-yellow-800",
@@ -421,6 +422,8 @@ export default function FichaPaciente() {
           {recetas?.length > 6 && <p className="text-xs text-slate-400 mt-2 print:hidden">Mostrando las 6 más recientes de {recetas.length}.</p>}
         </Seccion>
       )}
+
+      {puede("constancias.ver") && <ConstanciasPaciente pacienteId={id} atenciones={atenciones ?? []} />}
       <PieImpreso />
     </div>
   );

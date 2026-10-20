@@ -25,7 +25,8 @@ import DetalleCita from "./pages/DetalleCita";
 import Recordatorios from "./pages/Recordatorios";
 import Agenda from "./pages/Agenda";
 import VerificarReceta from "./pages/VerificarReceta";
-import { ConstanciaVacunacion, EstadoCuentaImpreso, RecetaImpresa, ResumenPaciente } from "./pages/Documentos";
+import VerificarConstancia from "./pages/VerificarConstancia";
+import { ConstanciaImpresa, ConstanciaVacunacion, EstadoCuentaImpreso, RecetaImpresa, ResumenPaciente } from "./pages/Documentos";
 
 // Al regresar del Login Único se vuelve a la página que se había pedido (receta, ficha, etc.)
 function VolverTrasLogin() {
@@ -47,10 +48,12 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         {/* Pública: otra farmacia verifica la receta al escanear su QR */}
         <Route path="/verificar/:codigo" element={<VerificarReceta />} />
+        <Route path="/verificar/constancia/:codigo" element={<VerificarConstancia />} />
         {/* Pantalla de sala de espera: a pantalla completa, sin el menú */}
         <Route path="/turnos/pantalla" element={<ProtectedRoute><PantallaTurnos /></ProtectedRoute>} />
         {/* Documentos para imprimir o guardar como PDF: sin el menú */}
         <Route path="/imprimir/receta/:id" element={<ProtectedRoute><RecetaImpresa /></ProtectedRoute>} />
+        <Route path="/imprimir/constancia/:id" element={<ProtectedRoute><ConstanciaImpresa /></ProtectedRoute>} />
         <Route path="/imprimir/cuenta/:id" element={<ProtectedRoute><EstadoCuentaImpreso /></ProtectedRoute>} />
         <Route path="/imprimir/vacunacion/:id" element={<ProtectedRoute><ConstanciaVacunacion /></ProtectedRoute>} />
         <Route path="/imprimir/resumen/:id" element={<ProtectedRoute><ResumenPaciente /></ProtectedRoute>} />

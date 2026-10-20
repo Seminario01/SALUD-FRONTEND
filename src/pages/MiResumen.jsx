@@ -36,6 +36,7 @@ export default function MiResumen() {
   const [ultimaAtencion, setUltimaAtencion] = useState(undefined);
   const [hospitalizaciones, setHospitalizaciones] = useState([]);
   const [cuentas, setCuentas] = useState([]);
+  const [constancias, setConstancias] = useState([]);
   const [codigo, setCodigo] = useState(null);
   const [copiado, setCopiado] = useState(false);
 
@@ -48,6 +49,7 @@ export default function MiResumen() {
         client.get("/citas").then((r) => setCitas(r.data.data)).catch(() => setCitas([]));
         client.get("/hospitalizaciones").then((r) => setHospitalizaciones(r.data.data)).catch(() => setHospitalizaciones([]));
         client.get("/cuentas").then((r) => setCuentas(r.data.data)).catch(() => setCuentas([]));
+        client.get("/constancias").then((r) => setConstancias(r.data.data.filter((c) => c.estado === "VIGENTE"))).catch(() => setConstancias([]));
         client.get(`/vacunacion/${p.id}`).then((r) => setVacunacion(r.data.data)).catch(() => setVacunacion(null));
         client
           .get(`/expedientes/${p.id}`)
@@ -181,6 +183,24 @@ export default function MiResumen() {
               </>
             )}
           </Tarjeta>
+
+          {constancias.length > 0 && (
+            <Tarjeta titulo="Mis constancias">
+              <ul className="space-y-2 text-sm">
+                {constancias.slice(0, 4).map((c) => (
+                  <li key={c.id} className="flex items-center justify-between gap-3">
+                    <span>
+                      {c.tipo === "INCAPACIDAD"
+                        ? <>Incapacidad · {c.dias_reposo} día(s) desde el {formatoFecha(`${c.desde}T12:00`, false)}</>
+                        : <>Constancia de consulta · {formatoFecha(`${c.fecha_atencion}T12:00`, false)}</>}
+                    </span>
+                    <Link to={`/imprimir/constancia/${c.id}`} className="text-blue-700 hover:underline whitespace-nowrap">Imprimir</Link>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-slate-500 mt-3">Cada constancia trae un código QR para que su trabajo o colegio compruebe que es auténtica.</p>
+            </Tarjeta>
+          )}
 
           <Tarjeta titulo="Última atención" to="/expedientes" enlace="Ver mi expediente">
             {ultimaAtencion === undefined && <p className="text-sm text-slate-400">Cargando...</p>}

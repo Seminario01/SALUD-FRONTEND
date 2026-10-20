@@ -9,6 +9,7 @@ import { ESTADO_CUENTA, descripcionCuenta, quetzales } from "../utils/caja";
 //   /imprimir/receta/:id        Receta médica
 //   /imprimir/cuenta/:id        Estado de cuenta
 //   /imprimir/vacunacion/:id    Constancia de vacunación (id del paciente)
+//   /imprimir/constancia/:id    Constancia de consulta o incapacidad (con QR verificable)
 // Los permisos los aplica el backend: si el usuario no puede ver el dato, se muestra el mensaje.
 
 const fechaHora = (t) => (t ? new Date(String(t).replace(" ", "T")).toLocaleString("es-GT", { dateStyle: "long", timeStyle: "short" }) : "—");
@@ -95,7 +96,7 @@ export function RecetaImpresa() {
           {r.estado === "DESPACHADA" && <p className="text-green-800 mb-2">Despachada en farmacia el {fechaHora(r.fecha_despacho)}</p>}
 
           <div className="flex items-end justify-between gap-6">
-            {r.codigo_verificacion ? <VerificacionQR codigo={r.codigo_verificacion} /> : <span />}
+            {r.codigo_verificacion ? <VerificacionQR enlace={`/verificar/${r.codigo_verificacion}`} que="esta receta" /> : <span />}
             <LineaFirma texto={`${r.medico || "Médico tratante"} · Firma y sello`} />
           </div>
         </>
@@ -104,18 +105,67 @@ export function RecetaImpresa() {
   );
 }
 
-// QR de la receta: cualquier farmacia lo escanea y ve si es auténtica, si ya se despachó o si se anuló
-function VerificacionQR({ codigo }) {
-  const enlace = `${window.location.origin}/verificar/${codigo}`;
+// QR del documento: quien lo recibe (una farmacia, un patrono) lo escanea y ve si es auténtico y vigente
+function VerificacionQR({ enlace: ruta, que }) {
+  const enlace = `${window.location.origin}${ruta}`;
   return (
     <div className="flex items-center gap-3 mt-8">
-      <CodigoQR texto={enlace} tamano={96} etiqueta="Código QR para verificar esta receta" />
+      <CodigoQR texto={enlace} tamano={96} etiqueta={`Código QR para verificar ${que}`} />
       <div className="text-[11px] leading-snug text-slate-600 max-w-52">
-        <p className="font-semibold text-slate-700">Verifique esta receta</p>
+        <p className="font-semibold text-slate-700">Verifique {que}</p>
         <p>Escanee el código con el celular o entre a:</p>
         <p className="font-mono text-[10px] break-all text-slate-800">{enlace.replace(/^https?:\/\//, "")}</p>
       </div>
     </div>
+  );
+}
+
+// ------------------------------------------------------------------ Constancia de consulta o incapacidad
+export function ConstanciaImpresa() {
+  const { id } = useParams();
+  const { datos, cargando, error } = useDocumento([`/constancias/${id}`]);
+  const c = datos?.[0];
+  const incapacidad = c?.tipo === "INCAPACIDAD";
+  const titulo = incapacidad ? "Constancia de incapacidad" : "Constancia médica";
+  const anios = edad(c?.paciente_fecha_nacimiento);
+  return (
+    <HojaDocumento titulo={`${titulo} No. ${id}`} detalle={c ? fechaHora(c.fecha) : null} cargando={cargando} error={error}>
+      {c && (
+        <>
+          {c.estado === "ANULADA" && (
+            <div className="mb-4 flex items-center gap-3">
+              <Sello texto="Anulada" clase="border-red-700 text-red-700" />
+              <span className="text-red-700 text-sm">{c.motivo_anulacion}</span>
+            </div>
+          )}
+          <p className="text-[11px] uppercase tracking-wide text-slate-500 mb-3">A quien interese</p>
+          <p className="leading-relaxed mb-4 text-justify">
+            El médico que firma hace constar que <span className="font-semibold">{c.paciente}</span>
+            {c.paciente_cui && <>, con DPI <span className="font-semibold tabular-nums">{c.paciente_cui}</span></>}
+            {anios !== null && <>, de {anios} años de edad</>}, fue atendido(a) en consulta médica el día{" "}
+            <span className="font-semibold">{fechaDia(c.fecha_atencion)}</span>
+            {c.diagnostico && <>, con diagnóstico de <span className="font-semibold">{c.diagnostico}</span></>}
+            {incapacidad ? (
+              <>
+                , y por su estado de salud <span className="font-semibold">necesita reposo durante {c.dias_reposo} día(s)</span>,
+                del <span className="font-semibold">{fechaDia(c.desde)}</span> al <span className="font-semibold">{fechaDia(c.hasta)}</span>, inclusive.
+              </>
+            ) : "."}
+          </p>
+          {c.observaciones && (
+            <div className="mb-4">
+              <p className="text-[11px] uppercase tracking-wide text-slate-500">Observaciones</p>
+              <p className="whitespace-pre-line">{c.observaciones}</p>
+            </div>
+          )}
+          <p className="mb-2">Se extiende la presente a solicitud del interesado, para los usos que le convengan, el {fechaDia(c.fecha)}.</p>
+          <div className="flex items-end justify-between gap-6">
+            <VerificacionQR enlace={`/verificar/constancia/${c.codigo_verificacion}`} que="esta constancia" />
+            <LineaFirma texto={`${c.medico || "Médico tratante"} · Firma y sello`} />
+          </div>
+        </>
+      )}
+    </HojaDocumento>
   );
 }
 
