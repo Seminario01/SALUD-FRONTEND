@@ -6,6 +6,7 @@ import BuscadorPaciente from "../components/BuscadorPaciente";
 import BotonesExportar from "../components/Exportar";
 import Paginacion from "../components/Paginacion";
 import usePaginacion from "../hooks/usePaginacion";
+import AccesosInusuales from "../components/AccesosInusuales";
 
 // Bitácora de accesos (solo Administración): quién vio o modificó los datos de cada paciente.
 // La escribe el backend en cada petición (bitacora_accesos.py); aquí solo se consulta.
@@ -55,6 +56,16 @@ export default function Bitacora() {
   const hayFiltros = pacienteId || usuario || accion || desde || hasta;
   const totales = resultado?.totales ?? {};
 
+  // Desde un acceso inusual: la tabla muestra solo lo de esa persona en esas fechas
+  function verInusual(a) {
+    setParams({});
+    setUsuario(a.usuario);
+    setAccion({ muchas_anulaciones: "anular", muchos_pacientes: "ver" }[a.tipo] ?? "");
+    setDesde(a.desde.slice(0, 10));
+    setHasta(a.hasta.slice(0, 10));
+    document.getElementById("filtros-bitacora")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <div className="p-6">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
@@ -76,7 +87,9 @@ export default function Bitacora() {
         Quién vio o modificó los datos de cada paciente, y cuándo. Se registra solo; nadie puede editarla ni borrarla desde el sistema.
       </p>
 
-      <div className="bg-white border rounded-lg p-4 shadow-sm mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+      <AccesosInusuales onVer={verInusual} />
+
+      <div id="filtros-bitacora" className="bg-white border rounded-lg p-4 shadow-sm mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
         <label className="text-sm lg:col-span-2">Paciente
           <BuscadorPaciente pacientes={pacientes} valor={pacienteId}
             onCambio={(id) => setParams(id ? { paciente: id } : {})} placeholder="Todos los pacientes (nombre o DPI)" />
