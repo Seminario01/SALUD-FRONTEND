@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import useRoles from "../hooks/useRoles";
 import BusquedaGlobal, { BotonBuscar } from "./BusquedaGlobal";
+import BotonAyuda from "./Ayuda";
 
 // Ícono del módulo (cruz médica), dibujado aquí mismo
 export function LogoSalud({ className = "h-8 w-8" }) {
@@ -117,6 +118,7 @@ export default function Layout() {
                 <div className="hidden 2xl:block w-56"><BotonBuscar onClick={buscar} /></div>
               </>
             )}
+            <BotonAyuda />
             <div className="text-right leading-tight whitespace-nowrap">
               <p className="text-sm font-medium">{perfil?.name || perfil?.preferred_username}</p>
               {r.puesto && (
@@ -133,8 +135,9 @@ export default function Layout() {
 
           {/* Celular / tableta */}
           {r.puede("pacientes.ver") && <div className="ml-auto xl:hidden"><BotonBuscar compacto onClick={buscar} /></div>}
+          <div className={`${r.puede("pacientes.ver") ? "" : "ml-auto "}xl:hidden`}><BotonAyuda /></div>
           <button
-            className={`${r.puede("pacientes.ver") ? "" : "ml-auto "}xl:hidden p-2 rounded-lg hover:bg-white/10`}
+            className="xl:hidden p-2 rounded-lg hover:bg-white/10"
             onClick={() => setMenuAbierto(!menuAbierto)}
             aria-label="Abrir menú"
             aria-expanded={menuAbierto}

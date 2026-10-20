@@ -53,10 +53,17 @@ cd ~/proyecto-salud/SALUD-BACKEND/deploy && docker compose ps
 producción, en `main.jsx`). El service worker **no guarda datos**: solo muestra `sin-conexion.html`
 si no hay internet; páginas y API van siempre a la red. Si se cambia, subir `CACHE` de versión.
 
+## Ayuda dentro del sistema
+
+Botón "?" del encabezado (`components/Ayuda.jsx`): consejos de la pantalla actual en `utils/ayuda.js`
+(la ruta más larga que coincida; `"/pacientes/"` con barra es la ficha). Cada consejo con `si` solo lo
+ve quien tiene ese permiso. Al agregar una pantalla o función, agregar su ayuda ahí.
+
 ## Pruebas de pantallas (Playwright)
 
 `e2e/` con `@playwright/test` (versión fija): cada puesto de prueba entra por el Login Único y abre
 todas las opciones de su menú en celular (sin salirse de lado) y en computadora, sin errores de
-JavaScript ni respuestas 5xx; y el recorrido Recepción registra -> Médico receta -> Farmacia despacha.
+JavaScript ni respuestas 5xx; los recorridos Recepción registra -> Médico receta -> Farmacia despacha
+y Médico pide laboratorio -> Enfermería registra el resultado; y que la ayuda filtre por puesto.
 En la PC (con backend, Keycloak y simuladores encendidos), usando el Chrome instalado:
 `E2E_CANAL=chrome npx playwright test`. En GitHub corren dentro de las pruebas completas del backend.

@@ -62,3 +62,48 @@ test("Farmacia despacha esa receta", async ({ page }) => {
   await expect(page.getByText(`Receta No. ${receta} despachada`)).toBeVisible();
   expect(errores).toEqual([]);
 });
+
+// 3) Laboratorio: el médico pide glucosa -> Enfermería toma la muestra y registra un valor alto
+let orden;
+
+test("el médico pide un examen de glucosa urgente", async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrar(page, "medico1");
+  await page.goto("/laboratorio");
+  await page.getByRole("combobox", { name: "Paciente" }).fill(NOMBRE);
+  await page.getByRole("option", { name: new RegExp(NOMBRE) }).first().click();
+  await page.getByLabel("Glucosa en ayunas").check();
+  await page.getByLabel("Urgente").check();
+  await page.getByRole("button", { name: "Pedir 1 examen" }).click();
+  const aviso = page.getByText(/Orden de laboratorio No\. \d+ creada/);
+  await expect(aviso).toBeVisible();
+  orden = Number((await aviso.textContent()).match(/No\. (\d+)/)[1]);
+  expect(errores).toEqual([]);
+});
+
+test("Enfermería toma la muestra y el resultado alto sale en rojo", async ({ page }) => {
+  expect(orden, "la orden del paso anterior").toBeTruthy();
+  const errores = vigilarErrores(page);
+  await entrar(page, "enfermera1");
+  await page.goto("/laboratorio");
+  const tarjeta = page.locator(`article[data-orden="${orden}"]`);
+  await expect(tarjeta).toContainText("URGENTE");
+  await tarjeta.getByRole("button", { name: "Tomar muestra" }).click();
+  await tarjeta.getByRole("button", { name: "Registrar resultados" }).click();
+  await tarjeta.getByLabel(/Glucosa/).fill("182");
+  await expect(tarjeta.getByText("Alto ↑")).toBeVisible();          // se marca mientras se digita
+  await tarjeta.getByRole("button", { name: "Guardar y entregar resultados" }).click();
+  await expect(page.getByText(`Resultados de la orden No. ${orden} completados`)).toBeVisible();
+  expect(errores).toEqual([]);
+});
+
+test("la ayuda muestra solo lo que el puesto puede hacer", async ({ page }) => {
+  await entrar(page, "farmacia1");
+  await page.goto("/recetas");
+  await page.getByRole("button", { name: "Ayuda de esta pantalla" }).filter({ visible: true }).click();
+  const ayuda = page.getByRole("dialog", { name: "Recetas" });
+  await expect(ayuda).toContainText("Despache las pendientes");
+  await expect(ayuda).not.toContainText("Al elegir al paciente");       // eso es del médico
+  await page.keyboard.press("Escape");
+  await expect(ayuda).toBeHidden();
+});
