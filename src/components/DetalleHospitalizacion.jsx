@@ -4,8 +4,33 @@ import client, { mensajeError } from "../api/client";
 import { AREAS, ESTADO_HOSPITALIZACION, TIPOS_EGRESO, fechaHora, textoDias } from "../utils/hospitalizacion";
 import { SIGNOS } from "../utils/validacion";
 import { useAvisos } from "./Avisos";
+import GraficaLinea from "./GraficaLinea";
+import { GRAFICAS, medicionesDeNotas, puntosGrafica } from "../utils/graficasSignos";
 
 const campo = "border rounded px-3 py-1.5 w-full";
+
+// Cómo han ido los signos durante ESTA estancia (aparece con 2 mediciones o más de algún signo)
+function EvolucionSignos({ notas }) {
+  const mediciones = medicionesDeNotas(notas);
+  const graficas = GRAFICAS
+    .map((g) => ({ ...g, puntos: puntosGrafica(mediciones, g) }))
+    .filter((g) => g.puntos.length >= 2);
+  if (!graficas.length) return null;
+  return (
+    <details className="rounded-lg border bg-slate-50 px-3 py-2">
+      <summary className="cursor-pointer text-sm font-medium text-slate-700">
+        Evolución de los signos durante la estancia ({graficas.length} {graficas.length === 1 ? "gráfica" : "gráficas"})
+      </summary>
+      <div className="mt-2 space-y-3">
+        {graficas.map((g) => (
+          <GraficaLinea key={g.titulo} titulo={g.titulo} unidad={g.unidad} series={g.series} puntos={g.puntos}
+            rangoNormal={g.rango} decimales={g.decimales ?? 0} />
+        ))}
+        <p className="text-xs text-slate-400">La franja gris marca el rango normal de referencia en adultos.</p>
+      </div>
+    </details>
+  );
+}
 
 function SignosVitales({ nota }) {
   // Signos fuera del rango normal (los calcula el backend): en rojo, con flecha arriba o abajo
@@ -268,6 +293,7 @@ export default function DetalleHospitalizacion({ id, camas, permisos, onCerrar, 
                     ? hecho(`Nota registrada. ⚠ Fuera de rango: ${alertas.map((a) => a.texto).join(", ")}.`, "error")
                     : hecho("Nota registrada.")} />}
                   {hosp.notas.length === 0 && <p className="text-sm text-slate-500">Sin notas registradas.</p>}
+                  <EvolucionSignos notas={hosp.notas} />
                   <ol className="space-y-3">
                     {hosp.notas.map((n) => (
                       <li key={n.id} className={`border-l-4 pl-3 ${n.puesto === "Médico" ? "border-blue-300" : "border-emerald-300"}`}>

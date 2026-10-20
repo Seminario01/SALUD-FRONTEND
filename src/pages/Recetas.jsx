@@ -36,6 +36,8 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
   const [indicaciones, setIndicaciones] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
+  const [activos, setActivos] = useState([]);
+  const [emitidas, setEmitidas] = useState(0);   // para volver a leer lo que ya toma
   const avisos = useAvisos();
 
   useEffect(() => {
@@ -54,17 +56,33 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
       .catch(() => { setAtenciones([]); setExpedienteId(""); });
   }, [pacienteId]);
 
+  // Lo que el paciente ya está tomando (recetas no anuladas de los últimos 30 días, como el backend
+  // al revisar interacciones), para que el médico lo vea antes de recetar
+  useEffect(() => {
+    if (!pacienteId) return;
+    const desde = Date.now() - 30 * 24 * 3600 * 1000;
+    client
+      .get("/recetas", { params: { paciente_id: pacienteId } })
+      .then((r) => setActivos(
+        r.data.data
+          .filter((x) => x.estado !== "ANULADA" && new Date(String(x.fecha).replace(" ", "T")).getTime() >= desde)
+          .flatMap((x) => x.items.map((it) => ({ clave: `${x.id}-${it.medicamento_id}`, nombre: it.medicamento, receta: x.id }))),
+      ))
+      .catch(() => setActivos([]));
+  }, [pacienteId, emitidas]);
+
   const medicamento = (id) => medicamentos.find((m) => String(m.id) === String(id));
   const cambiarFila = (i, campo, valor) => setFilas((f) => f.map((fila, j) => (j === i ? { ...fila, [campo]: valor } : fila)));
 
   function cambiarPaciente(valor) {
     setPacienteId(valor);
-    if (!valor) { setAtenciones([]); setExpedienteId(""); }
+    if (!valor) { setAtenciones([]); setExpedienteId(""); setActivos([]); }
   }
 
   const paciente = pacientes.find((p) => String(p.id) === String(pacienteId));
 
-  function emitir(confirmarAlergia = false) {
+  // confirmados: avisos que el médico ya vio y aceptó ({ alergia: true, interaccion: true })
+  function emitir(confirmados = {}) {
     setEnviando(true);
     setError(null);
     return client
@@ -73,12 +91,14 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
         expediente_id: expedienteId ? Number(expedienteId) : undefined,
         indicaciones,
         items: filas.map((f) => ({ medicamento_id: Number(f.medicamento_id), cantidad: Number(f.cantidad), dosis: f.dosis })),
-        ...(confirmarAlergia ? { confirmar_alergia: true } : {}),
+        ...(confirmados.alergia ? { confirmar_alergia: true } : {}),
+        ...(confirmados.interaccion ? { confirmar_interaccion: true } : {}),
       })
       .then((res) => {
         avisos.exito(`Receta No. ${res.data.data.id} emitida. Farmacia ya puede despacharla.`);
         setFilas([filaVacia()]);
         setIndicaciones("");
+        setEmitidas((n) => n + 1);
         onCreada();
       })
       .catch(async (err) => {
@@ -94,7 +114,23 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
             ],
             confirmar: "Sí, recetar igual", cancelar: "Revisar la receta", peligro: true,
           });
-          if (si) return emitir(true);
+          if (si) return emitir({ ...confirmados, alergia: true });
+          return;
+        }
+        if (err.response?.status === 409 && datos?.error === "interaccion") {
+          setEnviando(false);
+          const graves = datos.interacciones.some((a) => a.severidad === "grave");
+          const si = await avisos.confirmar({
+            titulo: graves ? "⚠ Interacción grave entre medicamentos" : "⚠ Posible interacción entre medicamentos",
+            mensaje: [
+              ...datos.interacciones.map((a) =>
+                `${a.severidad === "grave" ? "GRAVE" : "Moderada"}: ${a.medicamento} + ${a.con}` +
+                `${a.origen === "esta receta" ? "" : ` (${a.origen})`} — ${a.texto}.`),
+              "Es un aviso de apoyo; la decisión clínica es del médico. ¿Emitir la receta de todas formas? Quedará marcada para que Farmacia lo vea.",
+            ],
+            confirmar: "Sí, recetar igual", cancelar: "Revisar la receta", peligro: true,
+          });
+          if (si) return emitir({ ...confirmados, interaccion: true });
           return;
         }
         setError(mensajeError(err));
@@ -119,6 +155,12 @@ function FormularioReceta({ pacientes, pacienteInicial, onCreada }) {
           {paciente?.alergias && (
             <p role="alert" className="mt-1 rounded bg-red-50 border border-red-200 px-2 py-1 text-xs text-red-900">
               <span className="font-semibold">⚠ Alergias:</span> {paciente.alergias}
+            </p>
+          )}
+          {pacienteId && activos.length > 0 && (
+            <p className="mt-1 rounded bg-slate-50 border px-2 py-1 text-xs text-slate-700">
+              <span className="font-semibold">Ya está tomando (últimos 30 días):</span>{" "}
+              {activos.map((a) => `${a.nombre} (receta ${a.receta})`).join(", ")}
             </p>
           )}
         </label>
@@ -255,6 +297,11 @@ function TarjetaReceta({ receta, mostrarPaciente, puedeDespachar, puedeAnular, o
       {receta.alerta_alergia && (
         <p className="text-sm mt-2 rounded bg-red-50 border border-red-200 px-2 py-1 text-red-900">
           <span className="font-semibold">⚠ Recetado pese a alergia registrada</span> — {receta.alerta_alergia}
+        </p>
+      )}
+      {receta.alerta_interaccion && (
+        <p className="text-sm mt-2 rounded bg-amber-50 border border-amber-200 px-2 py-1 text-amber-900">
+          <span className="font-semibold">⚠ Recetado pese a interacción</span> — {receta.alerta_interaccion}
         </p>
       )}
       {receta.indicaciones && <p className="text-sm text-slate-600 mt-2"><span className="font-medium">Indicaciones:</span> {receta.indicaciones}</p>}
