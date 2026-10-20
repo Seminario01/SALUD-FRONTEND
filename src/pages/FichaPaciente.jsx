@@ -339,7 +339,10 @@ export default function FichaPaciente() {
             {atenciones?.map((e, i) => (
               <div key={e.id} className={`border-l-4 border-blue-200 pl-3 ${i >= 5 ? "hidden print:block" : ""}`}>
                 <p className="text-xs text-slate-400">{fecha(e.fecha_atencion)}</p>
-                <p className="font-medium text-slate-800">{e.diagnostico}</p>
+                <p className="font-medium text-slate-800">
+                  {e.codigo_cie10 && <span className="mr-2 font-mono text-xs text-blue-800" title={e.cie10}>{e.codigo_cie10}</span>}
+                  {e.diagnostico}
+                </p>
                 {e.tratamiento && <p className="text-sm text-slate-600">{e.tratamiento}</p>}
               </div>
             ))}

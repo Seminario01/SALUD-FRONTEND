@@ -6,6 +6,7 @@ import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import { TEXTO_LARGO } from "../utils/validacion";
 import BuscadorPaciente from "../components/BuscadorPaciente";
 import { useAvisos } from "../components/Avisos";
+import BuscadorCIE10 from "../components/BuscadorCIE10";
 
 // Un expediente clínico es información sensible, siempre ligada a UN paciente:
 // el backend expone GET /expedientes/<paciente_id> (médico, admin o el propio
@@ -19,6 +20,7 @@ function formatoFecha(texto) {
 function FormularioAtencion({ pacienteId, onRegistrada }) {
   const VACIO = { diagnostico: "", tratamiento: "", notas: "", cita_id: "" };
   const [datos, setDatos] = useState(VACIO);
+  const [cie, setCie] = useState(null);          // { codigo, descripcion } del catálogo CIE-10
   const [citas, setCitas] = useState([]);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
@@ -41,7 +43,8 @@ function FormularioAtencion({ pacienteId, onRegistrada }) {
     setEnviando(true);
     setError(null);
     const cuerpo = {
-      diagnostico: datos.diagnostico,
+      diagnostico: datos.diagnostico || undefined,
+      codigo_cie10: cie?.codigo,
       tratamiento: datos.tratamiento || undefined,
       notas: datos.notas || undefined,
       cita_id: datos.cita_id ? Number(datos.cita_id) : undefined,
@@ -51,6 +54,7 @@ function FormularioAtencion({ pacienteId, onRegistrada }) {
       .then(() => {
         avisos.exito("Atención registrada en el expediente.");
         setDatos(VACIO);
+        setCie(null);
         onRegistrada();
       })
       .catch((err) => setError(mensajeError(err)))
@@ -62,9 +66,17 @@ function FormularioAtencion({ pacienteId, onRegistrada }) {
     <form onSubmit={enviar} className="bg-white border rounded-lg p-4 shadow-sm mb-6">
       <h2 className="font-bold text-gray-700 mb-3">Registrar atención</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="text-sm md:col-span-2">
+          <span>Código CIE-10 (recomendado)</span>
+          <BuscadorCIE10 valor={cie} onElegir={(o) => {
+            setCie(o);
+            // Si todavía no escribió el diagnóstico, se propone el nombre oficial (lo puede cambiar)
+            if (o && !datos.diagnostico) setDatos((d) => ({ ...d, diagnostico: o.descripcion }));
+          }} />
+        </div>
         <label className="text-sm">
-          Diagnóstico *
-          <input name="diagnostico" value={datos.diagnostico} onChange={cambiar} required maxLength={TEXTO_LARGO} className={campo} />
+          Diagnóstico {cie ? "" : "*"}
+          <input name="diagnostico" value={datos.diagnostico} onChange={cambiar} required={!cie} maxLength={TEXTO_LARGO} className={campo} />
         </label>
         <label className="text-sm">
           Cita asociada (opcional)
@@ -112,7 +124,10 @@ function Historial({ registros }) {
             {formatoFecha(e.fecha_atencion)}
             {e.cita_id && <span> · cita #{e.cita_id}</span>}
           </p>
-          <p className="font-bold text-gray-700">{e.diagnostico}</p>
+          <p className="font-bold text-gray-700">
+            {e.codigo_cie10 && <span className="mr-2 rounded bg-blue-50 border border-blue-200 px-1.5 py-0.5 font-mono text-xs text-blue-900" title={e.cie10}>{e.codigo_cie10}</span>}
+            {e.diagnostico}
+          </p>
           {e.tratamiento && <p className="text-sm text-gray-600">Tratamiento: {e.tratamiento}</p>}
           {e.notas && <p className="text-sm text-gray-500 italic">Notas: {e.notas}</p>}
         </div>
