@@ -229,7 +229,12 @@ export default function Citas() {
     if (!si) return;
     setErrorAccion(null);
     client.delete(`/citas/${cita.id}`)
-      .then(() => { avisos.exito(`Cita No. ${cita.id} cancelada.`); cargar(); })
+      .then((r) => {
+        avisos.exito(`Cita No. ${cita.id} cancelada.`);
+        const esperan = r.data.data?.en_lista_espera;
+        if (esperan) avisos.info(`Se liberó un espacio: ${esperan} paciente(s) en la lista de espera (botón "Lista de espera").`);
+        cargar();
+      })
       .catch((err) => setErrorAccion(mensajeError(err)));
   }
 
@@ -247,6 +252,9 @@ export default function Citas() {
             </Link>
             <Link to="/citas/recordatorios" className="text-sm px-3 py-1.5 rounded border border-blue-700 text-blue-800 hover:bg-blue-50">
               Recordatorio de citas de mañana
+            </Link>
+            <Link to="/citas/lista-espera" className="text-sm px-3 py-1.5 rounded border border-blue-700 text-blue-800 hover:bg-blue-50">
+              Lista de espera
             </Link>
           </div>
         )}
