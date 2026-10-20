@@ -46,3 +46,11 @@ cd ~/proyecto-salud/SALUD-BACKEND/deploy && docker compose ps
 - Los errores se muestran con `mensajeError(err)` de ese mismo archivo: usa el mensaje
   del backend y, si no viene, uno en español según el código. No mostrar `err.message`.
 - Antes de hacer commit: `npx eslint src` y `npm run build`.
+
+## Pruebas de pantallas (Playwright)
+
+`e2e/` con `@playwright/test` (versión fija): cada puesto de prueba entra por el Login Único y abre
+todas las opciones de su menú en celular (sin salirse de lado) y en computadora, sin errores de
+JavaScript ni respuestas 5xx; y el recorrido Recepción registra -> Médico receta -> Farmacia despacha.
+En la PC (con backend, Keycloak y simuladores encendidos), usando el Chrome instalado:
+`E2E_CANAL=chrome npx playwright test`. En GitHub corren dentro de las pruebas completas del backend.
