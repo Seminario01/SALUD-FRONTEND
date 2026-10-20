@@ -10,6 +10,7 @@ import { useAvisos } from "../components/Avisos";
 import AlergiasPaciente from "../components/Alergias";
 import SignosVitales from "../components/SignosVitales";
 import ConstanciasPaciente from "../components/ConstanciasPaciente";
+import LaboratorioPaciente from "../components/LaboratorioPaciente";
 
 const COLOR_HOSPITALIZACION = {
   PENDIENTE: "bg-yellow-100 text-yellow-800",
@@ -426,6 +427,7 @@ export default function FichaPaciente() {
         </Seccion>
       )}
 
+      {puede("laboratorio.ver") && <LaboratorioPaciente pacienteId={id} />}
       {puede("constancias.ver") && <ConstanciasPaciente pacienteId={id} atenciones={atenciones ?? []} />}
       <PieImpreso />
     </div>

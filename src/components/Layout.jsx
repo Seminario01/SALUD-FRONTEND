@@ -34,6 +34,7 @@ export default function Layout() {
     { to: "/expedientes", texto: r.esPersonal ? "Expedientes" : "Mi expediente", ver: r.puede("expediente.ver") || r.esCiudadano },
     { to: "/hospitalizacion", texto: "Hospitalización", ver: r.puede("hospitalizacion.ver") },
     { to: "/recetas", texto: r.esPersonal ? "Recetas" : "Mis recetas", ver: r.puede("recetas.ver") || r.esCiudadano },
+    { to: "/laboratorio", texto: "Laboratorio", ver: r.puede("laboratorio.ver") },
     { to: "/caja", texto: "Caja", ver: r.puede("cuentas.ver"), grupo: true },
     { to: "/inventario", texto: "Inventario", ver: r.puede("inventario.ver"), grupo: true },
     { to: "/recursos", texto: "Recursos", ver: r.puede("recursos.ver"), grupo: true },

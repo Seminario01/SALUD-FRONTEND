@@ -26,7 +26,8 @@ import Recordatorios from "./pages/Recordatorios";
 import Agenda from "./pages/Agenda";
 import VerificarReceta from "./pages/VerificarReceta";
 import VerificarConstancia from "./pages/VerificarConstancia";
-import { ConstanciaImpresa, ConstanciaVacunacion, EstadoCuentaImpreso, RecetaImpresa, ResumenPaciente } from "./pages/Documentos";
+import { ConstanciaImpresa, ConstanciaVacunacion, EstadoCuentaImpreso, LaboratorioImpreso, RecetaImpresa, ResumenPaciente } from "./pages/Documentos";
+import Laboratorio from "./pages/Laboratorio";
 
 // Al regresar del Login Único se vuelve a la página que se había pedido (receta, ficha, etc.)
 function VolverTrasLogin() {
@@ -54,6 +55,7 @@ export default function App() {
         {/* Documentos para imprimir o guardar como PDF: sin el menú */}
         <Route path="/imprimir/receta/:id" element={<ProtectedRoute><RecetaImpresa /></ProtectedRoute>} />
         <Route path="/imprimir/constancia/:id" element={<ProtectedRoute><ConstanciaImpresa /></ProtectedRoute>} />
+        <Route path="/imprimir/laboratorio/:id" element={<ProtectedRoute><LaboratorioImpreso /></ProtectedRoute>} />
         <Route path="/imprimir/cuenta/:id" element={<ProtectedRoute><EstadoCuentaImpreso /></ProtectedRoute>} />
         <Route path="/imprimir/vacunacion/:id" element={<ProtectedRoute><ConstanciaVacunacion /></ProtectedRoute>} />
         <Route path="/imprimir/resumen/:id" element={<ProtectedRoute><ResumenPaciente /></ProtectedRoute>} />
@@ -76,6 +78,7 @@ export default function App() {
           <Route path="/vacunacion" element={<Vacunacion />} />
           <Route path="/expedientes" element={<Expedientes />} />
           <Route path="/recetas" element={<Recetas />} />
+          <Route path="/laboratorio" element={<Laboratorio />} />
           <Route path="/inventario" element={<Inventario />} />
           <Route path="/hospitalizacion" element={<Hospitalizacion />} />
           <Route path="/caja" element={<Caja />} />

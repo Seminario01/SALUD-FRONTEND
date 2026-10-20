@@ -4,12 +4,14 @@ import client, { mensajeError } from "../api/client";
 import { Dato, HojaDocumento, LineaFirma } from "../components/Impresion";
 import CodigoQR from "../components/CodigoQR";
 import { ESTADO_CUENTA, descripcionCuenta, quetzales } from "../utils/caja";
+import { ESTADO_ORDEN, NIVEL, fueraDeRango } from "../utils/laboratorio";
 
 // Documentos formales para imprimir o guardar como PDF:
 //   /imprimir/receta/:id        Receta médica
 //   /imprimir/cuenta/:id        Estado de cuenta
 //   /imprimir/vacunacion/:id    Constancia de vacunación (id del paciente)
 //   /imprimir/constancia/:id    Constancia de consulta o incapacidad (con QR verificable)
+//   /imprimir/laboratorio/:id   Orden o informe de resultados de laboratorio
 // Los permisos los aplica el backend: si el usuario no puede ver el dato, se muestra el mensaje.
 
 const fechaHora = (t) => (t ? new Date(String(t).replace(" ", "T")).toLocaleString("es-GT", { dateStyle: "long", timeStyle: "short" }) : "—");
@@ -162,6 +164,76 @@ export function ConstanciaImpresa() {
           <div className="flex items-end justify-between gap-6">
             <VerificacionQR enlace={`/verificar/constancia/${c.codigo_verificacion}`} que="esta constancia" />
             <LineaFirma texto={`${c.medico || "Médico tratante"} · Firma y sello`} />
+          </div>
+        </>
+      )}
+    </HojaDocumento>
+  );
+}
+
+// ------------------------------------------------------------------ Laboratorio
+export function LaboratorioImpreso() {
+  const { id } = useParams();
+  const { datos, cargando, error } = useDocumento([`/laboratorio/ordenes/${id}`]);
+  const o = datos?.[0];
+  const listo = o?.estado === "COMPLETADA";
+  const anios = edad(o?.paciente_fecha_nacimiento);
+  return (
+    <HojaDocumento titulo={`${listo ? "Informe de laboratorio" : "Orden de laboratorio"} No. ${id}`} detalle={o ? fechaHora(o.fecha) : null}
+      cargando={cargando} error={error}>
+      {o && (
+        <>
+          <div className="flex items-start justify-between gap-4 mb-5">
+            <dl className="grid grid-cols-2 gap-x-8 gap-y-3 flex-1">
+              <Dato etiqueta="Paciente">{o.paciente}</Dato>
+              <Dato etiqueta="DPI">{o.paciente_cui}</Dato>
+              <Dato etiqueta="Edad y sexo">{[anios !== null ? `${anios} años` : null, o.paciente_genero].filter(Boolean).join(" · ") || null}</Dato>
+              <Dato etiqueta="Médico que ordena">{o.medico ? `Dr(a). ${o.medico}` : null}</Dato>
+              <Dato etiqueta="Toma de muestra">{o.fecha_muestra ? fechaHora(o.fecha_muestra) : "Pendiente"}</Dato>
+              <Dato etiqueta="Resultados">{listo ? fechaHora(o.fecha_resultado) : (ESTADO_ORDEN[o.estado]?.texto ?? o.estado)}</Dato>
+            </dl>
+            {o.prioridad === "URGENTE" && <Sello texto="Urgente" clase="border-red-700 text-red-700" />}
+            {o.estado === "ANULADA" && <Sello texto="Anulada" clase="border-red-700 text-red-700" />}
+          </div>
+          {o.indicaciones && <p className="mb-4"><span className="text-[11px] uppercase tracking-wide text-slate-500">Indicaciones: </span>{o.indicaciones}</p>}
+
+          {o.examenes.map((e) => (
+            <section key={e.codigo} className="mb-5 break-inside-avoid">
+              <h2 className="font-semibold text-blue-900 border-b-2 border-slate-300 pb-1 mb-1">{e.nombre}
+                <span className="ml-2 text-xs font-normal text-slate-500">{e.categoria}</span></h2>
+              {e.resultados ? (
+                <table className="w-full table-fixed text-left text-sm border-collapse">
+                  <colgroup><col className="w-[38%]" /><col className="w-[16%]" /><col className="w-[16%]" /><col className="w-[30%]" /></colgroup>
+                  <thead>
+                    <tr className="text-[11px] uppercase tracking-wide text-slate-500 border-b border-slate-200">
+                      <th className="py-1 pr-2">Parámetro</th><th className="py-1 pr-2 text-right">Resultado</th>
+                      <th className="py-1 pr-2">Unidad</th><th className="py-1">Valores de referencia</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {e.resultados.map((r) => {
+                      const fuera = fueraDeRango(r.nivel);
+                      return (
+                        <tr key={r.clave} className="border-b border-slate-100">
+                          <td className="py-1 pr-2">{r.nombre}</td>
+                          <td className={`py-1 pr-2 text-right tabular-nums ${fuera ? "font-bold" : ""}`}>
+                            {r.valor ?? "—"}{fuera && <span aria-label={NIVEL[r.nivel].texto}> {NIVEL[r.nivel].flecha}</span>}
+                          </td>
+                          <td className="py-1 pr-2 text-slate-600">{r.unidad}</td>
+                          <td className="py-1 text-slate-600">{r.referencia}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : <p className="text-sm text-slate-500">Resultados pendientes.</p>}
+            </section>
+          ))}
+          {listo && <p className="text-xs text-slate-500 mb-3">↑ alto · ↓ bajo · * anormal. Valores de referencia para adultos; el médico interpreta los resultados.</p>}
+          {o.observaciones && <p className="mb-4"><span className="text-[11px] uppercase tracking-wide text-slate-500">Observaciones: </span>{o.observaciones}</p>}
+          {o.estado === "ANULADA" && <p className="text-red-700 mb-2">Motivo de la anulación: {o.motivo_anulacion}</p>}
+          <div className="flex justify-end">
+            <LineaFirma texto={listo ? `${o.resultado_por || "Responsable"} · Procesó` : `${o.medico || "Médico"} · Firma y sello`} />
           </div>
         </>
       )}

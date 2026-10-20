@@ -37,6 +37,7 @@ export default function MiResumen() {
   const [hospitalizaciones, setHospitalizaciones] = useState([]);
   const [cuentas, setCuentas] = useState([]);
   const [constancias, setConstancias] = useState([]);
+  const [laboratorio, setLaboratorio] = useState([]);
   const [codigo, setCodigo] = useState(null);
   const [copiado, setCopiado] = useState(false);
 
@@ -50,6 +51,7 @@ export default function MiResumen() {
         client.get("/hospitalizaciones").then((r) => setHospitalizaciones(r.data.data)).catch(() => setHospitalizaciones([]));
         client.get("/cuentas").then((r) => setCuentas(r.data.data)).catch(() => setCuentas([]));
         client.get("/constancias").then((r) => setConstancias(r.data.data.filter((c) => c.estado === "VIGENTE"))).catch(() => setConstancias([]));
+        client.get("/laboratorio/ordenes").then((r) => setLaboratorio(r.data.data.filter((o) => o.estado !== "ANULADA"))).catch(() => setLaboratorio([]));
         client.get(`/vacunacion/${p.id}`).then((r) => setVacunacion(r.data.data)).catch(() => setVacunacion(null));
         client
           .get(`/expedientes/${p.id}`)
@@ -183,6 +185,22 @@ export default function MiResumen() {
               </>
             )}
           </Tarjeta>
+
+          {laboratorio.length > 0 && (
+            <Tarjeta titulo="Mis exámenes de laboratorio">
+              <ul className="space-y-2 text-sm">
+                {laboratorio.slice(0, 4).map((o) => (
+                  <li key={o.id} className="flex items-center justify-between gap-3">
+                    <span>{o.examenes.map((e) => e.nombre).join(", ")}</span>
+                    {o.estado === "COMPLETADA"
+                      ? <Link to={`/imprimir/laboratorio/${o.id}`} className="text-blue-700 hover:underline whitespace-nowrap">Ver resultados</Link>
+                      : <span className="text-amber-700 whitespace-nowrap">{o.estado === "PENDIENTE" ? "Falta la muestra" : "En proceso"}</span>}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-slate-500 mt-3">Su médico le explicará los resultados en la próxima consulta.</p>
+            </Tarjeta>
+          )}
 
           {constancias.length > 0 && (
             <Tarjeta titulo="Mis constancias">
