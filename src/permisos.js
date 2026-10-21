@@ -51,6 +51,8 @@ export const PERMISOS = {
   "constancias.emitir": [MED],
   "constancias.anular": [MED, JEF],
   "laboratorio.ver": [MED, ENF, JEF, ADM],
+  "vigilancia.ver": [MED, ENF, JEF, ADM, ...ROLES_AUDITORIA],
+  "vigilancia.pacientes": [MED, JEF],
   "laboratorio.ordenar": [MED],
   "laboratorio.procesar": [ENF],
   "laboratorio.anular": [MED, JEF],

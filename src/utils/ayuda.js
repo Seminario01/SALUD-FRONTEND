@@ -18,6 +18,7 @@ export const AYUDA = {
     consejos: [
       { si: "pacientes.registrar", texto: "Para registrar llene al menos el nombre. Si el sistema encuentra a alguien parecido (mismo DPI, mismo nombre o nombre parecido con la misma fecha de nacimiento), avisa antes de crear un duplicado." },
       { si: "pacientes.registrar", texto: "Anote las alergias desde el registro: el médico verá el aviso al recetar." },
+      { si: "pacientes.registrar", texto: "Registre el departamento, municipio y zona donde vive: con eso funciona el mapa de vigilancia epidemiológica. Si escribe el DPI, el sistema sugiere el municipio de inscripción." },
       { texto: "Busque por nombre o CUI y abra la ficha para ver todo lo del paciente en un solo lugar." },
     ],
   },
@@ -91,6 +92,17 @@ export const AYUDA = {
       { si: "laboratorio.procesar", texto: "Use «Tomar muestra» y luego «Registrar resultados». Al digitar, lo que sale del rango normal se pone en rojo. Puede guardar avances y entregar cuando estén todos." },
       { si: "laboratorio.procesar", texto: "El sistema rechaza valores imposibles (por ejemplo una hemoglobina de 132) para evitar errores de digitación." },
       { texto: "El informe impreso marca ↑ alto, ↓ bajo y * anormal junto a los valores de referencia." },
+    ],
+  },
+  "/vigilancia": {
+    titulo: "Vigilancia epidemiológica",
+    consejos: [
+      { texto: "El mapa pinta cada municipio según los casos de pacientes que viven ahí (más oscuro = más casos). Solo cuentan las atenciones con código CIE-10 y los pacientes con residencia registrada." },
+      { texto: "Filtre por período, enfermedad (dengue, diarreas, respiratorias...), departamento, sexo y edad. Al elegir un departamento, el mapa se acerca." },
+      { texto: "El borde rojo y el aviso ⚠ marcan un posible brote: 3 o más casos en los últimos 7 días y más del doble del promedio de las 4 semanas anteriores. Es para investigar, no confirma un brote." },
+      { si: "vigilancia.pacientes", texto: "Toque un municipio y «Ver quiénes son los casos» para la lista con nombre, edad, zona y diagnóstico. Esa consulta queda en la bitácora." },
+      { texto: "Los municipios rayados tienen menos de 3 pacientes: para no identificar a nadie, a su puesto no se le muestra la cifra." },
+      { si: "pacientes.registrar", texto: "Para que el mapa sirva, registre el municipio y la zona donde vive cada paciente (el DPI solo dice dónde se inscribió)." },
     ],
   },
   "/vacunacion": {

@@ -6,6 +6,7 @@ import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import { REGLAS, reglasNacimiento } from "../utils/validacion";
 import { useAvisos } from "../components/Avisos";
+import SelectorResidencia from "../components/SelectorResidencia";
 
 const PACIENTE_VACIO = {
   nombre_completo: "",
@@ -16,6 +17,8 @@ const PACIENTE_VACIO = {
   tipo_seguro: "",
   cuidador: "",
   alergias: "",
+  municipio: "",
+  zona: "",
 };
 
 function FormularioPaciente({ onCreado }) {
@@ -123,6 +126,8 @@ function FormularioPaciente({ onCreado }) {
           Alergias
           <input name="alergias" value={datos.alergias} onChange={cambiar} maxLength={500} placeholder="Ej.: Penicilina, AINE" className={campo} />
         </label>
+        <SelectorResidencia municipio={datos.municipio} zona={datos.zona} cui={datos.cui} campo={campo}
+          onCambio={(c) => setDatos((d) => ({ ...d, ...c }))} />
       </div>
       <div className="mt-3 flex items-center gap-3">
         <button

@@ -53,6 +53,14 @@ cd ~/proyecto-salud/SALUD-BACKEND/deploy && docker compose ps
 producción, en `main.jsx`). El service worker **no guarda datos**: solo muestra `sin-conexion.html`
 si no hay internet; páginas y API van siempre a la red. Si se cambia, subir `CACHE` de versión.
 
+## Vigilancia epidemiológica (mapa de calor)
+
+`pages/Vigilancia.jsx` dibuja `GET /vigilancia/casos` con `components/MapaGuatemala.jsx` (SVG propio,
+sin librerías) sobre `public/mapas/guatemala.geojson`: límites de CONRED/OCHA (HDX `cod-ab-gtm`,
+licencia CC BY-IGO, **citar la fuente** donde se muestre), simplificados (~360 KB). Escala secuencial
+de un tono (azul); "pocos" con rayado; posible brote con borde rojo + ⚠ y texto. La residencia del
+paciente se elige con `components/SelectorResidencia.jsx` (sugiere el municipio de inscripción del DPI).
+
 ## Ayuda dentro del sistema
 
 Botón "?" del encabezado (`components/Ayuda.jsx`): consejos de la pantalla actual en `utils/ayuda.js`

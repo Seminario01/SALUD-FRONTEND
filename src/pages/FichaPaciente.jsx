@@ -10,6 +10,7 @@ import { useAvisos } from "../components/Avisos";
 import AlergiasPaciente from "../components/Alergias";
 import SignosVitales from "../components/SignosVitales";
 import ConstanciasPaciente from "../components/ConstanciasPaciente";
+import SelectorResidencia from "../components/SelectorResidencia";
 import LaboratorioPaciente from "../components/LaboratorioPaciente";
 
 const COLOR_HOSPITALIZACION = {
@@ -71,6 +72,8 @@ function FormularioEdicion({ paciente, puedeTodo, onGuardado, onCancelar }) {
     telefono: paciente.telefono ?? "",
     tipo_seguro: paciente.tipo_seguro ?? "",
     cuidador: paciente.cuidador ?? "",
+    municipio: paciente.municipio ?? "",
+    zona: paciente.zona ?? "",
   });
   const [codigo, setCodigo] = useState("");
   const [guardando, setGuardando] = useState(false);
@@ -84,7 +87,7 @@ function FormularioEdicion({ paciente, puedeTodo, onGuardado, onCancelar }) {
     setError(null);
     const cuerpo = puedeTodo
       ? { ...datos, ...(codigo.trim() ? { usuario_sub: codigo.trim() } : {}) }
-      : { telefono: datos.telefono, tipo_seguro: datos.tipo_seguro, cuidador: datos.cuidador };
+      : { telefono: datos.telefono, tipo_seguro: datos.tipo_seguro, cuidador: datos.cuidador, municipio: datos.municipio, zona: datos.zona };
     client
       .put(`/pacientes/${paciente.id}`, cuerpo)
       .then(onGuardado)
@@ -128,6 +131,8 @@ function FormularioEdicion({ paciente, puedeTodo, onGuardado, onCancelar }) {
       <label className="text-sm md:col-span-2">Cuidador / responsable
         <input name="cuidador" value={datos.cuidador} onChange={cambiar} {...REGLAS.cuidador} className={campo} />
       </label>
+      <SelectorResidencia municipio={datos.municipio} zona={datos.zona} cui={datos.cui} campo={campo}
+        onCambio={(c) => setDatos((d) => ({ ...d, ...c }))} />
       {puedeTodo && (
         <label className="text-sm md:col-span-3">
           Código de vinculación del ciudadano
@@ -267,6 +272,8 @@ export default function FichaPaciente() {
             <div><dt className="text-slate-400">Teléfono</dt><dd>{paciente.telefono || "—"}</dd></div>
             <div><dt className="text-slate-400">Seguro</dt><dd>{paciente.tipo_seguro || "—"}</dd></div>
             <div className="col-span-2"><dt className="text-slate-400">Cuidador / responsable</dt><dd>{paciente.cuidador || "—"}</dd></div>
+            <div className="col-span-2"><dt className="text-slate-400">Residencia</dt>
+              <dd>{paciente.municipio ? `${[paciente.zona, paciente.municipio_nombre, paciente.departamento_nombre].filter(Boolean).join(", ")}` : "Sin registrar"}</dd></div>
           </dl>
         )}
       </Seccion>
