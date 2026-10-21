@@ -12,6 +12,7 @@ import SignosVitales from "../components/SignosVitales";
 import ConstanciasPaciente from "../components/ConstanciasPaciente";
 import SelectorResidencia from "../components/SelectorResidencia";
 import LaboratorioPaciente from "../components/LaboratorioPaciente";
+import CrecimientoInfantil from "../components/CrecimientoInfantil";
 
 const COLOR_HOSPITALIZACION = {
   PENDIENTE: "bg-yellow-100 text-yellow-800",
@@ -357,6 +358,8 @@ export default function FichaPaciente() {
           </div>
         </Seccion>
       )}
+
+      {puedeVerClinico && <CrecimientoInfantil pacienteId={id} />}
 
       {puedeVerClinico && (
         <Seccion titulo="Signos vitales">

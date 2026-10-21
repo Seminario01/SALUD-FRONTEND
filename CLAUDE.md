@@ -61,6 +61,12 @@ licencia CC BY-IGO, **citar la fuente** donde se muestre), simplificados (~360 K
 de un tono (azul); "pocos" con rayado; posible brote con borde rojo + ⚠ y texto. La residencia del
 paciente se elige con `components/SelectorResidencia.jsx` (sugiere el municipio de inscripción del DPI).
 
+## Crecimiento infantil
+
+`components/CrecimientoInfantil.jsx` (en la ficha, solo de 0 a 5 años): clasificación de la última
+medición, formulario (Médico y Enfermería) y gráficas SVG de talla/edad, peso/edad y peso/talla con las
+líneas de la OMS (0, ±2, ±3 DE) que manda `GET /pacientes/{id}/crecimiento`; anillo rojo fuera de ±2.
+
 ## Ayuda dentro del sistema
 
 Botón "?" del encabezado (`components/Ayuda.jsx`): consejos de la pantalla actual en `utils/ayuda.js`

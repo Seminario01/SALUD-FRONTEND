@@ -28,6 +28,7 @@ export const AYUDA = {
       { texto: "La ficha reúne datos, alergias, citas, vacunas, expediente, signos vitales, laboratorio, recetas, constancias y cuentas (cada puesto ve lo que le corresponde)." },
       { si: "pacientes.alergias", texto: "Las alergias se editan en el recuadro rojo de arriba. Escriba nombres o familias (penicilina, sulfas, AINE): el sistema avisa al recetar algo que choque." },
       { si: "constancias.emitir", texto: "En «Constancias e incapacidades» emita una constancia de consulta o una incapacidad con días de reposo. Sale con un código QR que el patrono puede verificar." },
+      { si: "crecimiento.registrar", texto: "En niños de 0 a 5 años aparece «Crecimiento (OMS)»: registre peso y talla (acostado antes de los 2 años). El sistema calcula la puntuación z y avisa de desnutrición crónica, aguda, bajo peso o sobrepeso." },
       { si: "expediente.ver", texto: "«Resumen para referencia» arma un documento imprimible para enviar al paciente a otro hospital." },
       { texto: "El botón imprimir del navegador saca la ficha completa, sin botones." },
     ],
