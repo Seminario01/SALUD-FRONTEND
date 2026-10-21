@@ -243,7 +243,14 @@ export default function Pacientes() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Pacientes</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">Pacientes</h1>
+        {puedeRegistrarPacientes && (
+          <Link to="/pacientes/residencia" className="text-sm px-3 py-1.5 rounded border border-blue-700 text-blue-800 hover:bg-blue-50">
+            Completar residencia de pacientes
+          </Link>
+        )}
+      </div>
 
       {puedeRegistrarPacientes && <FormularioPaciente onCreado={cargar} />}
 

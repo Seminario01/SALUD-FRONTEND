@@ -30,6 +30,7 @@ import { ConstanciaImpresa, ConstanciaVacunacion, EstadoCuentaImpreso, Laborator
 import Laboratorio from "./pages/Laboratorio";
 import ListaEspera from "./pages/ListaEspera";
 import Vigilancia from "./pages/Vigilancia";
+import CompletarResidencia from "./pages/CompletarResidencia";
 
 // Al regresar del Login Único se vuelve a la página que se había pedido (receta, ficha, etc.)
 function VolverTrasLogin() {
@@ -70,6 +71,7 @@ export default function App() {
         >
           <Route path="/" element={<Dashboard />} />
           <Route path="/pacientes" element={<Pacientes />} />
+          <Route path="/pacientes/residencia" element={<CompletarResidencia />} />
           <Route path="/pacientes/:id" element={<FichaPaciente />} />
           <Route path="/citas" element={<Citas />} />
           <Route path="/citas/recordatorios" element={<Recordatorios />} />

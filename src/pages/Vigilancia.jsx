@@ -88,7 +88,9 @@ export default function Vigilancia() {
 
   const valores = useMemo(() => Object.fromEntries((datos?.municipios ?? []).filter((m) => !m.pocos).map((m) => [m.codigo, m.casos])), [datos]);
   const pocos = useMemo(() => new Set((datos?.municipios ?? []).filter((m) => m.pocos).map((m) => m.codigo)), [datos]);
-  const alertas = useMemo(() => new Set((datos?.alertas ?? []).map((a) => a.municipio)), [datos]);
+  // Sin filtro de enfermedad, el backend también revisa cada enfermedad por separado (más preciso)
+  const listaAlertas = datos?.alertas_por_enfermedad?.length ? datos.alertas_por_enfermedad : (datos?.alertas ?? []);
+  const alertas = useMemo(() => new Set([...(datos?.alertas ?? []), ...(datos?.alertas_por_enfermedad ?? [])].map((a) => a.municipio)), [datos]);
   const maximo = Math.max(0, ...Object.values(valores));
   const detalle = datos?.municipios.find((m) => m.codigo === elegido);
   const nombreElegido = detalle?.nombre ?? ub?.municipios?.find((m) => m.codigo === elegido)?.nombre;
@@ -150,12 +152,12 @@ export default function Vigilancia() {
 
       {error && <p className="text-sm text-red-600 mb-4">No se pudo consultar: {error}</p>}
 
-      {datos?.alertas.length > 0 && (
+      {listaAlertas.length > 0 && (
         <section role="alert" className="mb-4 rounded-lg border-2 border-red-300 bg-red-50 p-3">
-          <p className="font-semibold text-red-900">⚠ {datos.alertas.length === 1 ? "Posible brote" : `${datos.alertas.length} posibles brotes`}: aumento inusual de casos</p>
+          <p className="font-semibold text-red-900">⚠ {listaAlertas.length === 1 ? "Posible brote" : `${listaAlertas.length} posibles brotes`}: aumento inusual de casos</p>
           <ul className="mt-1 space-y-1 text-sm text-red-900">
-            {datos.alertas.map((a) => (
-              <li key={a.municipio}>
+            {listaAlertas.map((a) => (
+              <li key={`${a.municipio}-${a.grupo ?? ""}`}>
                 <button onClick={() => elegir(a.municipio)} className="font-semibold underline">{a.nombre}, {a.departamento_nombre}</button>: {a.texto}.
               </li>
             ))}
@@ -176,6 +178,7 @@ export default function Vigilancia() {
           <p className="mt-2 text-[11px] text-slate-400">
             Toque un municipio para ver el detalle. Límites municipales: CONRED / OCHA (HDX), licencia CC BY-IGO.
             {datos?.sin_ubicacion > 0 && ` ${datos.sin_ubicacion} atención(es) del período no entran porque el paciente no tiene municipio de residencia registrado.`}
+            {datos?.sin_ubicacion > 0 && puede("pacientes.registrar") && <> <Link to="/pacientes/residencia" className="text-blue-700 hover:underline">Completar residencias →</Link></>}
           </p>
         </section>
 

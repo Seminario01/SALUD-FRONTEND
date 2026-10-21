@@ -31,11 +31,22 @@ function TarjetaResumen({ titulo, valor, detalle, to, color }) {
 
 // Lo que hay que atender ya (GET /panel -> atencion_hoy; cada puesto recibe solo lo suyo)
 function AtencionHoy({ datos }) {
-  const { triage, laboratorio, lista_espera: espera } = datos;
+  const { triage, laboratorio, lista_espera: espera, vigilancia } = datos;
   const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
   return (
     <>
       <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Para atender ahora</h2>
+      {vigilancia?.posibles_brotes > 0 && (
+        <Link to="/vigilancia" role="alert"
+          className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border-2 border-red-300 bg-red-50 p-4 text-red-900 hover:bg-red-100">
+          <span className="text-2xl font-bold tabular-nums">⚠ {vigilancia.posibles_brotes}</span>
+          <span className="flex-1 min-w-48">
+            <span className="block font-semibold">{vigilancia.posibles_brotes === 1 ? "Posible brote" : "Posibles brotes"} en la vigilancia epidemiológica</span>
+            <span className="block text-sm">{vigilancia.detalle.join(" · ")}</span>
+          </span>
+          <span className="text-sm font-medium underline">Ver el mapa →</span>
+        </Link>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {triage && (
           <TarjetaResumen titulo="Urgencias en espera" valor={triage.urgentes_en_espera} to="/turnos"

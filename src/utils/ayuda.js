@@ -32,6 +32,14 @@ export const AYUDA = {
       { texto: "El botón imprimir del navegador saca la ficha completa, sin botones." },
     ],
   },
+  "/pacientes/residencia": {
+    titulo: "Completar residencia",
+    consejos: [
+      { texto: "Aquí están los pacientes sin municipio de residencia: sin él no aparecen en el mapa de vigilancia. Primero los que vinieron en los últimos 90 días." },
+      { texto: "Si el DPI sugiere un municipio y el paciente vive ahí, use «Vive ahí: guardar». Si no, elija departamento, municipio y zona y guarde." },
+      { texto: "El DPI dice dónde se inscribió la persona, no necesariamente dónde vive: confírmelo por teléfono o en la próxima visita." },
+    ],
+  },
   "/citas": {
     titulo: "Citas",
     consejos: [
