@@ -11,6 +11,7 @@ export const AYUDA = {
       { si: "inventario.ver", texto: "Farmacia ve aquí las recetas por despachar, los medicamentos bajo el mínimo y los que vencen en 60 días." },
       { si: "reportes.ver", texto: "En «Diagnósticos más frecuentes» elija el período; se puede bajar en Excel o CSV." },
       { texto: "La lupa del encabezado busca pacientes por nombre o DPI desde cualquier pantalla." },
+      { texto: "Con el círculo de sus iniciales (arriba a la derecha) cambia a modo oscuro o claro y cierra la sesión. Las hojas para imprimir siempre salen en blanco." },
     ],
   },
   "/pacientes": {

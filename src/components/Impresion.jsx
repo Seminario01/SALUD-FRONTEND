@@ -74,7 +74,8 @@ export function HojaDocumento({ titulo, detalle, cargando, error, children }) {
         <button type="button" onClick={() => (window.history.length > 1 ? window.history.back() : window.location.assign("/"))}
           className="text-sm px-3 py-1.5 rounded border hover:bg-white">← Volver</button>
       </div>
-      <article className="max-w-3xl mx-auto bg-white shadow print:shadow-none rounded-lg print:rounded-none p-10 print:p-0 text-sm text-slate-800">
+      {/* "papel": en modo oscuro la hoja sigue blanca, como se va a imprimir */}
+      <article className="papel max-w-3xl mx-auto bg-white shadow print:shadow-none rounded-lg print:rounded-none p-10 print:p-0 text-sm text-slate-800">
         <EncabezadoImpreso titulo={titulo} detalle={detalle} siempre />
         {cargando && <p className="text-slate-500">Cargando el documento...</p>}
         {error && <p className="text-red-700">{error}</p>}

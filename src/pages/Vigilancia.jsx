@@ -13,7 +13,7 @@ import BotonesExportar from "../components/Exportar";
 
 const PERIODOS = [[7, "Últimos 7 días"], [28, "Últimas 4 semanas"], [90, "Últimos 3 meses"], [365, "Último año"]];
 const EDADES = [["", "Todas las edades"], ["0-4", "0 a 4 años"], ["5-14", "5 a 14 años"], ["15-59", "15 a 59 años"], ["60-130", "60 años o más"]];
-const ESCALA = ["#cde2fb", "#86b6ef", "#3987e5", "#1c5cab", "#0d366b"];
+const ESCALA = [1, 2, 3, 4, 5].map((i) => `var(--mapa-${i})`);   // index.css: en oscuro, más casos = más brillante
 const campo = "border rounded px-2 py-1.5 text-sm w-full";
 
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -25,7 +25,7 @@ function Celda({ valor, maximo }) {
   const i = Math.min(ESCALA.length - 1, Math.floor(((valor - 1) / Math.max(1, maximo)) * ESCALA.length));
   return (
     <td className="p-1 text-center">
-      <span className={`block rounded px-2 py-1 tabular-nums font-medium ${i >= 2 ? "text-white" : "text-slate-800"}`} style={{ background: ESCALA[i] }}>{valor}</span>
+      <span className="block rounded px-2 py-1 tabular-nums font-medium" style={{ background: ESCALA[i], color: `var(--mapa-texto-${i + 1})` }}>{valor}</span>
     </td>
   );
 }

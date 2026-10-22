@@ -1,0 +1,102 @@
+/* ARCHIVO GENERADO por scripts/modo-oscuro.mjs: no se edita a mano. */
+/* Colores del modo oscuro para las clases de Tailwind que usa la app (95 clases). */
+/* Van en la capa "utilities" con :where() para que hover:, focus: y dark: sigan ganando. */
+@media screen {
+  @layer utilities {
+    :where(html.dark) .bg-amber-100:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(76.9% 0.188 70.08) 20%, transparent); }
+    :where(html.dark) .bg-amber-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(76.9% 0.188 70.08) 12%, transparent); }
+    :where(html.dark) .bg-blue-100:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 20%, transparent); }
+    :where(html.dark) .bg-blue-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 12%, transparent); }
+    :where(html.dark) .bg-blue-50\/40:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 5%, transparent); }
+    :where(html.dark) .bg-emerald-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(69.6% 0.17 162.48) 12%, transparent); }
+    :where(html.dark) .bg-gray-100:not(:where(.papel, .papel *)) { background-color: oklch(27.9% 0.041 260.031); }
+    :where(html.dark) .bg-gray-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(27.9% 0.041 260.031) 50%, transparent); }
+    :where(html.dark) .bg-green-100:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(72.3% 0.219 149.579) 20%, transparent); }
+    :where(html.dark) .bg-green-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(72.3% 0.219 149.579) 12%, transparent); }
+    :where(html.dark) .bg-green-50\/50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(72.3% 0.219 149.579) 6%, transparent); }
+    :where(html.dark) .bg-orange-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(70.5% 0.213 47.604) 12%, transparent); }
+    :where(html.dark) .bg-red-100:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(63.7% 0.237 25.331) 20%, transparent); }
+    :where(html.dark) .bg-red-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(63.7% 0.237 25.331) 12%, transparent); }
+    :where(html.dark) .bg-slate-100:not(:where(.papel, .papel *)) { background-color: oklch(27.9% 0.041 260.031); }
+    :where(html.dark) .bg-slate-200:not(:where(.papel, .papel *)) { background-color: oklch(37.2% 0.044 257.287); }
+    :where(html.dark) .bg-slate-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(27.9% 0.041 260.031) 50%, transparent); }
+    :where(html.dark) .bg-white:not(:where(.papel, .papel *)) { background-color: oklch(20.8% 0.042 265.755); }
+    :where(html.dark) .bg-yellow-100:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(79.5% 0.184 86.047) 20%, transparent); }
+    :where(html.dark) .bg-yellow-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(79.5% 0.184 86.047) 12%, transparent); }
+    :where(html.dark) .border-amber-200:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(76.9% 0.188 70.08) 40%, transparent); }
+    :where(html.dark) .border-amber-300:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(76.9% 0.188 70.08) 50%, transparent); }
+    :where(html.dark) .border-blue-200:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 40%, transparent); }
+    :where(html.dark) .border-blue-300:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 50%, transparent); }
+    :where(html.dark) .border-emerald-300:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(69.6% 0.17 162.48) 50%, transparent); }
+    :where(html.dark) .border-green-200:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(72.3% 0.219 149.579) 40%, transparent); }
+    :where(html.dark) .border-green-300:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(72.3% 0.219 149.579) 50%, transparent); }
+    :where(html.dark) .border-orange-300:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(70.5% 0.213 47.604) 50%, transparent); }
+    :where(html.dark) .border-red-200:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(63.7% 0.237 25.331) 40%, transparent); }
+    :where(html.dark) .border-red-300:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(63.7% 0.237 25.331) 50%, transparent); }
+    :where(html.dark) .border-slate-100:not(:where(.papel, .papel *)) { border-color: oklch(27.9% 0.041 260.031); }
+    :where(html.dark) .border-slate-200:not(:where(.papel, .papel *)) { border-color: oklch(37.2% 0.044 257.287); }
+    :where(html.dark) .border-slate-300:not(:where(.papel, .papel *)) { border-color: oklch(44.6% 0.043 257.281); }
+    :where(html.dark) .border-yellow-200:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(79.5% 0.184 86.047) 40%, transparent); }
+    :where(html.dark) .border-yellow-300:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(79.5% 0.184 86.047) 50%, transparent); }
+    :where(html.dark) .divide-slate-100:not(:where(.papel, .papel *)) > :not(:last-child) { border-color: oklch(27.9% 0.041 260.031); }
+    :where(html.dark) .fill-slate-400:not(:where(.papel, .papel *)) { fill: oklch(55.4% 0.046 257.417); }
+    :where(html.dark) .fill-slate-500:not(:where(.papel, .papel *)) { fill: oklch(70.4% 0.04 256.788); }
+    :where(html.dark) .fill-slate-900:not(:where(.papel, .papel *)) { fill: oklch(96.8% 0.007 247.896); }
+    :where(html.dark) .hover\:bg-amber-100:not(:where(.papel, .papel *)):hover { background-color: color-mix(in oklab, oklch(76.9% 0.188 70.08) 20%, transparent); }
+    :where(html.dark) .hover\:bg-blue-50:not(:where(.papel, .papel *)):hover { background-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 12%, transparent); }
+    :where(html.dark) .hover\:bg-blue-50\/60:not(:where(.papel, .papel *)):hover { background-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 7%, transparent); }
+    :where(html.dark) .hover\:bg-emerald-50:not(:where(.papel, .papel *)):hover { background-color: color-mix(in oklab, oklch(69.6% 0.17 162.48) 12%, transparent); }
+    :where(html.dark) .hover\:bg-gray-100:not(:where(.papel, .papel *)):hover { background-color: oklch(27.9% 0.041 260.031); }
+    :where(html.dark) .hover\:bg-gray-50:not(:where(.papel, .papel *)):hover { background-color: color-mix(in oklab, oklch(27.9% 0.041 260.031) 50%, transparent); }
+    :where(html.dark) .hover\:bg-green-50:not(:where(.papel, .papel *)):hover { background-color: color-mix(in oklab, oklch(72.3% 0.219 149.579) 12%, transparent); }
+    :where(html.dark) .hover\:bg-red-100:not(:where(.papel, .papel *)):hover { background-color: color-mix(in oklab, oklch(63.7% 0.237 25.331) 20%, transparent); }
+    :where(html.dark) .hover\:bg-red-50:not(:where(.papel, .papel *)):hover { background-color: color-mix(in oklab, oklch(63.7% 0.237 25.331) 12%, transparent); }
+    :where(html.dark) .hover\:bg-slate-100:not(:where(.papel, .papel *)):hover { background-color: oklch(27.9% 0.041 260.031); }
+    :where(html.dark) .hover\:bg-slate-50:not(:where(.papel, .papel *)):hover { background-color: color-mix(in oklab, oklch(27.9% 0.041 260.031) 50%, transparent); }
+    :where(html.dark) .hover\:bg-white:not(:where(.papel, .papel *)):hover { background-color: oklch(20.8% 0.042 265.755); }
+    :where(html.dark) .hover\:border-blue-300:not(:where(.papel, .papel *)):hover { border-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 50%, transparent); }
+    :where(html.dark) .hover\:text-green-900:not(:where(.papel, .papel *)):hover { color: oklch(92.5% 0.084 155.995); }
+    :where(html.dark) .hover\:text-slate-700:not(:where(.papel, .papel *)):hover { color: oklch(86.9% 0.022 252.894); }
+    :where(html.dark) .ring-white:not(:where(.papel, .papel *)) { --tw-ring-color: oklch(20.8% 0.042 265.755); }
+    :where(html.dark) .stroke-slate-100:not(:where(.papel, .papel *)) { stroke: oklch(27.9% 0.041 260.031); }
+    :where(html.dark) .stroke-slate-200:not(:where(.papel, .papel *)) { stroke: oklch(37.2% 0.044 257.287); }
+    :where(html.dark) .stroke-slate-300:not(:where(.papel, .papel *)) { stroke: oklch(44.6% 0.043 257.281); }
+    :where(html.dark) .stroke-slate-400:not(:where(.papel, .papel *)) { stroke: oklch(55.4% 0.046 257.417); }
+    :where(html.dark) .stroke-white:not(:where(.papel, .papel *)) { stroke: oklch(20.8% 0.042 265.755); }
+    :where(html.dark) .text-amber-600:not(:where(.papel, .papel *)) { color: oklch(82.8% 0.189 84.429); }
+    :where(html.dark) .text-amber-700:not(:where(.papel, .papel *)) { color: oklch(87.9% 0.169 91.605); }
+    :where(html.dark) .text-amber-800:not(:where(.papel, .papel *)) { color: oklch(92.4% 0.12 95.746); }
+    :where(html.dark) .text-amber-900:not(:where(.papel, .papel *)) { color: oklch(92.4% 0.12 95.746); }
+    :where(html.dark) .text-blue-600:not(:where(.papel, .papel *)) { color: oklch(70.7% 0.165 254.624); }
+    :where(html.dark) .text-blue-700:not(:where(.papel, .papel *)) { color: oklch(80.9% 0.105 251.813); }
+    :where(html.dark) .text-blue-800:not(:where(.papel, .papel *)) { color: oklch(88.2% 0.059 254.128); }
+    :where(html.dark) .text-blue-900:not(:where(.papel, .papel *)) { color: oklch(88.2% 0.059 254.128); }
+    :where(html.dark) .text-emerald-800:not(:where(.papel, .papel *)) { color: oklch(90.5% 0.093 164.15); }
+    :where(html.dark) .text-emerald-900:not(:where(.papel, .papel *)) { color: oklch(90.5% 0.093 164.15); }
+    :where(html.dark) .text-gray-400:not(:where(.papel, .papel *)) { color: oklch(55.4% 0.046 257.417); }
+    :where(html.dark) .text-gray-500:not(:where(.papel, .papel *)) { color: oklch(70.4% 0.04 256.788); }
+    :where(html.dark) .text-gray-600:not(:where(.papel, .papel *)) { color: oklch(70.4% 0.04 256.788); }
+    :where(html.dark) .text-gray-700:not(:where(.papel, .papel *)) { color: oklch(86.9% 0.022 252.894); }
+    :where(html.dark) .text-gray-800:not(:where(.papel, .papel *)) { color: oklch(92.9% 0.013 255.508); }
+    :where(html.dark) .text-green-600:not(:where(.papel, .papel *)) { color: oklch(79.2% 0.209 151.711); }
+    :where(html.dark) .text-green-700:not(:where(.papel, .papel *)) { color: oklch(87.1% 0.15 154.449); }
+    :where(html.dark) .text-green-800:not(:where(.papel, .papel *)) { color: oklch(92.5% 0.084 155.995); }
+    :where(html.dark) .text-green-900:not(:where(.papel, .papel *)) { color: oklch(92.5% 0.084 155.995); }
+    :where(html.dark) .text-orange-600:not(:where(.papel, .papel *)) { color: oklch(75% 0.183 55.934); }
+    :where(html.dark) .text-orange-900:not(:where(.papel, .papel *)) { color: oklch(90.1% 0.076 70.697); }
+    :where(html.dark) .text-purple-600:not(:where(.papel, .papel *)) { color: oklch(71.4% 0.203 305.504); }
+    :where(html.dark) .text-red-600:not(:where(.papel, .papel *)) { color: oklch(70.4% 0.191 22.216); }
+    :where(html.dark) .text-red-700:not(:where(.papel, .papel *)) { color: oklch(80.8% 0.114 19.571); }
+    :where(html.dark) .text-red-800:not(:where(.papel, .papel *)) { color: oklch(88.5% 0.062 18.334); }
+    :where(html.dark) .text-red-900:not(:where(.papel, .papel *)) { color: oklch(88.5% 0.062 18.334); }
+    :where(html.dark) .text-slate-400:not(:where(.papel, .papel *)) { color: oklch(55.4% 0.046 257.417); }
+    :where(html.dark) .text-slate-500:not(:where(.papel, .papel *)) { color: oklch(70.4% 0.04 256.788); }
+    :where(html.dark) .text-slate-600:not(:where(.papel, .papel *)) { color: oklch(70.4% 0.04 256.788); }
+    :where(html.dark) .text-slate-700:not(:where(.papel, .papel *)) { color: oklch(86.9% 0.022 252.894); }
+    :where(html.dark) .text-slate-800:not(:where(.papel, .papel *)) { color: oklch(92.9% 0.013 255.508); }
+    :where(html.dark) .text-slate-900:not(:where(.papel, .papel *)) { color: oklch(96.8% 0.007 247.896); }
+    :where(html.dark) .text-teal-700:not(:where(.papel, .papel *)) { color: oklch(85.5% 0.138 181.071); }
+    :where(html.dark) .text-yellow-600:not(:where(.papel, .papel *)) { color: oklch(85.2% 0.199 91.936); }
+    :where(html.dark) .text-yellow-800:not(:where(.papel, .papel *)) { color: oklch(94.5% 0.129 101.54); }
+  }
+}

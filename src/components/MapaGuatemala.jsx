@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 
 // Mapa de calor de Guatemala por municipio (SVG, sin librerías).
 // Límites: CONRED / OCHA (HDX cod-ab-gtm), licencia CC BY-IGO, simplificados en public/mapas.
-// Color secuencial de un solo tono (azul claro -> oscuro) según la cantidad de casos;
+// Color secuencial de un solo tono (azul claro -> oscuro; al revés en modo oscuro) según la cantidad de casos;
 // sin casos en gris neutro; "pocos" (oculto por privacidad) con rayado; alerta con borde rojo.
 
-const ESCALA = ["#cde2fb", "#86b6ef", "#3987e5", "#1c5cab", "#0d366b"];
-const SIN_CASOS = "#eef1f4";
-const LAGO = "#dbe7f3";
+const ESCALA = [1, 2, 3, 4, 5].map((i) => `var(--mapa-${i})`);   // index.css: en oscuro, más casos = más brillante
+const SIN_CASOS = "var(--mapa-sin-casos)";   // cambian con el modo oscuro (index.css)
+const LAGO = "var(--mapa-lago)";
 const ALERTA = "#d03b3b";
 const ANCHO = 1000;
 
@@ -75,16 +75,16 @@ export default function MapaGuatemala({ valores = {}, pocos = new Set(), alertas
         aria-label={`Mapa de casos por municipio${departamento ? "" : " de Guatemala"}`} onMouseLeave={() => setEncima(null)}>
         <defs>
           <pattern id="rayado-pocos" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <rect width="8" height="8" fill={SIN_CASOS} />
-            <line x1="0" y1="0" x2="0" y2="8" stroke="#94a3b8" strokeWidth="2" />
+            <rect width="8" height="8" style={{ fill: SIN_CASOS }} />
+            <line x1="0" y1="0" x2="0" y2="8" className="stroke-slate-400" strokeWidth="2" />
           </pattern>
         </defs>
         {dibujo.municipios.map((m) => {
           const lago = m.codigo.endsWith("00");
           const relleno = lago ? LAGO : pocos.has(m.codigo) ? "url(#rayado-pocos)" : colorDe(valores[m.codigo], maximo);
           return (
-            <path key={m.codigo} d={m.d} fill={relleno} stroke="#ffffff" strokeWidth="0.8" fillRule="evenodd"
-              className={lago ? "" : "cursor-pointer hover:opacity-80"}
+            <path key={m.codigo} d={m.d} style={{ fill: relleno }} strokeWidth="0.8" fillRule="evenodd"
+              className={lago ? "stroke-white" : "stroke-white cursor-pointer hover:opacity-80"}
               onMouseMove={(e) => {
                 const caja = e.currentTarget.ownerSVGElement.getBoundingClientRect();
                 setEncima({ codigo: m.codigo, x: e.clientX - caja.left, y: e.clientY - caja.top });
@@ -95,13 +95,13 @@ export default function MapaGuatemala({ valores = {}, pocos = new Set(), alertas
           );
         })}
         {/* Bordes de departamento encima (más gruesos), sin capturar el mouse */}
-        {dibujo.deptos.map((d) => <path key={d.codigo} d={d.d} fill="none" stroke="#64748b" strokeWidth="1.4" pointerEvents="none" />)}
+        {dibujo.deptos.map((d) => <path key={d.codigo} d={d.d} fill="none" className="stroke-slate-500" strokeWidth="1.4" pointerEvents="none" />)}
         {/* Municipios con alerta y el elegido: borde encima de todo */}
         {dibujo.municipios.filter((m) => alertas.has(m.codigo)).map((m) => (
           <path key={`a${m.codigo}`} d={m.d} fill="none" stroke={ALERTA} strokeWidth="3" pointerEvents="none" />
         ))}
         {seleccionado && dibujo.municipios.filter((m) => m.codigo === seleccionado).map((m) => (
-          <path key="sel" d={m.d} fill="none" stroke="#0f172a" strokeWidth="3" strokeDasharray="6 3" pointerEvents="none" />
+          <path key="sel" d={m.d} fill="none" className="stroke-slate-900 dark:stroke-slate-100" strokeWidth="3" strokeDasharray="6 3" pointerEvents="none" />
         ))}
       </svg>
       {info && (

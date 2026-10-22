@@ -64,20 +64,20 @@ export default function GraficaLinea({ titulo, unidad, series, puntos, rangoNorm
           {rangoNormal && (
             <g>
               <rect x={M.izquierda} width={areaW} y={y(Math.min(rangoNormal.max, y1))}
-                height={Math.max(0, y(Math.max(rangoNormal.min, y0)) - y(Math.min(rangoNormal.max, y1)))} fill="#f1f5f9" />
-              <text x={ANCHO - M.derecha - 4} y={y(Math.min(rangoNormal.max, y1)) + 10} textAnchor="end" fontSize="9" fill="#64748b">rango normal</text>
+                height={Math.max(0, y(Math.max(rangoNormal.min, y0)) - y(Math.min(rangoNormal.max, y1)))} className="fill-slate-100 dark:fill-slate-800" />
+              <text x={ANCHO - M.derecha - 4} y={y(Math.min(rangoNormal.max, y1)) + 10} textAnchor="end" fontSize="9" className="fill-slate-500">rango normal</text>
             </g>
           )}
           {marcas.map((m) => (
             <g key={m}>
-              <line x1={M.izquierda} x2={ANCHO - M.derecha} y1={y(m)} y2={y(m)} stroke="#e2e8f0" />
-              <text x={M.izquierda - 5} y={y(m)} dy="0.32em" textAnchor="end" fontSize="10" fill="#64748b">{m.toFixed(decimales)}</text>
+              <line x1={M.izquierda} x2={ANCHO - M.derecha} y1={y(m)} y2={y(m)} className="stroke-slate-200" />
+              <text x={M.izquierda - 5} y={y(m)} dy="0.32em" textAnchor="end" fontSize="10" className="fill-slate-500">{m.toFixed(decimales)}</text>
             </g>
           ))}
-          <text x={M.izquierda} y={ALTO - 6} fontSize="10" fill="#64748b">{fechaCorta(t0)}</text>
-          {t1 !== t0 && <text x={ANCHO - M.derecha} y={ALTO - 6} textAnchor="end" fontSize="10" fill="#64748b">{fechaCorta(t1)}</text>}
+          <text x={M.izquierda} y={ALTO - 6} fontSize="10" className="fill-slate-500">{fechaCorta(t0)}</text>
+          {t1 !== t0 && <text x={ANCHO - M.derecha} y={ALTO - 6} textAnchor="end" fontSize="10" className="fill-slate-500">{fechaCorta(t1)}</text>}
           {activo !== null && (
-            <line x1={x(tiempos[activo])} x2={x(tiempos[activo])} y1={M.arriba} y2={M.arriba + areaH} stroke="#94a3b8" strokeDasharray="3 3" />
+            <line x1={x(tiempos[activo])} x2={x(tiempos[activo])} y1={M.arriba} y2={M.arriba + areaH} className="stroke-slate-400" strokeDasharray="3 3" />
           )}
           {series.map((s) => {
             const conValor = puntos.map((p, i) => [i, p.valores[s.clave]]).filter(([, v]) => v != null);
@@ -87,10 +87,10 @@ export default function GraficaLinea({ titulo, unidad, series, puntos, rangoNorm
               <g key={s.clave}>
                 <path d={camino} fill="none" stroke={s.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
                 {conValor.map(([i, v]) => (
-                  <circle key={i} cx={x(tiempos[i])} cy={y(v)} r={activo === i ? 5 : 4} fill={s.color} stroke="#ffffff" strokeWidth="2" />
+                  <circle key={i} cx={x(tiempos[i])} cy={y(v)} r={activo === i ? 5 : 4} fill={s.color} className="stroke-white" strokeWidth="2" />
                 ))}
                 {/* Etiqueta directa solo en la última medición */}
-                {fin && <text x={x(tiempos[fin[0]]) + 8} y={y(fin[1])} dy="0.32em" fontSize="10" fontWeight="600" fill="#0f172a">{Number(fin[1]).toFixed(decimales)}</text>}
+                {fin && <text x={x(tiempos[fin[0]]) + 8} y={y(fin[1])} dy="0.32em" fontSize="10" fontWeight="600" className="fill-slate-900">{Number(fin[1]).toFixed(decimales)}</text>}
               </g>
             );
           })}

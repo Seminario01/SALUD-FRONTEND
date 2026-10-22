@@ -4,6 +4,7 @@ import { useAuth } from "react-oidc-context";
 import useRoles from "../hooks/useRoles";
 import BusquedaGlobal, { BotonBuscar } from "./BusquedaGlobal";
 import BotonAyuda from "./Ayuda";
+import BotonTema from "./BotonTema";
 
 // Ícono del módulo (cruz médica), dibujado aquí mismo
 export function LogoSalud({ className = "h-8 w-8" }) {
@@ -49,6 +50,9 @@ export default function Layout() {
   const gestion = agrupar ? enlaces.filter((e) => e.grupo) : [];
   const location = useLocation();
   const [gestionAbierta, setGestionAbierta] = useState(false);
+  const [usuarioAbierto, setUsuarioAbierto] = useState(false);
+  const nombre = perfil?.name || perfil?.preferred_username || "";
+  const iniciales = nombre.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join("") || "?";
   const enGestion = gestion.some((e) => location.pathname.startsWith(e.to));
 
   function manejarLogout() {
@@ -69,7 +73,7 @@ export default function Layout() {
             <LogoSalud className="h-8 w-8 text-white" />
             <div className="leading-tight">
               <p className="font-bold">Módulo Salud</p>
-              <p className="text-[11px] text-blue-100 hidden sm:block xl:hidden 2xl:block">Red Inteligente de Servicios Digitales</p>
+              <p className="text-[11px] text-blue-100 hidden sm:block xl:hidden">Red Inteligente de Servicios Digitales</p>
             </div>
           </div>
 
@@ -112,26 +116,39 @@ export default function Layout() {
             )}
           </nav>
 
+          {/* Computadora: buscar, ayuda y el menú del usuario (nombre, puesto, modo oscuro y salir) */}
           <div className="ml-auto hidden xl:flex items-center gap-3">
-            {r.puede("pacientes.ver") && (
-              <>
-                <div className="2xl:hidden"><BotonBuscar compacto onClick={buscar} /></div>
-                <div className="hidden 2xl:block w-56"><BotonBuscar onClick={buscar} /></div>
-              </>
-            )}
+            {r.puede("pacientes.ver") && <BotonBuscar compacto onClick={buscar} />}
             <BotonAyuda />
-            <div className="text-right leading-tight whitespace-nowrap">
-              <p className="text-sm font-medium">{perfil?.name || perfil?.preferred_username}</p>
-              {r.puesto && (
-                <span className="text-[11px] bg-white/15 rounded-full px-2 py-0.5 whitespace-nowrap">{r.puesto}</span>
+            <div
+              className="relative"
+              onBlur={(ev) => { if (!ev.currentTarget.contains(ev.relatedTarget)) setUsuarioAbierto(false); }}
+            >
+              <button
+                onClick={() => setUsuarioAbierto(!usuarioAbierto)}
+                aria-expanded={usuarioAbierto}
+                aria-label={`Menú de ${nombre}`}
+                title={nombre}
+                className="flex items-center gap-1 rounded-full pl-0.5 pr-1.5 py-0.5 hover:bg-white/10"
+              >
+                <span className="h-8 w-8 rounded-full bg-white/20 ring-1 ring-white/40 grid place-items-center text-sm font-semibold">{iniciales}</span>
+                <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden="true">
+                  <path d="M5.5 7.5l4.5 4.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                </svg>
+              </button>
+              {usuarioAbierto && (
+                <div className="absolute right-0 mt-2 w-64 rounded-xl bg-white text-slate-700 shadow-lg ring-1 ring-black/5 py-2 z-20">
+                  <div className="px-4 pb-2 border-b border-slate-100">
+                    <p className="text-sm font-semibold text-slate-900 truncate">{nombre}</p>
+                    {r.puesto && <p className="text-xs text-slate-500">{r.puesto}</p>}
+                  </div>
+                  <BotonTema enMenu />
+                  <button onClick={manejarLogout} className="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-slate-50">
+                    Cerrar sesión
+                  </button>
+                </div>
               )}
             </div>
-            <button
-              onClick={manejarLogout}
-              className="text-sm whitespace-nowrap border border-white/30 rounded-lg px-3 py-1.5 hover:bg-white/10 transition"
-            >
-              Cerrar sesión
-            </button>
           </div>
 
           {/* Celular / tableta */}
@@ -163,9 +180,12 @@ export default function Layout() {
                 {perfil?.name || perfil?.preferred_username}
                 {r.puesto && <span className="text-blue-100"> · {r.puesto}</span>}
               </span>
-              <button onClick={manejarLogout} className="text-sm border border-white/30 rounded-lg px-3 py-1.5">
-                Cerrar sesión
-              </button>
+              <div className="flex items-center gap-2">
+                <BotonTema />
+                <button onClick={manejarLogout} className="text-sm border border-white/30 rounded-lg px-3 py-1.5">
+                  Cerrar sesión
+                </button>
+              </div>
             </div>
           </div>
         )}

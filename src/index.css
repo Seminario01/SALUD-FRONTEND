@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* Modo oscuro: colores generados por scripts/modo-oscuro.mjs (y "dark:" para casos especiales) */
+@import "./modo-oscuro.css";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------- Identidad visual del Módulo de Salud ---------- */
 @theme {
@@ -11,6 +14,83 @@ html {
 
 body {
   @apply bg-slate-50 text-slate-800;
+}
+
+/* Colores del mapa de vigilancia que cambian con el modo */
+:root {
+  --mapa-sin-casos: #eef1f4;
+  --mapa-lago: #dbe7f3;
+  /* Escala de casos (de menos a más) y el color del número encima */
+  --mapa-1: #cde2fb; --mapa-2: #86b6ef; --mapa-3: #3987e5; --mapa-4: #1c5cab; --mapa-5: #0d366b;
+  --mapa-texto-1: #1e293b; --mapa-texto-2: #1e293b; --mapa-texto-3: #fff; --mapa-texto-4: #fff; --mapa-texto-5: #fff;
+}
+
+/* ---------- Modo oscuro (utils/tema.js pone la clase "dark" en <html>) ---------- */
+/* Lo que no viene de una clase de color: fondo, campos, tablas y bordes sin color */
+@media screen {
+  html.dark {
+    color-scheme: dark;
+    --mapa-sin-casos: #1e293b;
+    --mapa-lago: #1e3a5f;
+    --mapa-1: #1d4f8f; --mapa-2: #2f6fc4; --mapa-3: #4f8fe6; --mapa-4: #8dbcf2; --mapa-5: #d6e7fc;
+    --mapa-texto-1: #fff; --mapa-texto-2: #fff; --mapa-texto-3: #fff; --mapa-texto-4: #0f172a; --mapa-texto-5: #0f172a;
+  }
+  html.dark body {
+    @apply bg-slate-950 text-slate-200;
+  }
+  html.dark main h1 {
+    @apply text-slate-50;
+  }
+  html.dark main .bg-white.border {
+    @apply border-slate-700/70;
+  }
+  html.dark main label {
+    @apply text-slate-400;
+  }
+  html.dark main input:not([type="checkbox"]),
+  html.dark main select,
+  html.dark main textarea {
+    @apply border-slate-600 bg-slate-800 text-slate-100;
+  }
+  html.dark main input::placeholder,
+  html.dark main textarea::placeholder {
+    @apply text-slate-500;
+  }
+  html.dark main input:focus,
+  html.dark main select:focus,
+  html.dark main textarea:focus {
+    @apply border-blue-400 ring-blue-400/25;
+  }
+  html.dark main table {
+    @apply bg-slate-900 ring-slate-700/70;
+  }
+  html.dark main thead tr {
+    @apply bg-slate-800 border-slate-700;
+  }
+  html.dark main th {
+    @apply text-slate-400;
+  }
+  html.dark main tbody tr {
+    @apply border-slate-800;
+  }
+  html.dark main tbody tr:hover {
+    @apply bg-blue-500/10;
+  }
+  html.dark header.bg-gradient-to-r {
+    @apply from-slate-900 to-blue-950 border-b border-slate-800;
+  }
+  html.dark ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700;
+  }
+}
+
+/* Bordes sin color ("border", "border-b"): en oscuro, un gris oscuro en vez del gris claro */
+@layer base {
+  @media screen {
+    html.dark *:not(:where(.papel, .papel *)), html.dark ::before, html.dark ::after {
+      border-color: var(--color-slate-700);
+    }
+  }
 }
 
 /* Títulos de página (h1 dentro del contenido) */

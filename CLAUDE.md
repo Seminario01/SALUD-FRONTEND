@@ -67,6 +67,20 @@ paciente se elige con `components/SelectorResidencia.jsx` (sugiere el municipio 
 medición, formulario (Médico y Enfermería) y gráficas SVG de talla/edad, peso/edad y peso/talla con las
 líneas de la OMS (0, ±2, ±3 DE) que manda `GET /pacientes/{id}/crecimiento`; anillo rojo fuera de ±2.
 
+## Modo oscuro
+
+Se cambia en el menú del usuario (círculo con sus iniciales; en celular, el ícono junto a "Cerrar
+sesión") y se recuerda en el navegador (`localStorage` "salud-tema"); si nunca se eligió, sigue al
+sistema. `public/tema.js` pone la clase `dark` en `<html>` antes de dibujar (sin parpadeo) y
+`src/utils/tema.js` la cambia. Los colores **no** se escriben pantalla por pantalla:
+`scripts/modo-oscuro.mjs` busca las clases de color de `src/` (bg-white, text-slate-500, bg-blue-50,
+border-red-200, hover:...) y genera `src/modo-oscuro.css` (fondos claros -> oscuros, textos oscuros ->
+claros; los colores fuertes de botones, triage e insignias no cambian). **Después de agregar clases de
+color nuevas, correr `node scripts/modo-oscuro.mjs`** (GitHub falla si el archivo no está al día).
+Casos especiales con `dark:` (por ejemplo `dark:stroke-slate-300`). En las gráficas SVG usar clases
+(`fill-slate-500`, `stroke-slate-200`), no colores fijos. Lo que va dentro de `.papel` (hojas para
+imprimir) sigue blanco, y al imprimir todo sale claro. El mapa usa variables `--mapa-*` de `index.css`.
+
 ## Ayuda dentro del sistema
 
 Botón "?" del encabezado (`components/Ayuda.jsx`): consejos de la pantalla actual en `utils/ayuda.js`

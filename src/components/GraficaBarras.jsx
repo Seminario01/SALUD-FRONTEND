@@ -39,8 +39,8 @@ export default function GraficaBarras({ titulo, subtitulo, datos, formato = (v) 
           onMouseLeave={() => setActivo(null)}>
           {marcas.map((m) => (
             <g key={m}>
-              <line x1={MARGEN.izquierda} x2={ancho - MARGEN.derecha} y1={y(m)} y2={y(m)} stroke="#e2e8f0" strokeWidth="1" />
-              <text x={MARGEN.izquierda - 6} y={y(m)} dy="0.32em" textAnchor="end" fontSize="10" fill="#64748b">{formato(m)}</text>
+              <line x1={MARGEN.izquierda} x2={ancho - MARGEN.derecha} y1={y(m)} y2={y(m)} className="stroke-slate-200" strokeWidth="1" />
+              <text x={MARGEN.izquierda - 6} y={y(m)} dy="0.32em" textAnchor="end" fontSize="10" className="fill-slate-500">{formato(m)}</text>
             </g>
           ))}
           {datos.map((d, i) => {
@@ -56,9 +56,9 @@ export default function GraficaBarras({ titulo, subtitulo, datos, formato = (v) 
               <g key={d.etiqueta}>
                 {camino && <path d={camino} fill={color} opacity={activo === null || resaltada ? 1 : 0.45} />}
                 {i === ultimo && d.valor > 0 && (
-                  <text x={cx} y={tope0 - 6} textAnchor="middle" fontSize="11" fontWeight="600" fill="#0f172a">{formato(d.valor)}</text>
+                  <text x={cx} y={tope0 - 6} textAnchor="middle" fontSize="11" fontWeight="600" className="fill-slate-900">{formato(d.valor)}</text>
                 )}
-                <text x={cx} y={ALTO - 8} textAnchor="middle" fontSize="11" fill={resaltada ? "#0f172a" : "#64748b"}>{d.etiqueta}</text>
+                <text x={cx} y={ALTO - 8} textAnchor="middle" fontSize="11" className={resaltada ? "fill-slate-900" : "fill-slate-500"}>{d.etiqueta}</text>
                 {/* Zona para el mouse: toda la columna, más grande que la barra */}
                 <rect x={MARGEN.izquierda + columna * i} y={MARGEN.arriba} width={columna} height={areaAlto} fill="transparent"
                   tabIndex={0} aria-label={`${d.titulo ?? d.etiqueta}: ${formato(d.valor)}`}
@@ -66,7 +66,7 @@ export default function GraficaBarras({ titulo, subtitulo, datos, formato = (v) 
               </g>
             );
           })}
-          <line x1={MARGEN.izquierda} x2={ancho - MARGEN.derecha} y1={y(0)} y2={y(0)} stroke="#94a3b8" strokeWidth="1" />
+          <line x1={MARGEN.izquierda} x2={ancho - MARGEN.derecha} y1={y(0)} y2={y(0)} className="stroke-slate-400" strokeWidth="1" />
         </svg>
         {activo !== null && (
           <div className="pointer-events-none absolute -top-2 z-10 whitespace-nowrap rounded-md border bg-white px-3 py-2 text-xs shadow-lg"

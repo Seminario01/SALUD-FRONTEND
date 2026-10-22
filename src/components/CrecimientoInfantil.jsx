@@ -15,9 +15,9 @@ const NIVEL = {
   grave: { clase: "border-red-300 bg-red-50 text-red-900", icono: "⚠" },
 };
 const LINEAS = [
-  { z: "3", texto: "+3", trazo: "#cbd5e1", guion: "2 3" }, { z: "2", texto: "+2", trazo: "#94a3b8", guion: "6 4" },
-  { z: "0", texto: "0", trazo: "#475569", guion: "" },
-  { z: "-2", texto: "−2", trazo: "#94a3b8", guion: "6 4" }, { z: "-3", texto: "−3", trazo: "#cbd5e1", guion: "2 3" },
+  { z: "3", texto: "+3", trazo: "stroke-slate-300", guion: "2 3" }, { z: "2", texto: "+2", trazo: "stroke-slate-400", guion: "6 4" },
+  { z: "0", texto: "0", trazo: "stroke-slate-600 dark:stroke-slate-300", guion: "" },
+  { z: "-2", texto: "−2", trazo: "stroke-slate-400", guion: "6 4" }, { z: "-3", texto: "−3", trazo: "stroke-slate-300", guion: "2 3" },
 ];
 const ANCHO = 640;
 const ALTO = 300;
@@ -53,22 +53,22 @@ function Grafica({ curva, puntos, eje, unidad }) {
       <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} className="w-full h-auto" role="img" aria-label={`${curva.nombre}: mediciones del paciente sobre las curvas de la OMS`}>
         {marcasY.map((v) => (
           <g key={v}>
-            <line x1={M.izquierda} x2={ANCHO - M.derecha} y1={y(v)} y2={y(v)} stroke="#f1f5f9" />
-            <text x={M.izquierda - 6} y={y(v) + 4} textAnchor="end" fontSize="11" fill="#64748b">{v}</text>
+            <line x1={M.izquierda} x2={ANCHO - M.derecha} y1={y(v)} y2={y(v)} className="stroke-slate-100" />
+            <text x={M.izquierda - 6} y={y(v) + 4} textAnchor="end" fontSize="11" className="fill-slate-500">{v}</text>
           </g>
         ))}
         {marcasX.map((m) => (
-          <text key={m.v} x={x(m.v)} y={ALTO - 12} textAnchor="middle" fontSize="11" fill="#64748b">{m.t}</text>
+          <text key={m.v} x={x(m.v)} y={ALTO - 12} textAnchor="middle" fontSize="11" className="fill-slate-500">{m.t}</text>
         ))}
-        <text x={ANCHO - M.derecha} y={ALTO - 1} textAnchor="end" fontSize="10" fill="#94a3b8">{enDias ? "edad (meses)" : "longitud/talla (cm)"}</text>
-        <text x={4} y={M.arriba + 2} fontSize="10" fill="#94a3b8">{unidad}</text>
+        <text x={ANCHO - M.derecha} y={ALTO - 1} textAnchor="end" fontSize="10" className="fill-slate-400">{enDias ? "edad (meses)" : "longitud/talla (cm)"}</text>
+        <text x={4} y={M.arriba + 2} fontSize="10" className="fill-slate-400">{unidad}</text>
         {LINEAS.map((l) => {
           const ps = curva.lineas[l.z] || [];
           const ultimo = ps[ps.length - 1];
           return (
             <g key={l.z}>
-              <path d={ruta(ps)} fill="none" stroke={l.trazo} strokeWidth={l.z === "0" ? 1.5 : 1.2} strokeDasharray={l.guion} />
-              {ultimo && <text x={x(ultimo.x) + 4} y={y(ultimo.y) + 4} fontSize="10" fill="#64748b">{l.texto}</text>}
+              <path d={ruta(ps)} fill="none" className={l.trazo} strokeWidth={l.z === "0" ? 1.5 : 1.2} strokeDasharray={l.guion} />
+              {ultimo && <text x={x(ultimo.x) + 4} y={y(ultimo.y) + 4} fontSize="10" className="fill-slate-500">{l.texto}</text>}
             </g>
           );
         })}
@@ -76,7 +76,7 @@ function Grafica({ curva, puntos, eje, unidad }) {
         {puntos.map((p, i) => (
           <g key={i} onMouseEnter={() => setActivo(i)} onMouseLeave={() => setActivo(null)}>
             <circle cx={x(p.x)} cy={y(p.y)} r="14" fill="transparent" />
-            <circle cx={x(p.x)} cy={y(p.y)} r="5" fill={SERIE} stroke="#ffffff" strokeWidth="2" />
+            <circle cx={x(p.x)} cy={y(p.y)} r="5" fill={SERIE} className="stroke-white" strokeWidth="2" />
             {(p.nivel === "alerta" || p.nivel === "grave") && <circle cx={x(p.x)} cy={y(p.y)} r="8" fill="none" stroke="#d03b3b" strokeWidth="2" />}
           </g>
         ))}

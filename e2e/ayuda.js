@@ -32,7 +32,7 @@ export async function pantallaBien(page, ruta) {
   await expect(principal.getByText(/No se pudo/), `${ruta}: muestra un error`).toHaveCount(0);
 }
 
-// En celular nada debe obligar a mover la página de lado (las tablas se mueven dentro de su caja)
+// Nada debe obligar a mover la página de lado (las tablas se mueven dentro de su caja)
 export async function sinScrollDeLado(page, ruta) {
   const sobra = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(sobra, `${ruta}: la página se sale ${sobra}px a lo ancho`).toBeLessThanOrEqual(1);

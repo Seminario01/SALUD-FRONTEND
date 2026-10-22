@@ -29,6 +29,8 @@ jobs:
       - run: npm ci
       - name: Lint (npx eslint src)
         run: npx eslint src
+      - name: Modo oscuro al día (node scripts/modo-oscuro.mjs --revisar)
+        run: node scripts/modo-oscuro.mjs --revisar
       - name: Compilar (npm run build)
         run: npm run build
       - name: Librerías sin vulnerabilidades altas o críticas
