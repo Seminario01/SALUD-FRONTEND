@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import useRoles from "../hooks/useRoles";
 import BusquedaGlobal, { BotonBuscar } from "./BusquedaGlobal";
 import BotonAyuda from "./Ayuda";
 import BotonTema from "./BotonTema";
+import { CargandoPantalla } from "./CargandoPantalla";
+import AvisoSesion from "./AvisoSesion";
 
 // Ícono del módulo (cruz médica), dibujado aquí mismo
 export function LogoSalud({ className = "h-8 w-8" }) {
@@ -194,7 +196,11 @@ export default function Layout() {
       {r.puede("pacientes.ver") && <BusquedaGlobal abierto={buscando} setAbierto={setBuscando} />}
 
       <main className="flex-1 w-full max-w-7xl mx-auto sm:px-2">
-        <Outlet />
+        <AvisoSesion />
+        {/* El encabezado se queda mientras se baja la pantalla */}
+        <Suspense fallback={<CargandoPantalla />}>
+          <Outlet />
+        </Suspense>
       </main>
 
       <footer className="text-center text-xs text-slate-400 py-4">

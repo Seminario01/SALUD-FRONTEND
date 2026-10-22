@@ -81,6 +81,19 @@ Casos especiales con `dark:` (por ejemplo `dark:stroke-slate-300`). En las gráf
 (`fill-slate-500`, `stroke-slate-200`), no colores fijos. Lo que va dentro de `.papel` (hojas para
 imprimir) sigue blanco, y al imprimir todo sale claro. El mapa usa variables `--mapa-*` de `index.css`.
 
+## Pantallas por partes y sesión
+
+Cada pantalla se baja recién cuando se abre (`utils/cargarPantalla.js` con `React.lazy`; el
+encabezado se queda mientras tanto). Si después de actualizar el servidor una pestaña vieja pide un
+archivo que ya no existe, se recarga una vez sola; si aun así falla, dice "No se pudo abrir esta pantalla".
+Al agregar una pantalla en `App.jsx`, cargarla con `cargar(() => import("./pages/..."))`.
+
+`components/AvisoSesion.jsx` (dentro de Layout): tras 15 minutos sin uso en ninguna pestaña del
+módulo (`utils/sesion.js`) muestra "¿Sigue ahí?" con 2 minutos de cuenta regresiva y luego cierra la
+sesión también en el Login Único (el login lo explica). Si el Login Único ya no renueva la sesión,
+muestra "Su sesión terminó" con "Volver a entrar", que regresa a la misma pantalla. La pantalla de
+turnos de la sala de espera no lleva Layout, así que no se cierra por inactividad.
+
 ## Ayuda dentro del sistema
 
 Botón "?" del encabezado (`components/Ayuda.jsx`): consejos de la pantalla actual en `utils/ayuda.js`

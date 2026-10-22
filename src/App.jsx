@@ -1,36 +1,45 @@
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import { tomarDestino } from "./utils/volver";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { CargandoPantalla } from "./components/CargandoPantalla";
+import { cargar } from "./utils/cargarPantalla";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Pacientes from "./pages/Pacientes";
-import FichaPaciente from "./pages/FichaPaciente";
-import Citas from "./pages/Citas";
-import Turnos from "./pages/Turnos";
-import PantallaTurnos from "./pages/PantallaTurnos";
-import Recursos from "./pages/Recursos";
-import Vacunacion from "./pages/Vacunacion";
-import Expedientes from "./pages/Expedientes";
-import Integraciones from "./pages/Integraciones";
-import Recetas from "./pages/Recetas";
-import Inventario from "./pages/Inventario";
-import Hospitalizacion from "./pages/Hospitalizacion";
-import Caja from "./pages/Caja";
-import NoEncontrado from "./pages/NoEncontrado";
-import Bitacora from "./pages/Bitacora";
-import DetalleCita from "./pages/DetalleCita";
-import Recordatorios from "./pages/Recordatorios";
-import Agenda from "./pages/Agenda";
-import VerificarReceta from "./pages/VerificarReceta";
-import VerificarConstancia from "./pages/VerificarConstancia";
-import { ConstanciaImpresa, ConstanciaVacunacion, EstadoCuentaImpreso, LaboratorioImpreso, RecetaImpresa, ResumenPaciente } from "./pages/Documentos";
-import Laboratorio from "./pages/Laboratorio";
-import ListaEspera from "./pages/ListaEspera";
-import Vigilancia from "./pages/Vigilancia";
-import CompletarResidencia from "./pages/CompletarResidencia";
+
+// Cada pantalla se baja recién cuando se abre (así la app abre más rápido, sobre todo en celular)
+const Dashboard = cargar(() => import("./pages/Dashboard"));
+const Pacientes = cargar(() => import("./pages/Pacientes"));
+const FichaPaciente = cargar(() => import("./pages/FichaPaciente"));
+const Citas = cargar(() => import("./pages/Citas"));
+const Turnos = cargar(() => import("./pages/Turnos"));
+const PantallaTurnos = cargar(() => import("./pages/PantallaTurnos"));
+const Recursos = cargar(() => import("./pages/Recursos"));
+const Vacunacion = cargar(() => import("./pages/Vacunacion"));
+const Expedientes = cargar(() => import("./pages/Expedientes"));
+const Integraciones = cargar(() => import("./pages/Integraciones"));
+const Recetas = cargar(() => import("./pages/Recetas"));
+const Inventario = cargar(() => import("./pages/Inventario"));
+const Hospitalizacion = cargar(() => import("./pages/Hospitalizacion"));
+const Caja = cargar(() => import("./pages/Caja"));
+const NoEncontrado = cargar(() => import("./pages/NoEncontrado"));
+const Bitacora = cargar(() => import("./pages/Bitacora"));
+const DetalleCita = cargar(() => import("./pages/DetalleCita"));
+const Recordatorios = cargar(() => import("./pages/Recordatorios"));
+const Agenda = cargar(() => import("./pages/Agenda"));
+const VerificarReceta = cargar(() => import("./pages/VerificarReceta"));
+const VerificarConstancia = cargar(() => import("./pages/VerificarConstancia"));
+const ConstanciaImpresa = cargar(() => import("./pages/Documentos"), "ConstanciaImpresa");
+const ConstanciaVacunacion = cargar(() => import("./pages/Documentos"), "ConstanciaVacunacion");
+const EstadoCuentaImpreso = cargar(() => import("./pages/Documentos"), "EstadoCuentaImpreso");
+const LaboratorioImpreso = cargar(() => import("./pages/Documentos"), "LaboratorioImpreso");
+const RecetaImpresa = cargar(() => import("./pages/Documentos"), "RecetaImpresa");
+const ResumenPaciente = cargar(() => import("./pages/Documentos"), "ResumenPaciente");
+const Laboratorio = cargar(() => import("./pages/Laboratorio"));
+const ListaEspera = cargar(() => import("./pages/ListaEspera"));
+const Vigilancia = cargar(() => import("./pages/Vigilancia"));
+const CompletarResidencia = cargar(() => import("./pages/CompletarResidencia"));
 
 // Al regresar del Login Único se vuelve a la página que se había pedido (receta, ficha, etc.)
 function VolverTrasLogin() {
@@ -48,6 +57,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <VolverTrasLogin />
+      <Suspense fallback={<CargandoPantalla />}>
       <Routes>
         <Route path="/login" element={<Login />} />
         {/* Pública: otra farmacia verifica la receta al escanear su QR */}
@@ -93,6 +103,7 @@ export default function App() {
           <Route path="*" element={<NoEncontrado />} />
         </Route>
       </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

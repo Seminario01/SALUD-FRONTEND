@@ -12,6 +12,7 @@ export const AYUDA = {
       { si: "reportes.ver", texto: "En «Diagnósticos más frecuentes» elija el período; se puede bajar en Excel o CSV." },
       { texto: "La lupa del encabezado busca pacientes por nombre o DPI desde cualquier pantalla." },
       { texto: "Con el círculo de sus iniciales (arriba a la derecha) cambia a modo oscuro o claro y cierra la sesión. Las hojas para imprimir siempre salen en blanco." },
+      { texto: "Por seguridad, después de 15 minutos sin usar el sistema aparece «¿Sigue ahí?»: con «Seguir trabajando» continúa; si nadie responde en 2 minutos, la sesión se cierra sola." },
     ],
   },
   "/pacientes": {

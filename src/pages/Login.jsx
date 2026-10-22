@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import { LogoSalud } from "../components/Layout";
+import { leerSalida, olvidarSalida } from "../utils/sesion";
 import { recordarDestino } from "../utils/volver";
 
 // Sin campos de usuario ni contraseña: la pantalla de login la provee el
@@ -8,6 +10,7 @@ import { recordarDestino } from "../utils/volver";
 export default function Login() {
   const auth = useAuth();
   const desde = useLocation().state?.desde;
+  const [salida] = useState(leerSalida);
 
   if (auth.isLoading) return <p className="p-6">Cargando...</p>;
   if (auth.isAuthenticated) return <Navigate to={desde || "/"} replace />;
@@ -43,6 +46,12 @@ export default function Login() {
           <h1 className="text-2xl font-bold text-slate-900">Iniciar sesión</h1>
           <p className="text-sm text-slate-500 mt-1 mb-6">Ingrese con su cuenta del Login Único.</p>
 
+          {salida === "inactividad" && (
+            <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4" role="status">
+              Su sesión se cerró por inactividad, para proteger los datos de los pacientes. Vuelva a entrar para seguir.
+            </p>
+          )}
+
           {auth.error && (
             <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
               Error: {auth.error.message}
@@ -50,7 +59,7 @@ export default function Login() {
           )}
 
           <button
-            onClick={() => { recordarDestino(desde); auth.signinRedirect(); }}
+            onClick={() => { olvidarSalida(); recordarDestino(desde); auth.signinRedirect(); }}
             className="w-full bg-blue-700 text-white py-2.5 rounded-lg font-medium hover:bg-blue-800 transition shadow-sm"
           >
             Iniciar sesión con el Login Único

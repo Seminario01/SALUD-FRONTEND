@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { entrar, pantallaBien, sinScrollDeLado, vigilarErrores } from "./ayuda";
+import { CLAVE_PRUEBA, entrar, pantallaBien, sinScrollDeLado, vigilarErrores } from "./ayuda";
 
 // 1) Cada puesto entra y abre TODAS las opciones de su menú, en celular y en computadora:
 //    ninguna pantalla se rompe (error de JavaScript o 5xx), se queda cargando o se sale de lado.
@@ -58,6 +58,46 @@ test("modo oscuro: se activa desde el menú del usuario, se recuerda y no se imp
   await page.getByRole("button", { name: /^Menú de / }).click();
   await page.getByRole("button", { name: "Cambiar a modo claro" }).click();
   await expect(page.locator("html")).not.toHaveClass(/dark/);
+});
+
+test("sesión: avisa tras 15 minutos sin uso, se puede seguir y si nadie responde se cierra", async ({ page }) => {
+  await page.clock.install();                                        // reloj del navegador controlado
+  await entrar(page, "medico1");
+  await page.clock.fastForward("14:00");
+  await expect(page.getByRole("alertdialog"), "antes de 15 minutos no avisa").toHaveCount(0);
+  await page.clock.fastForward("01:30");
+  await expect(page.getByRole("alertdialog")).toBeVisible();
+  await expect(page.getByText("¿Sigue ahí?")).toBeVisible();
+  await page.getByRole("button", { name: "Seguir trabajando" }).click();
+  await expect(page.getByRole("alertdialog"), "seguir trabajando cierra el aviso").toHaveCount(0);
+  await page.clock.fastForward("17:05");                             // nadie responde
+  await page.waitForURL((url) => url.port === "4200" && url.pathname.startsWith("/login"), { timeout: 20_000 });
+  await expect(page.getByText(/se cerró por inactividad/)).toBeVisible();
+});
+
+test("sesión: si se cierra en otra pestaña, avisa y al volver a entrar regresa a la misma pantalla", async ({ page, context }) => {
+  await page.clock.install();
+  await entrar(page, "medico1");
+  await page.goto("/vacunacion");
+  await pantallaBien(page, "/vacunacion");
+  // Otra pestaña (misma sesión del Login Único) cierra la sesión
+  const otra = await context.newPage();
+  await otra.goto("/");
+  await otra.getByRole("button", { name: /Iniciar sesión con el Login Único/ }).click();
+  await otra.waitForURL((url) => url.port === "4200" && !url.pathname.startsWith("/login"));
+  await otra.getByRole("button", { name: /^Menú de / }).click();
+  await otra.getByRole("button", { name: "Cerrar sesión" }).click();
+  await otra.waitForURL((url) => url.port === "4200" && url.pathname.startsWith("/login"));
+  await otra.close();
+  // En esta pestaña, la siguiente renovación (cada 5 minutos) ya no funciona
+  await page.clock.fastForward("05:00");
+  await expect(page.getByText("Su sesión terminó")).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: "Volver a entrar" }).click();
+  await page.locator("#username").fill("medico1");
+  await page.locator("#password").fill(CLAVE_PRUEBA);
+  await page.locator("#kc-login").click();
+  await page.waitForURL((url) => url.port === "4200" && url.pathname === "/vacunacion");
+  await pantallaBien(page, "/vacunacion");
 });
 
 test("una ruta que no existe muestra la página de no encontrado", async ({ page }) => {
