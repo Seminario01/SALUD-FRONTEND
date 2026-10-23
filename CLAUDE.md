@@ -108,6 +108,12 @@ Salud a una cuenta del Login Único (por el código de "Mi resumen" o eligiéndo
 `utils/puestosAsignados.js` lee los `asignados` de `GET /mis-permisos` una vez por sesión (ProtectedRoute
 espera a tenerlos) y `useRoles` los suma a los roles del token; el servidor los aplica en cada petición.
 
+## Auditoría Social (en Integraciones)
+
+`components/AuditoriaSocial.jsx`: lista de comprobación de los servicios para Auditoría, última consulta
+exitosa, rechazos con su motivo (para compartírselo a Auditoría) y "Probar ahora"
+(`GET /integraciones/auditoria`, `POST /integraciones/auditoria/probar`).
+
 ## Ayuda dentro del sistema
 
 Botón "?" del encabezado (`components/Ayuda.jsx`): consejos de la pantalla actual en `utils/ayuda.js`

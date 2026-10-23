@@ -1,5 +1,5 @@
 /* ARCHIVO GENERADO por scripts/modo-oscuro.mjs: no se edita a mano. */
-/* Colores del modo oscuro para las clases de Tailwind que usa la app (99 clases). */
+/* Colores del modo oscuro para las clases de Tailwind que usa la app (100 clases). */
 /* Van en la capa "utilities" con :where() para que hover:, focus: y dark: sigan ganando. */
 @media screen {
   @layer utilities {
@@ -29,6 +29,7 @@
     :where(html.dark) .border-amber-300:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(76.9% 0.188 70.08) 50%, transparent); }
     :where(html.dark) .border-blue-200:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 40%, transparent); }
     :where(html.dark) .border-blue-300:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 50%, transparent); }
+    :where(html.dark) .border-emerald-200:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(69.6% 0.17 162.48) 40%, transparent); }
     :where(html.dark) .border-emerald-300:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(69.6% 0.17 162.48) 50%, transparent); }
     :where(html.dark) .border-green-200:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(72.3% 0.219 149.579) 40%, transparent); }
     :where(html.dark) .border-green-300:not(:where(.papel, .papel *)) { border-color: color-mix(in oklab, oklch(72.3% 0.219 149.579) 50%, transparent); }

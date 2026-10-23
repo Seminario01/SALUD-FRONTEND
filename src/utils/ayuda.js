@@ -146,6 +146,7 @@ export const AYUDA = {
     titulo: "Integraciones",
     consejos: [
       { texto: "Muestra cómo se comunica Salud con Educación, Seguridad, Tributario y Auditoría, y la bitácora de cada llamada (sin datos personales)." },
+      { texto: "«Auditoría Social» demuestra que los servicios para Auditoría están listos: «Probar ahora» hace las mismas consultas que su tablero. Si alguien consulta sin la credencial correcta, aparece el motivo para compartírselo." },
     ],
   },
   "/bitacora": {

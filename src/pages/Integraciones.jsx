@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import client, { mensajeError } from "../api/client";
+import AuditoriaSocial from "../components/AuditoriaSocial";
 import useRoles from "../hooks/useRoles";
 
 // Integración con los otros módulos de la Red: estado, demostración en ambas
@@ -157,6 +158,8 @@ export default function Integraciones() {
         {MODULOS.map((m) => <TarjetaModulo key={m.clave} modulo={m} estado={estado?.[m.clave]} />)}
       </div>
       {!estado && <p className="text-sm text-slate-400">Verificando conexión...</p>}
+
+      <AuditoriaSocial />
 
       {puedeProbar && (
         <section className="bg-white border rounded-lg p-5">
