@@ -10,6 +10,7 @@ import { useAvisos } from "../components/Avisos";
 import AlergiasPaciente from "../components/Alergias";
 import SignosVitales from "../components/SignosVitales";
 import ConstanciasPaciente from "../components/ConstanciasPaciente";
+import ReferenciasPaciente from "../components/ReferenciasPaciente";
 import SelectorResidencia from "../components/SelectorResidencia";
 import LaboratorioPaciente from "../components/LaboratorioPaciente";
 import CrecimientoInfantil from "../components/CrecimientoInfantil";
@@ -439,6 +440,7 @@ export default function FichaPaciente() {
 
       {puede("laboratorio.ver") && <LaboratorioPaciente pacienteId={id} />}
       {puede("constancias.ver") && <ConstanciasPaciente pacienteId={id} atenciones={atenciones ?? []} />}
+      {puede("referencias.ver") && <ReferenciasPaciente pacienteId={id} />}
       <PieImpreso />
     </div>
   );

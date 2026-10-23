@@ -42,6 +42,9 @@ const Vigilancia = cargar(() => import("./pages/Vigilancia"));
 const CompletarResidencia = cargar(() => import("./pages/CompletarResidencia"));
 const Permisos = cargar(() => import("./pages/Permisos"));
 const AsignarPuestos = cargar(() => import("./pages/AsignarPuestos"));
+const RedEstablecimientos = cargar(() => import("./pages/RedEstablecimientos"));
+const Referencias = cargar(() => import("./pages/Referencias"));
+const ReferenciaImpresa = cargar(() => import("./pages/Documentos"), "ReferenciaImpresa");
 
 // Al regresar del Login Único se vuelve a la página que se había pedido (receta, ficha, etc.)
 function VolverTrasLogin() {
@@ -74,6 +77,7 @@ export default function App() {
         <Route path="/imprimir/cuenta/:id" element={<ProtectedRoute><EstadoCuentaImpreso /></ProtectedRoute>} />
         <Route path="/imprimir/vacunacion/:id" element={<ProtectedRoute><ConstanciaVacunacion /></ProtectedRoute>} />
         <Route path="/imprimir/resumen/:id" element={<ProtectedRoute><ResumenPaciente /></ProtectedRoute>} />
+        <Route path="/imprimir/referencia/:id" element={<ProtectedRoute><ReferenciaImpresa /></ProtectedRoute>} />
         <Route
           element={
             <ProtectedRoute>
@@ -104,6 +108,8 @@ export default function App() {
           <Route path="/bitacora" element={<Bitacora />} />
           <Route path="/permisos" element={<Permisos />} />
           <Route path="/puestos" element={<AsignarPuestos />} />
+          <Route path="/red" element={<RedEstablecimientos />} />
+          <Route path="/referencias" element={<Referencias />} />
           <Route path="*" element={<NoEncontrado />} />
         </Route>
       </Routes>

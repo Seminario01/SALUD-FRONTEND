@@ -114,6 +114,15 @@ espera a tenerlos) y `useRoles` los suma a los roles del token; el servidor los 
 exitosa, rechazos con su motivo (para compartírselo a Auditoría) y "Probar ahora"
 (`GET /integraciones/auditoria`, `POST /integraciones/auditoria/probar`).
 
+## Red de establecimientos y referencias
+
+`pages/RedEstablecimientos.jsx` (`/red`, todo el personal): los 45 hospitales del MSPAS y los que agregue
+Administración, con mapa por municipio, filtros y la fuente citada; con `establecimientos.gestionar` se
+completan dirección, teléfono, estado y atención. `components/ReferenciasPaciente.jsx` (ficha): el médico
+refiere a un establecimiento activo y se abre la hoja `/imprimir/referencia/:id` (`ReferenciaImpresa` en
+`Documentos.jsx`, en la misma pestaña). `pages/Referencias.jsx` (`/referencias`): por confirmar primero;
+Enfermería, Médico o Jefatura la marcan recibida o cancelada. `utils/red.js`: textos y la red en memoria.
+
 ## Ayuda dentro del sistema
 
 Botón "?" del encabezado (`components/Ayuda.jsx`): consejos de la pantalla actual en `utils/ayuda.js`

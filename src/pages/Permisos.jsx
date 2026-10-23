@@ -39,6 +39,10 @@ const AREAS = [
     ["hospitalizacion.camas", "Asignar camas"], ["hospitalizacion.notas", "Notas y signos vitales"],
     ["recursos.ver", "Ver recursos y camas"], ["recursos.camas", "Cambiar el estado de las camas"], ["recursos.gestionar", "Administrar recursos"],
   ]],
+  ["Red y referencias", [
+    ["referencias.ver", "Ver las referencias a otros establecimientos"], ["referencias.crear", "Referir a un paciente"],
+    ["referencias.gestionar", "Marcar una referencia recibida o cancelada"], ["establecimientos.gestionar", "Completar los datos de la red de establecimientos"],
+  ]],
   ["Caja y pagos", [
     ["cuentas.ver", "Ver cuentas de pacientes"], ["cuentas.gestionar", "Cargos, descuentos y cierre de cuentas"],
     ["pagos.verificar", "Enviar cobros y verificar pagos en Tributario"],

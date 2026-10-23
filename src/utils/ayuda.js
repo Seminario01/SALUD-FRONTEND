@@ -156,6 +156,21 @@ export const AYUDA = {
       { texto: "«Accesos inusuales» avisa de patrones a revisar: muchos pacientes en una hora, muchas anulaciones, accesos de noche o muchas IP. «Ver en la bitácora» filtra la tabla." },
     ],
   },
+  "/red": {
+    titulo: "Red de establecimientos",
+    consejos: [
+      { texto: "Los 45 hospitales públicos del MSPAS y los establecimientos que agregue Administración. Toque un municipio del mapa para ver los suyos." },
+      { si: "establecimientos.gestionar", texto: "«Completar» guarda la dirección, el teléfono, el estado y la atención que da. Un establecimiento inactivo no se ofrece a Seguridad ni se puede elegir para referir." },
+    ],
+  },
+  "/referencias": {
+    titulo: "Referencias",
+    consejos: [
+      { texto: "Pacientes referidos a otros establecimientos. Las urgentes y las que faltan por confirmar van primero." },
+      { si: "referencias.gestionar", texto: "Cuando confirmen que el paciente llegó (por teléfono o con la hoja firmada), márquela «Recibida». Para cancelar hay que escribir el motivo." },
+      { si: "referencias.crear", texto: "Para referir: en la ficha del paciente, sección «Referencias», botón «Referir». Se abre la hoja para imprimir." },
+    ],
+  },
   "/puestos": {
     titulo: "Asignar puestos",
     consejos: [

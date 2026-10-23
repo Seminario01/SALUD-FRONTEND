@@ -151,3 +151,39 @@ test("Administración le asigna un puesto a una cuenta sin puesto, y se lo quita
   await expect(persona.getByRole("link", { name: "Mi resumen" })).toBeVisible();
   expect(errores).toEqual([]);
 });
+
+test("el médico refiere a una paciente al Roosevelt y Enfermería confirma que llegó", async ({ browser }) => {
+  test.setTimeout(120_000);
+  const ventana = { viewport: { width: 1366, height: 768 } };
+  const medico = await (await browser.newContext(ventana)).newPage();
+  const errores = vigilarErrores(medico);
+  await entrar(medico, "medico1");
+  await medico.goto("/pacientes");
+  await medico.getByPlaceholder("Buscar por nombre o CUI").fill("María José López");
+  await medico.getByRole("button", { name: "Buscar", exact: true }).click();
+  await medico.getByRole("link", { name: "María José López Hernández" }).first().click();
+  await medico.getByRole("button", { name: "Referir" }).click();
+  const seccion = medico.locator("section", { hasText: "Referencias a otros establecimientos" });
+  await seccion.getByLabel("Departamento").selectOption({ label: "Guatemala" });
+  await seccion.getByLabel("Establecimiento").selectOption({ label: "Hospital Roosevelt — Guatemala" });
+  await seccion.getByLabel("Prioridad").selectOption("URGENTE");
+  const motivo = `Valoración por cardiología ${Date.now()}`;
+  await seccion.getByLabel("Motivo de la referencia").fill(motivo);
+  medico.on("dialog", (d) => d.dismiss());                          // la hoja abre la ventana de imprimir
+  await seccion.getByRole("button", { name: "Referir e imprimir la hoja" }).click();
+  await medico.waitForURL(/\/imprimir\/referencia\/\d+/);
+  await expect(medico.getByText(motivo)).toBeVisible();               // la hoja trae el motivo y el destino
+  await expect(medico.getByText("Hospital Roosevelt").first()).toBeVisible();
+  await medico.getByRole("button", { name: "← Volver" }).click();
+  await expect(medico.locator("section", { hasText: "Referencias a otros establecimientos" }).getByText(motivo)).toBeVisible();
+
+  const enfermera = await (await browser.newContext(ventana)).newPage();
+  enfermera.on("dialog", (d) => d.accept("Confirmado por teléfono con emergencia"));
+  await entrar(enfermera, "enfermera1");
+  await enfermera.goto("/referencias");
+  const fila = enfermera.locator("tr", { hasText: motivo });
+  await expect(fila).toContainText("Urgente");
+  await fila.getByRole("button", { name: "Recibida" }).click();
+  await expect(enfermera.getByText("Referencia marcada como recibida")).toBeVisible();
+  expect(errores).toEqual([]);
+});

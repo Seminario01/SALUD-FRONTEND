@@ -514,3 +514,53 @@ export function ResumenPaciente() {
     </HojaDocumento>
   );
 }
+
+// Hoja de referencia a otro establecimiento de la red (la lleva el paciente o el traslado)
+export function ReferenciaImpresa() {
+  const { id } = useParams();
+  const { datos, cargando, error } = useDocumento([`/referencias/${id}`]);
+  const r = datos?.[0];
+  const anios = edad(r?.fecha_nacimiento);
+  return (
+    <HojaDocumento titulo={`${r?.tipo === "CONTRARREFERENCIA" ? "Contrarreferencia" : "Referencia"} No. ${id}`} detalle={r ? fechaHora(r.fecha) : null}
+      cargando={cargando} error={error}>
+      {r && (
+        <>
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            {r.prioridad === "URGENTE" && <Sello texto="Urgente" clase="border-red-700 text-red-700" />}
+            {r.estado === "CANCELADA" && <Sello texto="Cancelada" clase="border-slate-600 text-slate-600" />}
+            {r.estado === "RECIBIDA" && <Sello texto="Recibida" clase="border-emerald-700 text-emerald-700" />}
+          </div>
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-3 mb-5">
+            <Dato etiqueta="Paciente">{r.paciente}</Dato>
+            <Dato etiqueta="DPI">{r.cui || "—"}</Dato>
+            <Dato etiqueta="Edad y sexo">{anios !== null ? `${anios} años` : "—"}{r.genero ? ` · ${r.genero === "F" ? "Femenino" : r.genero === "M" ? "Masculino" : r.genero}` : ""}</Dato>
+            <Dato etiqueta="Alergias">{r.alergias || "Ninguna registrada"}</Dato>
+            <Dato etiqueta="Se refiere a">{r.establecimiento}</Dato>
+            <Dato etiqueta="Ubicación">{r.establecimiento_municipio}{r.establecimiento_telefono ? ` · Tel. ${r.establecimiento_telefono}` : ""}</Dato>
+          </dl>
+          <div className="mb-4">
+            <p className="text-[11px] uppercase tracking-wide text-slate-500">Motivo de la referencia</p>
+            <p className="font-medium">{r.motivo}</p>
+          </div>
+          {r.diagnostico && (
+            <div className="mb-4">
+              <p className="text-[11px] uppercase tracking-wide text-slate-500">Diagnóstico</p>
+              <p>{r.codigo_cie10 && <span className="font-mono mr-2">{r.codigo_cie10}</span>}{r.diagnostico}</p>
+            </div>
+          )}
+          {r.resumen && (
+            <div className="mb-4">
+              <p className="text-[11px] uppercase tracking-wide text-slate-500">Resumen clínico</p>
+              <p className="whitespace-pre-line">{r.resumen}</p>
+            </div>
+          )}
+          <div className="mt-8 grid grid-cols-2 gap-10">
+            <LineaFirma texto={`${r.medico_nombre || "Médico que refiere"} · Firma y sello`} />
+            <LineaFirma texto="Recibido por (nombre, firma, fecha y hora)" />
+          </div>
+        </>
+      )}
+    </HojaDocumento>
+  );
+}
