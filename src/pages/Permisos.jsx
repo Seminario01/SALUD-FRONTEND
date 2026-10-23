@@ -53,7 +53,8 @@ const AREAS = [
     ["presupuesto.ver", "Ver el presupuesto"], ["presupuesto.editar", "Actualizar el presupuesto"],
     ["integraciones.ver", "Ver integraciones con otros módulos"], ["integraciones.demo", "Demostración de integraciones"],
     ["bitacora.ver", "Bitácora de accesos a datos de pacientes"],
-    ["puestos.asignar", "Asignar puestos de Salud a cuentas del Login Único"],
+    ["puestos.asignar", "Asignar puestos y sedes al personal"],
+    ["sedes.cambiar", "Ver otra sede o todas las sedes"],
   ]],
 ];
 

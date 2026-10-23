@@ -120,6 +120,15 @@ Solo lo operativo: las explicaciones de cómo funciona cada pantalla van en la a
 no como párrafos en la pantalla. Las fuentes con licencia (CONRED/OCHA, MSPAS, OMS) sí se citan, cortas.
 Integraciones no tiene demostraciones: un módulo sin URL real sale "No conectado".
 
+## Sedes
+
+Turnos, camas, hospitalización y recursos son de cada sede (backend `sedes.py`); farmacia, caja y expedientes
+son compartidos. `hooks/useSede.js` pide `GET /sedes` una vez por pestaña. `components/SelectorSede.jsx`: la sede
+en el menú del usuario (Jefatura y Administración la cambian: `utils/sede.js` la guarda en sessionStorage, recarga
+y `api/client.js` la manda como `X-Sede`) y la franja "Viendo: ..." cuando no es la propia. El inicio muestra la
+sede bajo el título. Administración asigna la sede de cada persona en "Asignar puestos" (Sede del personal) y
+marca qué establecimientos son sede en la Red ("Sede de este sistema").
+
 ## Red de establecimientos y referencias
 
 `pages/RedEstablecimientos.jsx` (`/red`, todo el personal): los 45 hospitales del MSPAS y los que agregue

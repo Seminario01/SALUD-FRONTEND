@@ -11,6 +11,8 @@ export const AYUDA = {
       { si: "inventario.ver", texto: "Farmacia ve aquí las recetas por despachar, los medicamentos bajo el mínimo y los que vencen en 60 días." },
       { si: "reportes.ver", texto: "En «Diagnósticos más frecuentes» elija el período; se puede bajar en Excel o CSV." },
       { texto: "La lupa del encabezado busca pacientes por nombre o DPI desde cualquier pantalla." },
+      { texto: "Bajo el título está su sede. Turnos, camas, hospitalización y recursos son de cada sede; farmacia, caja y expedientes son compartidos." },
+      { si: "sedes.cambiar", texto: "En el menú de sus iniciales, «Sede» muestra otra sede o todas. Mientras ve otra, una franja amarilla lo recuerda; «Volver a mi sede» regresa." },
       { texto: "Con el círculo de sus iniciales (arriba a la derecha) cambia a modo oscuro o claro y cierra la sesión. Las hojas para imprimir siempre salen en blanco." },
       { texto: "Por seguridad, después de 15 minutos sin usar el sistema aparece «¿Sigue ahí?»: con «Seguir trabajando» continúa; si nadie responde en 2 minutos, la sesión se cierra sola." },
     ],
@@ -168,6 +170,7 @@ export const AYUDA = {
     consejos: [
       { texto: "Los 45 hospitales públicos del MSPAS y los establecimientos que agregue Administración. Toque un municipio del mapa para ver los suyos." },
       { si: "establecimientos.gestionar", texto: "«Completar» guarda la dirección, el teléfono, el estado y la atención que da. Un establecimiento inactivo no se ofrece a Seguridad ni se puede elegir para referir." },
+      { si: "establecimientos.gestionar", texto: "«Sede de este sistema» convierte al establecimiento en una sede con sus propios turnos, camas y recursos. La sede principal no se puede quitar, ni una sede con personal o camas." },
     ],
   },
   "/referencias": {
@@ -184,6 +187,7 @@ export const AYUDA = {
       { texto: "Para darle acceso a un compañero: que entre una vez a saludumg.online con su cuenta del Login Único; aparece en «Entraron sin puesto». Presione «Asignar puesto», elija el puesto y «Asignar»." },
       { texto: "También puede pegar el código que la persona ve en «Mi resumen». El puesto vale solo en Salud y la persona lo ve al recargar la página." },
       { texto: "Nadie puede cambiar su propio puesto. Cada asignación y cada «Quitar» quedan en la bitácora de accesos." },
+      { texto: "«Sede del personal»: elija dónde trabaja cada persona. Quien no tiene sede asignada trabaja en la sede principal. La persona ve el cambio al recargar la página." },
     ],
   },
   "/permisos": {

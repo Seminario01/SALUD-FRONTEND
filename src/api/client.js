@@ -1,5 +1,6 @@
 import axios from "axios";
 import { obtenerAccessToken } from "../auth";
+import { sedeElegida } from "../utils/sede";
 
 const client = axios.create({
   baseURL: "/api/v1/salud",
@@ -11,6 +12,9 @@ client.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Sede elegida por Jefatura o Administración (utils/sede.js); el servidor decide si vale
+  const sede = sedeElegida();
+  if (sede) config.headers["X-Sede"] = sede;
   return config;
 });
 

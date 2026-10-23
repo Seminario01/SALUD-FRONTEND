@@ -10,6 +10,7 @@ import ResumenFarmacia from "../components/ResumenFarmacia";
 import DiagnosticosFrecuentes from "../components/DiagnosticosFrecuentes";
 import AlertasSeguridad from "../components/AlertasSeguridad";
 import useRoles from "../hooks/useRoles";
+import useSede from "../hooks/useSede";
 import { BotonImprimir, EncabezadoImpreso, PieImpreso } from "../components/Impresion";
 import BotonesExportar from "../components/Exportar";
 
@@ -77,6 +78,7 @@ function AtencionHoy({ datos }) {
 
 export default function Dashboard() {
   const { esPersonal, esAuditor, puede } = useRoles();
+  const sede = useSede(esPersonal);
   // Cada tarjeta enlaza a su pantalla solo si el puesto puede usarla.
   const PERMISO_RUTA = { "/pacientes": "pacientes.ver", "/citas": "citas.ver", "/turnos": "turnos.ver_cola", "/vacunacion": "vacunacion.ver" };
   const enlace = (ruta) => (puede(PERMISO_RUTA[ruta]) ? ruta : undefined);
@@ -155,7 +157,7 @@ export default function Dashboard() {
       <p className="text-gray-500 mb-6">
         {esAuditor && !esPersonal
           ? "Indicadores agregados del Módulo de Salud"
-          : "Resumen general del sistema"}
+          : sede?.nombre ?? "Resumen general del sistema"}
       </p>
 
       {errorIndicadores && (

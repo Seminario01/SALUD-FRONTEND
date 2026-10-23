@@ -7,6 +7,56 @@ import { useAvisos } from "../components/Avisos";
 // el servidor lo suma a los roles de su cuenta en cada petición. Nadie cambia su propio puesto.
 const fecha = (t) => (t ? new Date(t).toLocaleString("es-GT", { dateStyle: "medium", timeStyle: "short" }) : "—");
 
+// Sede donde trabaja cada persona del personal (GET /sedes/personal, PUT /sedes/personal/{sub})
+function SedesPersonal() {
+  const avisos = useAvisos();
+  const [datos, setDatos] = useState(null);
+  const [error, setError] = useState(null);
+  const [guardando, setGuardando] = useState(null);
+  const cargar = () => client.get("/sedes/personal")
+    .then((r) => { setDatos(r.data.data); setError(null); })
+    .catch((e) => setError(mensajeError(e)));
+  useEffect(() => { cargar(); }, []);
+
+  function cambiar(persona, sedeId) {
+    setGuardando(persona.usuario_sub);
+    client.put(`/sedes/personal/${persona.usuario_sub}`, { sede_id: Number(sedeId) })
+      .then((r) => { avisos.exito(r.data.message); cargar(); })
+      .catch((err) => avisos.error(mensajeError(err)))
+      .finally(() => setGuardando(null));
+  }
+
+  return (
+    <section>
+      <h2 className="text-lg font-semibold mb-2">Sede del personal</h2>
+      {error && <p className="text-sm text-red-600" role="alert">No se pudo cargar: {error}</p>}
+      {datos && datos.personal.length === 0 && <p className="text-sm text-slate-500">Nadie por ahora.</p>}
+      {datos?.personal.length > 0 && (
+        <table className="w-full">
+          <thead><tr className="text-left"><th className="p-2">Persona</th><th className="p-2">Puesto</th><th className="p-2">Sede</th></tr></thead>
+          <tbody>
+            {datos.personal.map((p) => (
+              <tr key={p.usuario_sub}>
+                <td className="p-2">
+                  <span className="font-medium">{p.nombre || p.usuario}</span>
+                  <span className="block text-xs text-slate-500">{[p.usuario, p.email].filter(Boolean).join(" · ")}</span>
+                </td>
+                <td className="p-2 text-sm">{p.puestos.join(", ")}</td>
+                <td className="p-2">
+                  <select value={p.sede_id ?? ""} disabled={guardando === p.usuario_sub} onChange={(e) => cambiar(p, e.target.value)}
+                    aria-label={`Sede de ${p.nombre || p.usuario}`} className="border rounded px-2 py-1.5 text-sm w-full max-w-xs">
+                    {datos.sedes.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  );
+}
+
 export default function AsignarPuestos() {
   const avisos = useAvisos();
   const [datos, setDatos] = useState(null);
@@ -116,6 +166,8 @@ export default function AsignarPuestos() {
           </table>
         )}
       </section>
+
+      <SedesPersonal />
     </div>
   );
 }

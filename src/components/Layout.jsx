@@ -8,6 +8,7 @@ import BotonAyuda from "./Ayuda";
 import BotonTema from "./BotonTema";
 import { CargandoPantalla } from "./CargandoPantalla";
 import AvisoSesion from "./AvisoSesion";
+import { AvisoOtraSede, SelectorSede } from "./SelectorSede";
 
 // Ícono del módulo (cruz médica), dibujado aquí mismo
 export function LogoSalud({ className = "h-8 w-8" }) {
@@ -148,6 +149,7 @@ export default function Layout() {
                   <div className="px-4 pb-2 border-b border-slate-100">
                     <p className="text-sm font-semibold text-slate-900 truncate">{nombre}</p>
                     {r.puesto && <p className="text-xs text-slate-500">{r.puesto}</p>}
+                    {r.esPersonal && <div className="mt-2"><SelectorSede /></div>}
                   </div>
                   <BotonTema enMenu />
                   <button onClick={manejarLogout} className="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-slate-50">
@@ -186,6 +188,7 @@ export default function Layout() {
               <span className="text-sm">
                 {perfil?.name || perfil?.preferred_username}
                 {r.puesto && <span className="text-blue-100"> · {r.puesto}</span>}
+                {r.esPersonal && <span className="block mt-1"><SelectorSede claro /></span>}
               </span>
               <div className="flex items-center gap-2">
                 <BotonTema />
@@ -197,6 +200,7 @@ export default function Layout() {
           </div>
         )}
       </header>
+      {r.esPersonal && <AvisoOtraSede />}
 
       {r.puede("pacientes.ver") && <BusquedaGlobal abierto={buscando} setAbierto={setBuscando} />}
 

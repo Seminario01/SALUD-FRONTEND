@@ -14,7 +14,7 @@ const ORDEN_NIVEL = ["Referencia nacional", "Especializado", "Regional", "Nacion
 
 function Editor({ e, opciones, onGuardado, onCerrar }) {
   const avisos = useAvisos();
-  const [form, setForm] = useState({ direccion: e.direccion || "", telefono: e.telefono || "", estado_servicio: e.estado_servicio, tipo_atencion: e.tipo_atencion });
+  const [form, setForm] = useState({ direccion: e.direccion || "", telefono: e.telefono || "", estado_servicio: e.estado_servicio, tipo_atencion: e.tipo_atencion, es_sede: e.es_sede });
   const [error, setError] = useState(null);
   const [enviando, setEnviando] = useState(false);
   function guardar(ev) {
@@ -44,6 +44,10 @@ function Editor({ e, opciones, onGuardado, onCerrar }) {
           ))}
         </div>
       </fieldset>
+      <label className="text-sm flex items-center gap-2 sm:col-span-2">
+        <input type="checkbox" checked={form.es_sede} onChange={(x) => setForm({ ...form, es_sede: x.target.checked })} />
+        Sede de este sistema (turnos, camas y recursos propios)
+      </label>
       {error && <p className="sm:col-span-2 text-sm text-red-700" role="alert">{error}</p>}
       <div className="sm:col-span-2 flex gap-2">
         <button disabled={enviando} className="bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-blue-800 disabled:opacity-60">{enviando ? "Guardando..." : "Guardar"}</button>
@@ -154,6 +158,7 @@ export default function RedEstablecimientos() {
                 <td className="p-2">
                   <span className="font-medium">{e.nombre}</span>
                   <span className="block text-xs text-slate-500">{e.nivel || e.tipo}{e.referencias_90_dias > 0 && ` · ${e.referencias_90_dias} referencia(s) en 90 días`}</span>
+                  {e.es_sede && <span className="mr-1 text-[11px] bg-blue-100 text-blue-800 rounded px-1.5">Sede</span>}
                   {e.estado_servicio !== "ACTIVO" && <span className="text-[11px] bg-amber-100 text-amber-800 rounded px-1.5">{ESTADO_SERVICIO[e.estado_servicio] ?? e.estado_servicio}</span>}
                   {editando === e.id && <Editor e={e} opciones={datos} onGuardado={recargar} onCerrar={() => setEditando(null)} />}
                 </td>

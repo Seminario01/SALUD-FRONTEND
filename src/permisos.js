@@ -67,6 +67,7 @@ export const PERMISOS = {
   "bitacora.ver": [ADM],
   "puestos.asignar": [ADM],
   "establecimientos.gestionar": [ADM],
+  "sedes.cambiar": [JEF, ADM],
   "referencias.ver": [MED, ENF, REC, JEF, ADM],
   "referencias.crear": [MED],
   "referencias.gestionar": [MED, ENF, JEF],
