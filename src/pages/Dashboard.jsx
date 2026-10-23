@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import client from "../api/client";
+import Presupuesto from "../components/Presupuesto";
 import MiResumen from "./MiResumen";
 import EstadoIntegraciones from "../components/EstadoIntegraciones";
 import ResumenCitas from "../components/ResumenCitas";
@@ -83,17 +84,16 @@ export default function Dashboard() {
   const [errorIndicadores, setErrorIndicadores] = useState(false);
   const [sinPermiso, setSinPermiso] = useState(false);
 
-  useEffect(() => {
-    // GET /panel usa el token del usuario (solo personal de Salud).
-    // La API key entre módulos NO se usa desde el navegador.
-    client
-      .get("/panel")
-      .then((res) => setIndicadores(res.data.data))
-      .catch((err) => {
-        if (err.response?.status === 403) setSinPermiso(true);
-        else setErrorIndicadores(true);
-      });
-  }, []);
+  // GET /panel usa el token del usuario (solo personal de Salud).
+  // La API key entre módulos NO se usa desde el navegador.
+  const cargarPanel = () => client
+    .get("/panel")
+    .then((res) => setIndicadores(res.data.data))
+    .catch((err) => {
+      if (err.response?.status === 403) setSinPermiso(true);
+      else setErrorIndicadores(true);
+    });
+  useEffect(() => { cargarPanel(); }, []);
 
   // Un ciudadano no ve los indicadores generales: ve su propio resumen.
   if (sinPermiso) return <MiResumen />;
@@ -250,16 +250,8 @@ export default function Dashboard() {
 
       {indicadores?.presupuesto_servicio_social && (
         <>
-          <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Presupuesto ({indicadores.presupuesto_servicio_social.periodo})</h2>
-          <div className="bg-white border rounded-lg p-4 shadow-sm inline-block">
-            <p className="text-sm text-gray-500">Ejecutado / Asignado</p>
-            <p className="text-3xl font-bold text-teal-700">
-              Q{indicadores.presupuesto_servicio_social.monto_ejecutado_servicio_social.toLocaleString()}{" "}
-              <span className="text-sm text-gray-400 font-normal">
-                / Q{indicadores.presupuesto_servicio_social.monto_asignado.toLocaleString()}
-              </span>
-            </p>
-          </div>
+          <h2 className="text-lg font-bold text-gray-700 mt-8 mb-3">Presupuesto</h2>
+          <Presupuesto presupuesto={indicadores.presupuesto_servicio_social} onActualizado={cargarPanel} />
         </>
       )}
       {puede("cuentas.ver") && indicadores?.cuentas && (

@@ -1,5 +1,5 @@
 /* ARCHIVO GENERADO por scripts/modo-oscuro.mjs: no se edita a mano. */
-/* Colores del modo oscuro para las clases de Tailwind que usa la app (95 clases). */
+/* Colores del modo oscuro para las clases de Tailwind que usa la app (99 clases). */
 /* Van en la capa "utilities" con :where() para que hover:, focus: y dark: sigan ganando. */
 @media screen {
   @layer utilities {
@@ -8,6 +8,8 @@
     :where(html.dark) .bg-blue-100:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 20%, transparent); }
     :where(html.dark) .bg-blue-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 12%, transparent); }
     :where(html.dark) .bg-blue-50\/40:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 5%, transparent); }
+    :where(html.dark) .bg-blue-50\/50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 6%, transparent); }
+    :where(html.dark) .bg-emerald-100:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(69.6% 0.17 162.48) 20%, transparent); }
     :where(html.dark) .bg-emerald-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(69.6% 0.17 162.48) 12%, transparent); }
     :where(html.dark) .bg-gray-100:not(:where(.papel, .papel *)) { background-color: oklch(27.9% 0.041 260.031); }
     :where(html.dark) .bg-gray-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(27.9% 0.041 260.031) 50%, transparent); }
@@ -57,6 +59,7 @@
     :where(html.dark) .hover\:border-blue-300:not(:where(.papel, .papel *)):hover { border-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 50%, transparent); }
     :where(html.dark) .hover\:text-green-900:not(:where(.papel, .papel *)):hover { color: oklch(92.5% 0.084 155.995); }
     :where(html.dark) .hover\:text-slate-700:not(:where(.papel, .papel *)):hover { color: oklch(86.9% 0.022 252.894); }
+    :where(html.dark) .ring-slate-200:not(:where(.papel, .papel *)) { --tw-ring-color: oklch(37.2% 0.044 257.287); }
     :where(html.dark) .ring-white:not(:where(.papel, .papel *)) { --tw-ring-color: oklch(20.8% 0.042 265.755); }
     :where(html.dark) .stroke-slate-100:not(:where(.papel, .papel *)) { stroke: oklch(27.9% 0.041 260.031); }
     :where(html.dark) .stroke-slate-200:not(:where(.papel, .papel *)) { stroke: oklch(37.2% 0.044 257.287); }
@@ -71,6 +74,7 @@
     :where(html.dark) .text-blue-700:not(:where(.papel, .papel *)) { color: oklch(80.9% 0.105 251.813); }
     :where(html.dark) .text-blue-800:not(:where(.papel, .papel *)) { color: oklch(88.2% 0.059 254.128); }
     :where(html.dark) .text-blue-900:not(:where(.papel, .papel *)) { color: oklch(88.2% 0.059 254.128); }
+    :where(html.dark) .text-emerald-700:not(:where(.papel, .papel *)) { color: oklch(84.5% 0.143 164.978); }
     :where(html.dark) .text-emerald-800:not(:where(.papel, .papel *)) { color: oklch(90.5% 0.093 164.15); }
     :where(html.dark) .text-emerald-900:not(:where(.papel, .papel *)) { color: oklch(90.5% 0.093 164.15); }
     :where(html.dark) .text-gray-400:not(:where(.papel, .papel *)) { color: oklch(55.4% 0.046 257.417); }

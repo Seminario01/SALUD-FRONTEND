@@ -94,6 +94,13 @@ sesión también en el Login Único (el login lo explica). Si el Login Único ya
 muestra "Su sesión terminó" con "Volver a entrar", que regresa a la misma pantalla. La pantalla de
 turnos de la sala de espera no lleva Layout, así que no se cierra por inactividad.
 
+## Puestos y permisos, presupuesto
+
+`pages/Permisos.jsx` (`/permisos`, menú Gestión de Jefatura y Administración): la matriz de `permisos.js`
+por área y puesto, solo lectura, con el puesto del usuario resaltado. Al agregar un permiso, ponerlo
+también en su área de esa pantalla (y en `auth.py`, que es la que manda). `components/Presupuesto.jsx`
+(inicio): barra de ejecución y, con `presupuesto.editar` (Administración), el formulario de `PUT /presupuesto`.
+
 ## Ayuda dentro del sistema
 
 Botón "?" del encabezado (`components/Ayuda.jsx`): consejos de la pantalla actual en `utils/ayuda.js`

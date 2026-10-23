@@ -2,6 +2,7 @@ import { Suspense, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import useRoles from "../hooks/useRoles";
+import { PUESTOS } from "../permisos";
 import BusquedaGlobal, { BotonBuscar } from "./BusquedaGlobal";
 import BotonAyuda from "./Ayuda";
 import BotonTema from "./BotonTema";
@@ -45,6 +46,7 @@ export default function Layout() {
     { to: "/recursos", texto: "Recursos", ver: r.puede("recursos.ver"), grupo: true },
     { to: "/integraciones", texto: "Integraciones", ver: r.puede("integraciones.ver"), grupo: true },
     { to: "/bitacora", texto: "Bitácora de accesos", ver: r.puede("bitacora.ver"), grupo: true },
+    { to: "/permisos", texto: "Puestos y permisos", ver: r.esAdmin || r.roles.includes(PUESTOS.JEFATURA), grupo: true },
   ].filter((e) => e.ver);
   // Con muchas opciones, las de gestión van en un menú "Gestión" para que el encabezado quepa
   const agrupar = enlaces.length > 7;

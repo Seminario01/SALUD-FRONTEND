@@ -155,6 +155,13 @@ export const AYUDA = {
       { texto: "«Accesos inusuales» avisa de patrones a revisar: muchos pacientes en una hora, muchas anulaciones, accesos de noche o muchas IP. «Ver en la bitácora» filtra la tabla." },
     ],
   },
+  "/permisos": {
+    titulo: "Puestos y permisos",
+    consejos: [
+      { texto: "Muestra qué puede hacer cada puesto del Login Único. Es la misma tabla que revisa el servidor en cada petición." },
+      { texto: "Su puesto sale resaltado en azul. Para cambiar el puesto de una persona se cambia su rol en el Login Único, no aquí." },
+    ],
+  },
 };
 
 // Para el ciudadano la página de inicio es su resumen
