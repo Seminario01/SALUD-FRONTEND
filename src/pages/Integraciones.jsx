@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import client, { mensajeError } from "../api/client";
-import AuditoriaSocial from "../components/AuditoriaSocial";
-import useRoles from "../hooks/useRoles";
+import { TarjetaAuditoria } from "../components/AuditoriaSocial";
 
-// Integración con los otros módulos de la Red: estado, demostración en ambas
-// direcciones y bitácora de llamadas. Mientras los otros equipos no publiquen
-// sus servicios, Salud se conecta a los simuladores del backend (datos ficticios).
+// Integración con los otros módulos de la Red: estado de cada conexión y bitácora de llamadas.
 
 const MODULOS = [
   {
@@ -28,19 +25,10 @@ const MODULOS = [
   },
 ];
 
-const CASOS = [
-  { caso: "seguridad-establecimientos", modulo: "Seguridad", texto: "Pregunta qué establecimientos atienden una emergencia" },
-  { caso: "educacion-jornada", modulo: "Educación", texto: "Solicita una jornada de vacunación" },
-  { caso: "educacion-practicante", modulo: "Educación", texto: "Consulta las horas de un practicante" },
-  { caso: "tributario-pago", modulo: "Tributario", texto: "Avisa el pago de un cobro pendiente" },
-  { caso: "tributario-costo", modulo: "Tributario", texto: "Consulta el costo de una cita" },
-  { caso: "auditoria-indicadores", modulo: "Auditoría", texto: "Consulta los indicadores de Salud" },
-];
-
 const ESTADO = {
   conectado: { punto: "bg-green-500", texto: "Conectado" },
   no_disponible: { punto: "bg-red-500", texto: "No disponible" },
-  no_configurado: { punto: "bg-slate-400", texto: "No configurado" },
+  no_configurado: { punto: "bg-slate-400", texto: "No conectado" },
 };
 
 const RESULTADO = {
@@ -84,44 +72,11 @@ function TarjetaModulo({ modulo, estado }) {
   );
 }
 
-function ResultadoDemo({ r }) {
-  if (r.error) return <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{r.error}</p>;
-  const d = r.data;
-  return (
-    <div className="rounded-lg border border-slate-200 overflow-hidden text-sm">
-      <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-        <p className="font-medium text-slate-800">{d.origen} → Salud <span className="text-slate-400 font-normal">· {d.duracionMs} ms</span></p>
-        <p className="text-slate-500">{d.contexto}</p>
-      </div>
-      <div className="grid md:grid-cols-2">
-        <div className="p-4 md:border-r border-slate-200">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Petición de {d.origen}</p>
-          <p className="font-mono text-xs break-all"><span className="font-bold text-blue-700">{d.peticion.metodo}</span> {d.peticion.ruta}</p>
-          <p className="font-mono text-[11px] text-slate-500 mt-1">X-API-Key: ••••••  ·  X-Modulo-Origen: {d.origen}</p>
-          {d.peticion.cuerpo && (
-            <pre className="mt-2 bg-slate-900 text-slate-100 rounded-lg p-3 text-[11px] overflow-auto max-h-48">{JSON.stringify(d.peticion.cuerpo, null, 2)}</pre>
-          )}
-        </div>
-        <div className="p-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
-            Respuesta de Salud <span className={d.respuesta.status < 400 ? "text-green-700" : "text-red-700"}>({d.respuesta.status ?? "sin respuesta"})</span>
-          </p>
-          <pre className="bg-slate-900 text-slate-100 rounded-lg p-3 text-[11px] overflow-auto max-h-72">{JSON.stringify(d.respuesta.cuerpo, null, 2)}</pre>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function Integraciones() {
-  const { puede } = useRoles();
-  const puedeProbar = puede("integraciones.demo");
   const [estado, setEstado] = useState(null);
   const [bitacora, setBitacora] = useState(null);
   const [filtroModulo, setFiltroModulo] = useState("");
   const [filtroDireccion, setFiltroDireccion] = useState("");
-  const [demo, setDemo] = useState(null);
-  const [probando, setProbando] = useState(null);
 
   const cargarBitacora = useCallback(() => {
     const params = { limite: 50 };
@@ -142,39 +97,15 @@ export default function Integraciones() {
     return () => clearInterval(t);
   }, [cargarBitacora]);
 
-  function probar(caso) {
-    setProbando(caso);
-    client.post(`/integraciones/simular/${caso}`)
-      .then((r) => setDemo({ data: r.data.data }))
-      .catch((err) => setDemo({ error: mensajeError(err) }))
-      .finally(() => { setProbando(null); cargarBitacora(); });
-  }
-
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Integración con otros módulos</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {MODULOS.map((m) => <TarjetaModulo key={m.clave} modulo={m} estado={estado?.[m.clave]} />)}
+        <TarjetaAuditoria />
       </div>
       {!estado && <p className="text-sm text-slate-400">Verificando conexión...</p>}
-
-      <AuditoriaSocial />
-
-      {puedeProbar && (
-        <section className="bg-white border rounded-lg p-5">
-          <h2 className="font-bold text-slate-700 mb-4">Consultas de otros módulos a Salud</h2>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {CASOS.map((c) => (
-              <button key={c.caso} onClick={() => probar(c.caso)} disabled={probando !== null}
-                className="text-sm px-3 py-2 rounded-lg border border-slate-300 hover:bg-blue-50 hover:border-blue-300 disabled:opacity-50 text-left">
-                <span className="font-semibold text-blue-700">{c.modulo}:</span> {probando === c.caso ? "Consultando..." : c.texto}
-              </button>
-            ))}
-          </div>
-          {demo && <ResultadoDemo r={demo} />}
-        </section>
-      )}
 
       <section className="bg-white border rounded-lg p-5">
         <div className="flex flex-wrap items-end justify-between gap-3 mb-3">

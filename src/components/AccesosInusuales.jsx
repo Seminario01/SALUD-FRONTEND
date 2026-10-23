@@ -57,9 +57,6 @@ export default function AccesosInusuales({ onVer }) {
           </button>
         )}
       </div>
-      <p className="text-xs text-slate-500 mt-1">
-        Patrones que pueden indicar una consulta indebida o una cuenta compartida. Es un aviso para revisar: no bloquea a nadie.
-      </p>
       {error && <p className="text-sm text-red-600 mt-2">No se pudieron revisar los accesos: {error}</p>}
       {datos === null && !error && <p className="text-sm text-slate-400 mt-2">Revisando...</p>}
       {abierto && datos?.length > 0 && (

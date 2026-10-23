@@ -35,7 +35,6 @@ export default function Referencias() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Referencias</h1>
-          <p className="text-slate-500 text-sm">Pacientes referidos a otros establecimientos de la red. Las urgentes van primero.</p>
         </div>
         <select value={estado} onChange={(e) => setEstado(e.target.value)} className="border rounded px-2 py-1.5 text-sm">
           <option value="ENVIADA">Por confirmar</option>

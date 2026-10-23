@@ -116,9 +116,6 @@ export default function Vigilancia() {
             ]} />
         )}
       </div>
-      <p className="text-sm text-slate-500 mb-4">
-        Casos por municipio donde vive el paciente (atenciones con código CIE-10). Sirve para ver si una enfermedad se está juntando en una zona y actuar a tiempo.
-      </p>
 
       <div className="bg-white border rounded-lg p-3 shadow-sm mb-4 grid grid-cols-2 md:grid-cols-5 gap-2" role="group" aria-label="Filtros de vigilancia">
         <label className="text-xs text-slate-600">Período
@@ -176,8 +173,8 @@ export default function Vigilancia() {
             seleccionado={elegido} onElegir={elegir} />
           <div className="mt-2"><LeyendaMapa maximo={maximo} hayPocos={pocos.size > 0} hayAlertas={alertas.size > 0} /></div>
           <p className="mt-2 text-[11px] text-slate-400">
-            Toque un municipio para ver el detalle. Límites municipales: CONRED / OCHA (HDX), licencia CC BY-IGO.
-            {datos?.sin_ubicacion > 0 && ` ${datos.sin_ubicacion} atención(es) del período no entran porque el paciente no tiene municipio de residencia registrado.`}
+            Límites municipales: CONRED / OCHA (HDX), licencia CC BY-IGO.
+            {datos?.sin_ubicacion > 0 && ` ${datos.sin_ubicacion} atención(es) sin municipio de residencia.`}
             {datos?.sin_ubicacion > 0 && puede("pacientes.registrar") && <> <Link to="/pacientes/residencia" className="text-blue-700 hover:underline">Completar residencias →</Link></>}
           </p>
         </section>
@@ -212,7 +209,7 @@ export default function Vigilancia() {
                 <button onClick={() => setElegido(null)} className="text-xs text-blue-700 hover:underline">← Volver</button>
               </div>
               {!detalle && <p className="mt-2 text-sm text-slate-500">Sin casos con estos filtros.</p>}
-              {detalle?.pocos && <p className="mt-2 text-sm text-slate-500">Menos de 3 pacientes: la cifra no se muestra para no identificar a nadie.</p>}
+              {detalle?.pocos && <p className="mt-2 text-sm text-slate-500">Menos de 3 pacientes.</p>}
               {detalle && !detalle.pocos && (
                 <>
                   <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">

@@ -83,9 +83,6 @@ export default function Bitacora() {
             { titulo: "Dirección IP", valor: (r) => r.ip ?? "", ancho: 16 },
           ]} />
       </div>
-      <p className="text-sm text-slate-500 mb-4">
-        Quién vio o modificó los datos de cada paciente, y cuándo. Se registra solo; nadie puede editarla ni borrarla desde el sistema.
-      </p>
 
       <AccesosInusuales onVer={verInusual} />
 

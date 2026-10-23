@@ -71,8 +71,7 @@ export default function VerificarConstancia() {
                 {incapacidad && <div><dt className="text-slate-500">Días de reposo</dt><dd className="tabular-nums">{c.dias_reposo}</dd></div>}
               </dl>
               <p className="mt-4 text-xs text-slate-500">
-                Compare estos datos con la constancia en papel: si algo no coincide (fechas, días o número), fue alterada.
-                Por privacidad no se muestra el diagnóstico, y del paciente solo las iniciales y los últimos 4 dígitos del DPI.
+                Si algo no coincide con la constancia en papel, fue alterada.
               </p>
             </section>
             <p className="mt-3 text-center text-xs text-slate-400">{c.establecimiento}</p>

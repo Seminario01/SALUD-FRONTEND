@@ -78,11 +78,6 @@ export default function DiagnosticosFrecuentes() {
           </li>
         ))}
       </ol>
-      {filas.length > 0 && (
-        <p className="text-xs text-slate-400 mt-3">
-          Se agrupan sin importar mayúsculas ni tildes. Para Auditoría, los diagnósticos con menos de 3 pacientes se suman en "Otros".
-        </p>
-      )}
     </section>
   );
 }

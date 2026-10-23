@@ -199,7 +199,6 @@ export default function MiResumen() {
                   </li>
                 ))}
               </ul>
-              <p className="text-xs text-slate-500 mt-3">Su médico le explicará los resultados en la próxima consulta.</p>
             </Tarjeta>
           )}
 
@@ -217,7 +216,6 @@ export default function MiResumen() {
                   </li>
                 ))}
               </ul>
-              <p className="text-xs text-slate-500 mt-3">Cada constancia trae un código QR para que su trabajo o colegio compruebe que es auténtica.</p>
             </Tarjeta>
           )}
 

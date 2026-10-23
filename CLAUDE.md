@@ -110,9 +110,15 @@ espera a tenerlos) y `useRoles` los suma a los roles del token; el servidor los 
 
 ## Auditoría Social (en Integraciones)
 
-`components/AuditoriaSocial.jsx`: lista de comprobación de los servicios para Auditoría, última consulta
-exitosa, rechazos con su motivo (para compartírselo a Auditoría) y "Probar ahora"
-(`GET /integraciones/auditoria`, `POST /integraciones/auditoria/probar`).
+`components/AuditoriaSocial.jsx` (`TarjetaAuditoria`, cuarta tarjeta de Integraciones): "Servicio operativo"
+(el backend calcula el tablero y llega a las llaves del Login Único), "Aún no consumido" o la última consulta
+real, consultas y rechazos de 7 días (`GET /integraciones/auditoria`).
+
+## Textos en pantalla
+
+Solo lo operativo: las explicaciones de cómo funciona cada pantalla van en la ayuda "?" (`utils/ayuda.js`),
+no como párrafos en la pantalla. Las fuentes con licencia (CONRED/OCHA, MSPAS, OMS) sí se citan, cortas.
+Integraciones no tiene demostraciones: un módulo sin URL real sale "No conectado".
 
 ## Red de establecimientos y referencias
 

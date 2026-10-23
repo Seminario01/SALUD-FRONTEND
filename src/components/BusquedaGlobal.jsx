@@ -60,9 +60,6 @@ export default function BusquedaGlobal({ abierto, setAbierto }) {
               <BuscadorPaciente pacientes={pacientes} valor="" onCambio={ir} autoFocus
                 placeholder="Nombre o DPI del paciente" etiquetaAria="Buscar paciente" />
             )}
-            <p className="text-xs text-slate-500 mt-3">
-              Enter abre la ficha · Esc cierra · Ctrl + K abre esta búsqueda desde cualquier pantalla
-            </p>
           </div>
         </div>
       )}

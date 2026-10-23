@@ -66,11 +66,6 @@ export default function Permisos() {
     <div className="p-4 sm:p-6 space-y-4">
       <div>
         <h1 className="text-2xl font-bold">Puestos y permisos</h1>
-        <p className="text-slate-500 mt-1 max-w-3xl text-sm">
-          Qué puede hacer cada puesto del Login Único. Es la misma matriz que aplica el servidor en cada petición:
-          si alguien intenta algo que no le toca, la respuesta es "sin permiso" aunque lo intente fuera de esta aplicación.
-          El ciudadano solo ve lo suyo (su ficha, citas, recetas, resultados y constancias).
-        </p>
       </div>
 
       <div className="overflow-x-auto rounded-xl ring-1 ring-slate-200">
@@ -116,10 +111,6 @@ export default function Permisos() {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-slate-500">
-        Principio de mínimo privilegio: cada puesto tiene solo lo que su trabajo necesita. Por ejemplo, Caja ve cuentas y recetas pero no
-        el expediente clínico; Auditoría ve cifras sin datos personales; solo Médico receta y solo Farmacia despacha.
-      </p>
     </div>
   );
 }

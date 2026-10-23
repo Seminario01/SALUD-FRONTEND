@@ -236,7 +236,7 @@ export default function DetalleCita() {
       {cita.historial && (
         <Tarjeta titulo="Historial">
           {cita.historial.length === 0 ? (
-            <p className="text-sm text-slate-500">Sin cambios registrados (la bitácora empezó el 17 de octubre de 2026).</p>
+            <p className="text-sm text-slate-500">Sin cambios registrados.</p>
           ) : (
             <ol className="relative border-l border-slate-200 ml-2 space-y-3">
               {cita.historial.map((h, i) => (

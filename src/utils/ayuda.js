@@ -52,6 +52,13 @@ export const AYUDA = {
       { si: "pagos.verificar", texto: "Cuando el paciente paga en Tributario, use «Verificar pago» para confirmarlo." },
     ],
   },
+  "/citas/recordatorios": {
+    titulo: "Recordatorios",
+    consejos: [
+      { texto: "Citas pendientes y confirmadas del día, con el teléfono del paciente para llamarle o escribirle." },
+      { texto: "La marca «Avisado» se guarda solo en esta computadora. Al abrir WhatsApp se marca sola." },
+    ],
+  },
   "/citas/lista-espera": {
     titulo: "Lista de espera",
     consejos: [
@@ -146,7 +153,7 @@ export const AYUDA = {
     titulo: "Integraciones",
     consejos: [
       { texto: "Muestra cómo se comunica Salud con Educación, Seguridad, Tributario y Auditoría, y la bitácora de cada llamada (sin datos personales)." },
-      { texto: "«Auditoría Social» demuestra que los servicios para Auditoría están listos: «Probar ahora» hace las mismas consultas que su tablero. Si alguien consulta sin la credencial correcta, aparece el motivo para compartírselo." },
+      { texto: "Cada tarjeta dice si el módulo está conectado. En Auditoría Social, «Servicio operativo» indica que el servicio responde; «Aún no consumido», que Auditoría todavía no lo ha consultado. Si una consulta se rechaza, aparece el motivo." },
     ],
   },
   "/bitacora": {

@@ -14,7 +14,7 @@ export default function SignosVitales({ pacienteId }) {
 
   if (datos === null) return <p className="text-sm text-slate-400">Cargando...</p>;
   if (datos.length === 0) {
-    return <p className="text-sm text-slate-500">Sin signos vitales registrados. Se toman de las notas de hospitalización.</p>;
+    return <p className="text-sm text-slate-500">Sin signos vitales registrados.</p>;
   }
 
   const ultimo = (clave) => [...datos].reverse().find((d) => d[clave] != null);
@@ -51,7 +51,7 @@ export default function SignosVitales({ pacienteId }) {
             rangoNormal={g.rango} decimales={g.decimales ?? 0} />;
         })}
       </div>
-      <p className="text-xs text-slate-400 mt-2">La franja gris marca el rango normal de referencia en adultos.</p>
+      <p className="text-xs text-slate-400 mt-2">Franja gris: rango normal (adulto)</p>
     </div>
   );
 }

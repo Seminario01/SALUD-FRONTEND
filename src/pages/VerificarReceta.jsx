@@ -82,8 +82,7 @@ export default function VerificarReceta() {
                 ))}
               </ul>
               <p className="mt-4 text-xs text-slate-500">
-                Compare estos datos con la receta en papel: si algo no coincide (medicamento, cantidad o número), la receta fue alterada.
-                Por privacidad, del paciente solo se muestran las iniciales y los últimos 4 dígitos del DPI.
+                Si algo no coincide con la receta en papel, fue alterada.
               </p>
             </section>
             <p className="mt-3 text-center text-xs text-slate-400">{r.establecimiento}</p>

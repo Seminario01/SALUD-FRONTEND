@@ -26,7 +26,7 @@ function EvolucionSignos({ notas }) {
           <GraficaLinea key={g.titulo} titulo={g.titulo} unidad={g.unidad} series={g.series} puntos={g.puntos}
             rangoNormal={g.rango} decimales={g.decimales ?? 0} />
         ))}
-        <p className="text-xs text-slate-400">La franja gris marca el rango normal de referencia en adultos.</p>
+        <p className="text-xs text-slate-400">Franja gris: rango normal (adulto)</p>
       </div>
     </details>
   );

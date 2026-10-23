@@ -133,7 +133,6 @@ function Formulario({ pacienteId, onGuardado }) {
         className="bg-blue-700 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-800 disabled:opacity-50">
         {enviando ? "Guardando..." : "Registrar medición"}
       </button>
-      <p className="col-span-2 md:col-span-5 text-[11px] text-slate-500">Antes de los 2 años se mide acostado (longitud); desde los 2 años, de pie (talla).</p>
       {error && <p className="col-span-2 md:col-span-5 text-sm text-red-600">{error}</p>}
     </form>
   );
@@ -200,7 +199,7 @@ export default function CrecimientoInfantil({ pacienteId }) {
           </div>
           {curvas[vista] && <Grafica curva={curvas[vista]} puntos={puntos} eje={curvas[vista].eje} unidad={unidadVista} />}
           <p className="text-[11px] text-slate-500">
-            Líneas grises: mediana (0) y ±2 y ±3 desviaciones estándar de la OMS. Punto con anillo rojo: fuera de lo normal (menos de −2 o más de +2).
+            Líneas: mediana, ±2 y ±3 DE (OMS) · Anillo rojo: fuera de ±2 DE
           </p>
           <button onClick={() => setVerDatos((v) => !v)} className="mt-2 text-xs text-blue-700 hover:underline no-imprimir">{verDatos ? "Ocultar datos" : "Ver datos"}</button>
           {verDatos && (

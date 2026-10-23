@@ -47,11 +47,6 @@ export default function AsignarPuestos() {
     <div className="p-4 sm:p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Asignar puestos</h1>
-        <p className="text-slate-500 mt-1 max-w-3xl text-sm">
-          Dé un puesto de Salud a una persona que ya tiene cuenta en el Login Único. Solo vale dentro de este módulo
-          y el servidor lo revisa en cada petición. La persona debe recargar la página para verlo. Nadie puede
-          cambiar su propio puesto, y cada cambio queda en la bitácora de accesos.
-        </p>
       </div>
       {error && <p className="text-sm text-red-600" role="alert">No se pudo cargar: {error}</p>}
 
@@ -72,10 +67,6 @@ export default function AsignarPuestos() {
         <button disabled={enviando || !datos} className="bg-blue-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800 disabled:opacity-60">
           {enviando ? "Asignando..." : "Asignar"}
         </button>
-        <p className="md:col-span-4 text-xs text-slate-500">
-          El código es el que la persona ve en «Mi resumen» al entrar sin puesto (botón «Copiar»), o elíjala abajo en
-          «Entraron sin puesto».
-        </p>
         {errorForm && <p className="md:col-span-4 text-sm text-red-700" role="alert">{errorForm}</p>}
       </form>
 
@@ -106,8 +97,7 @@ export default function AsignarPuestos() {
 
       <section>
         <h2 className="text-lg font-semibold mb-1">Entraron sin puesto de Salud</h2>
-        <p className="text-sm text-slate-500 mb-2">Cuentas que entraron al módulo en los últimos 30 días sin ningún puesto (como ciudadanos).</p>
-        {datos && datos.recientes.length === 0 && <p className="text-sm text-slate-500">Nadie por ahora. Pida a la persona que entre una vez a saludumg.online.</p>}
+        {datos && datos.recientes.length === 0 && <p className="text-sm text-slate-500">Nadie por ahora.</p>}
         {datos?.recientes.length > 0 && (
           <table className="w-full">
             <thead><tr className="text-left"><th className="p-2">Persona</th><th className="p-2">Último ingreso</th><th className="p-2" /></tr></thead>

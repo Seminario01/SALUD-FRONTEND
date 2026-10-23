@@ -82,10 +82,6 @@ export default function CompletarResidencia() {
         <h1 className="text-2xl font-bold text-gray-800">Completar residencia de pacientes</h1>
         <Link to="/pacientes" className="text-sm text-blue-700 hover:underline">← Volver a pacientes</Link>
       </div>
-      <p className="text-sm text-slate-500 mb-4">
-        Los pacientes sin municipio de residencia no aparecen en el mapa de vigilancia epidemiológica. Primero están los que vinieron
-        en los últimos 90 días. El municipio del DPI es donde se inscribió: confírmelo con el paciente si puede.
-      </p>
       {error && <p className="text-sm text-red-600 mb-4">No se pudo cargar la lista: {error}</p>}
       {datos === null && !error && <p className="text-sm text-slate-400">Cargando...</p>}
       {datos && (

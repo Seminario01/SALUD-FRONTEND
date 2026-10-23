@@ -95,7 +95,6 @@ export default function RedEstablecimientos() {
         <h1 className="text-2xl font-bold">Red de establecimientos</h1>
         <p className="text-slate-500 mt-1 text-sm max-w-3xl">
           {hospitales} hospitales públicos y {datos.establecimientos.length - hospitales} establecimientos más en {departamentos.length} departamentos.
-          Se usa para referir pacientes y es la misma lista que consulta Seguridad para ubicar atención de emergencia.
         </p>
       </div>
 
@@ -124,7 +123,6 @@ export default function RedEstablecimientos() {
             {municipio && <button onClick={() => setMunicipio(null)} className="text-sm text-blue-700 hover:underline">Ver todos</button>}
           </div>
           <MapaGuatemala valores={valores} departamento={depto || undefined} seleccionado={municipio} onElegir={(c) => setMunicipio(c === municipio ? null : c)} />
-          <p className="text-xs text-slate-500 mt-2">Toque un municipio para ver sus establecimientos. Más oscuro = más establecimientos.</p>
         </section>
         <section className="bg-white border rounded-lg p-3">
           <h2 className="font-semibold mb-2">Por nivel</h2>

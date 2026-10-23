@@ -113,9 +113,6 @@ export default function ListaEspera() {
         <h1 className="text-2xl font-bold text-gray-800">Lista de espera de citas</h1>
         <Link to="/citas" className="text-sm text-blue-700 hover:underline">← Volver a citas</Link>
       </div>
-      <p className="text-sm text-slate-500 mb-4">
-        Cuando se cancela una cita, llame primero a quien lleva más tiempo esperando. Al darle la cita, sale de la lista.
-      </p>
       {gestiona && <Agregar onAgregado={(m) => { avisos.exito(m); cargar(); }} />}
       {error && <p className="text-sm text-red-600 mb-4">No se pudo cargar la lista: {error}</p>}
       {lista === null && !error && <p className="text-sm text-slate-400">Cargando...</p>}

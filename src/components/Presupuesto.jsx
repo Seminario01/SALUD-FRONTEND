@@ -70,7 +70,7 @@ export default function Presupuesto({ presupuesto, onActualizado }) {
             <input value={form.monto_ejecutado_servicio_social} onChange={(e) => setForm({ ...form, monto_ejecutado_servicio_social: e.target.value })}
               inputMode="decimal" className="w-full border rounded px-2 py-1.5 tabular-nums" />
           </label>
-          <p className="sm:col-span-3 text-xs text-slate-500">Período como AAAA, AAAA-MM o AAAA-Q1 a Q4. Un período nuevo crea otro registro.</p>
+          <p className="sm:col-span-3 text-xs text-slate-500">Período: AAAA, AAAA-MM o AAAA-Q1 a Q4</p>
           {error && <p className="sm:col-span-3 text-sm text-red-700" role="alert">{error}</p>}
           <div className="sm:col-span-3 flex gap-2">
             <button disabled={enviando} className="bg-blue-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800 disabled:opacity-60">

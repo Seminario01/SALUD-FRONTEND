@@ -254,9 +254,6 @@ export default function Laboratorio() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-1">Laboratorio</h1>
-      <p className="text-sm text-slate-500 mb-4">
-        El médico pide los exámenes, Enfermería toma la muestra y registra los resultados. Lo que sale del rango normal se marca en rojo.
-      </p>
       {ordena && catalogo.length > 0 && (
         <NuevaOrden catalogo={catalogo} pacientes={pacientes} pacienteInicial={params.get("paciente")} onCreada={(m) => { avisos.exito(m); cargar(); }} />
       )}

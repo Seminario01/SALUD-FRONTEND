@@ -6,7 +6,7 @@ const NOMBRES = { educacion: "Educación", seguridad: "Seguridad", tributario: "
 const ESTILO = {
   conectado: { punto: "bg-green-500", texto: "Conectado" },
   no_disponible: { punto: "bg-red-500", texto: "No disponible" },
-  no_configurado: { punto: "bg-slate-400", texto: "No configurado" },
+  no_configurado: { punto: "bg-slate-400", texto: "No conectado" },
 };
 
 // Muestra si el backend de Salud logra comunicarse con los otros módulos.

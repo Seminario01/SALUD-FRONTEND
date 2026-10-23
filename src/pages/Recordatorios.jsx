@@ -75,9 +75,6 @@ export default function Recordatorios() {
         </div>
       </div>
       <h1 className="text-2xl font-bold text-gray-800 print:hidden">Recordatorio de citas</h1>
-      <p className="text-sm text-slate-500 mb-4 print:hidden">
-        Citas pendientes y confirmadas del día, con el teléfono del paciente para llamarle o escribirle.
-      </p>
 
       <div className="flex flex-wrap items-end gap-3 mb-4 print:hidden">
         <label className="text-sm">Día
@@ -149,9 +146,6 @@ export default function Recordatorios() {
           </table>
         </div>
       )}
-      <p className="text-xs text-slate-400 mt-3 print:hidden">
-        La marca "Avisado" se guarda solo en esta computadora. Al abrir WhatsApp se marca sola.
-      </p>
       <PieImpreso />
     </div>
   );
