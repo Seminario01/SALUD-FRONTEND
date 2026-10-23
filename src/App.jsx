@@ -41,6 +41,7 @@ const ListaEspera = cargar(() => import("./pages/ListaEspera"));
 const Vigilancia = cargar(() => import("./pages/Vigilancia"));
 const CompletarResidencia = cargar(() => import("./pages/CompletarResidencia"));
 const Permisos = cargar(() => import("./pages/Permisos"));
+const AsignarPuestos = cargar(() => import("./pages/AsignarPuestos"));
 
 // Al regresar del Login Único se vuelve a la página que se había pedido (receta, ficha, etc.)
 function VolverTrasLogin() {
@@ -102,6 +103,7 @@ export default function App() {
           <Route path="/integraciones" element={<Integraciones />} />
           <Route path="/bitacora" element={<Bitacora />} />
           <Route path="/permisos" element={<Permisos />} />
+          <Route path="/puestos" element={<AsignarPuestos />} />
           <Route path="*" element={<NoEncontrado />} />
         </Route>
       </Routes>

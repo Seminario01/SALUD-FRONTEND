@@ -65,6 +65,7 @@ export const PERMISOS = {
   "integraciones.ver": [JEF, ADM],
   "integraciones.demo": [JEF, ADM],
   "bitacora.ver": [ADM],
+  "puestos.asignar": [ADM],
   "reportes.ver": [MED, JEF, ADM, ...ROLES_AUDITORIA],
 };
 

@@ -101,6 +101,13 @@ por área y puesto, solo lectura, con el puesto del usuario resaltado. Al agrega
 también en su área de esa pantalla (y en `auth.py`, que es la que manda). `components/Presupuesto.jsx`
 (inicio): barra de ejecución y, con `presupuesto.editar` (Administración), el formulario de `PUT /presupuesto`.
 
+## Asignar puestos
+
+`pages/AsignarPuestos.jsx` (`/puestos`, Gestión, permiso `puestos.asignar`): Administración da un puesto de
+Salud a una cuenta del Login Único (por el código de "Mi resumen" o eligiéndola en "Entraron sin puesto").
+`utils/puestosAsignados.js` lee los `asignados` de `GET /mis-permisos` una vez por sesión (ProtectedRoute
+espera a tenerlos) y `useRoles` los suma a los roles del token; el servidor los aplica en cada petición.
+
 ## Ayuda dentro del sistema
 
 Botón "?" del encabezado (`components/Ayuda.jsx`): consejos de la pantalla actual en `utils/ayuda.js`

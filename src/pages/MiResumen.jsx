@@ -88,7 +88,8 @@ export default function MiResumen() {
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-sm text-amber-900 max-w-xl">
           <p>
             Su usuario todavía no está vinculado a un registro de paciente. Acérquese a recepción y
-            muestre este código para que lo vinculen:
+            muestre este código para que lo vinculen. Si usted es del personal de Salud, envíelo a
+            Administración para que le asigne su puesto:
           </p>
           {codigo && (
             <div className="mt-3 flex flex-wrap items-center gap-2">

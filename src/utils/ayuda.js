@@ -155,6 +155,14 @@ export const AYUDA = {
       { texto: "«Accesos inusuales» avisa de patrones a revisar: muchos pacientes en una hora, muchas anulaciones, accesos de noche o muchas IP. «Ver en la bitácora» filtra la tabla." },
     ],
   },
+  "/puestos": {
+    titulo: "Asignar puestos",
+    consejos: [
+      { texto: "Para darle acceso a un compañero: que entre una vez a saludumg.online con su cuenta del Login Único; aparece en «Entraron sin puesto». Presione «Asignar puesto», elija el puesto y «Asignar»." },
+      { texto: "También puede pegar el código que la persona ve en «Mi resumen». El puesto vale solo en Salud y la persona lo ve al recargar la página." },
+      { texto: "Nadie puede cambiar su propio puesto. Cada asignación y cada «Quitar» quedan en la bitácora de accesos." },
+    ],
+  },
   "/permisos": {
     titulo: "Puestos y permisos",
     consejos: [

@@ -107,3 +107,47 @@ test("la ayuda muestra solo lo que el puesto puede hacer", async ({ page }) => {
   await page.keyboard.press("Escape");
   await expect(ayuda).toBeHidden();
 });
+
+test("Administración le asigna un puesto a una cuenta sin puesto, y se lo quita", async ({ browser }) => {
+  test.setTimeout(120_000);
+  const ventana = { viewport: { width: 1366, height: 768 } };
+  const persona = await (await browser.newContext(ventana)).newPage();   // cada uno con su propia sesión
+  const admin = await (await browser.newContext(ventana)).newPage();
+  admin.on("dialog", (d) => d.accept());
+  const errores = vigilarErrores(admin);
+
+  await entrar(persona, "ciudadano1");
+  await expect(persona.getByRole("link", { name: "Mi resumen" })).toBeVisible();
+  // El código del usuario (sub): el mismo que "Mi resumen" muestra a quien no está vinculado
+  const codigo = await persona.evaluate(() => {
+    const [, guardado] = Object.entries(sessionStorage).find(([k]) => k.startsWith("oidc.user"));
+    return JSON.parse(guardado).profile.sub;
+  });
+
+  await entrar(admin, "admin.salud");
+  await admin.goto("/puestos");
+  await expect(admin.getByRole("heading", { name: "Asignar puestos" })).toBeVisible();
+  const fila = admin.locator("tr", { hasText: codigo });
+  if (await fila.count()) {                                     // quedó de una corrida anterior
+    await fila.getByRole("button", { name: "Quitar" }).click();
+    await expect(fila).toHaveCount(0);
+  }
+  await admin.getByLabel("Código del usuario").fill(codigo);
+  await admin.getByLabel("Puesto").selectOption({ label: "Jefatura médica" });
+  await admin.getByRole("button", { name: "Asignar", exact: true }).click();
+  await expect(admin.getByText(/Puesto Jefatura médica asignado/)).toBeVisible();
+  await expect(fila).toContainText("Jefatura médica");
+
+  await persona.reload();                                       // al recargar ya trae su puesto
+  await persona.getByRole("button", { name: /^Menú de / }).click();
+  await expect(persona.getByText("Jefatura médica").first()).toBeVisible();
+  await persona.goto("/vigilancia");
+  await expect(persona.getByRole("heading", { name: "Vigilancia epidemiológica" })).toBeVisible();
+
+  await fila.getByRole("button", { name: "Quitar" }).click();
+  await expect(admin.getByText("Puesto quitado.")).toBeVisible();
+  await persona.goto("/");
+  await persona.reload();
+  await expect(persona.getByRole("link", { name: "Mi resumen" })).toBeVisible();
+  expect(errores).toEqual([]);
+});
