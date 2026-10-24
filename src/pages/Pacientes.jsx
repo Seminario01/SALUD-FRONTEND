@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Paginacion from "../components/Paginacion";
 import usePaginacion from "../hooks/usePaginacion";
@@ -192,17 +192,23 @@ export default function Pacientes() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
+  // Solo vale la respuesta de la última petición: si la lista inicial llega después de una
+  // búsqueda, no debe reemplazar sus resultados.
+  const ultima = useRef(0);
   const cargar = useCallback((q = "") => {
+    const numero = ++ultima.current;
     client
       .get("/pacientes", { params: q ? { q } : {} })
       .then((res) => {
+        if (numero !== ultima.current) return;
         setPacientes(res.data.data);
         setError(null);
       })
-      .catch((err) =>
-        setError(err.response?.status === 403 ? "No tiene permiso para ver el listado de pacientes." : mensajeError(err))
-      )
-      .finally(() => setCargando(false));
+      .catch((err) => {
+        if (numero !== ultima.current) return;
+        setError(err.response?.status === 403 ? "No tiene permiso para ver el listado de pacientes." : mensajeError(err));
+      })
+      .finally(() => { if (numero === ultima.current) setCargando(false); });
   }, []);
 
   useEffect(() => {

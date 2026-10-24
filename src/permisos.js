@@ -68,6 +68,7 @@ export const PERMISOS = {
   "puestos.asignar": [ADM],
   "establecimientos.gestionar": [ADM],
   "sedes.cambiar": [JEF, ADM],
+  "permisos.editar": [ADM],
   "referencias.ver": [MED, ENF, REC, JEF, ADM],
   "referencias.crear": [MED],
   "referencias.gestionar": [MED, ENF, JEF],
@@ -88,6 +89,7 @@ export const NOMBRE_PUESTO = [
   ["ciudadano", "Ciudadano"],
 ];
 
-export function tienePermiso(roles, ...permisos) {
-  return permisos.some((p) => (PERMISOS[p] ?? []).some((r) => roles.includes(r)));
+// matriz: la vigente que manda el servidor (GET /mis-permisos); sin ella, la original de aquí
+export function tienePermiso(roles, permisos, matriz = PERMISOS) {
+  return permisos.some((p) => (matriz[p] ?? PERMISOS[p] ?? []).some((r) => roles.includes(r)));
 }

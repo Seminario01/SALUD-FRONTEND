@@ -14,7 +14,8 @@ export default function useRoles() {
   const deToken = rolesDe(auth.user);
   const asignados = puestos.sub === auth.user?.profile?.sub ? puestos.asignados : [];
   const roles = [...deToken, ...asignados.filter((r) => !deToken.includes(r))];
-  const puede = (...permisos) => tienePermiso(roles, ...permisos);
+  const matriz = puestos.sub === auth.user?.profile?.sub ? puestos.matriz : null;
+  const puede = (...permisos) => tienePermiso(roles, permisos, matriz ?? undefined);
   const esPersonal = Object.values(PUESTOS).some((r) => roles.includes(r));
   return {
     roles,

@@ -186,15 +186,18 @@ export const AYUDA = {
     consejos: [
       { texto: "Para darle acceso a un compañero: que entre una vez a saludumg.online con su cuenta del Login Único; aparece en «Entraron sin puesto». Presione «Asignar puesto», elija el puesto y «Asignar»." },
       { texto: "También puede pegar el código que la persona ve en «Mi resumen». El puesto vale solo en Salud y la persona lo ve al recargar la página." },
-      { texto: "Nadie puede cambiar su propio puesto. Cada asignación y cada «Quitar» quedan en la bitácora de accesos." },
+      { texto: "Para cambiar el puesto de alguien (por ejemplo, de Administración a Enfermería y luego regresarlo), elija el nuevo en la lista de su fila." },
+      { texto: "Nadie puede cambiar su propio puesto. Cada asignación, cambio y «Quitar» quedan en la bitácora de accesos." },
       { texto: "«Sede del personal»: elija dónde trabaja cada persona. Quien no tiene sede asignada trabaja en la sede principal. La persona ve el cambio al recargar la página." },
     ],
   },
   "/permisos": {
     titulo: "Puestos y permisos",
     consejos: [
-      { texto: "Muestra qué puede hacer cada puesto del Login Único. Es la misma tabla que revisa el servidor en cada petición." },
-      { texto: "Su puesto sale resaltado en azul. Para cambiar el puesto de una persona se cambia su rol en el Login Único, no aquí." },
+      { texto: "Muestra qué puede hacer cada puesto. Es la misma tabla que revisa el servidor en cada petición. Su puesto sale resaltado en azul." },
+      { si: "permisos.editar", texto: "Toque una casilla de un puesto de Salud para darle o quitarle ese permiso. Vale para todas las personas con ese puesto al recargar la página. Los cambios llevan borde ámbar; pase el mouse para ver quién lo cambió." },
+      { si: "permisos.editar", texto: "«Restablecer original» borra todos los cambios. A Administración no se le puede quitar «Agregar o quitar permisos» ni «Asignar puestos», para no quedar sin acceso." },
+      { texto: "Para cambiar el puesto de una persona, use «Asignar puestos»." },
     ],
   },
 };

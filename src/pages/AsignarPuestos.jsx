@@ -87,6 +87,12 @@ export default function AsignarPuestos() {
       .catch((err) => avisos.error(mensajeError(err)));
   }
 
+  function cambiarPuesto(p, rol) {
+    client.put(`/puestos/asignados/${p.id}`, { rol })
+      .then((r) => { avisos.exito(r.data.message); cargar(); })
+      .catch((err) => avisos.error(mensajeError(err)));
+  }
+
   function elegir(persona) {
     setForm({ ...form, usuario_sub: persona.usuario_sub });
     setErrorForm(null);
@@ -134,7 +140,12 @@ export default function AsignarPuestos() {
                     <span className="block text-xs text-slate-500">{[p.usuario, p.email].filter(Boolean).join(" · ")}</span>
                     <span className="block text-[11px] text-slate-400 font-mono">{p.usuario_sub}</span>
                   </td>
-                  <td className="p-2"><span className="text-xs bg-blue-50 text-blue-800 rounded-full px-2 py-0.5 whitespace-nowrap">{p.puesto}</span></td>
+                  <td className="p-2">
+                    <select value={p.rol} onChange={(e) => cambiarPuesto(p, e.target.value)} aria-label={`Puesto de ${p.nombre || p.usuario || p.usuario_sub}`}
+                      className="border rounded px-2 py-1 text-sm bg-blue-50 text-blue-800">
+                      {datos.puestos.map((x) => <option key={x.rol} value={x.rol}>{x.nombre}</option>)}
+                    </select>
+                  </td>
                   <td className="p-2 text-sm">{p.asignado_por || "—"}<span className="block text-xs text-slate-500">{fecha(p.fecha)}</span></td>
                   <td className="p-2 text-sm text-slate-600">{p.nota || "—"}</td>
                   <td className="p-2 text-right"><button onClick={() => quitar(p)} className="text-sm text-red-700 hover:underline">Quitar</button></td>

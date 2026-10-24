@@ -96,9 +96,13 @@ turnos de la sala de espera no lleva Layout, así que no se cierra por inactivid
 
 ## Puestos y permisos, presupuesto
 
-`pages/Permisos.jsx` (`/permisos`, menú Gestión de Jefatura y Administración): la matriz de `permisos.js`
-por área y puesto, solo lectura, con el puesto del usuario resaltado. Al agregar un permiso, ponerlo
-también en su área de esa pantalla (y en `auth.py`, que es la que manda). `components/Presupuesto.jsx`
+`pages/Permisos.jsx` (`/permisos`, menú Gestión de Jefatura y Administración): la matriz VIGENTE de
+`GET /permisos` por área y puesto, con el puesto del usuario resaltado. Con `permisos.editar` (Administración)
+cada casilla de un puesto de Salud se toca para dar o quitar el permiso (`PUT /permisos`; borde ámbar = cambiado,
+"Restablecer original" = `DELETE /permisos/ajustes`). `useRoles` usa la matriz vigente de `GET /mis-permisos`
+(`utils/puestosAsignados.js`); sin ella, la de `permisos.js`. Al agregar un permiso, ponerlo también en su área
+de esa pantalla (y en `auth.py`, que es la que manda). En "Asignar puestos" el puesto de cada fila se cambia
+con su lista (`PUT /puestos/asignados/{id}`). `components/Presupuesto.jsx`
 (inicio): barra de ejecución y, con `presupuesto.editar` (Administración), el formulario de `PUT /presupuesto`.
 
 ## Asignar puestos

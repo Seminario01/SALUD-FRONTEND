@@ -1,9 +1,12 @@
+import { useEffect, useState } from "react";
+import client, { mensajeError } from "../api/client";
+import { useAvisos } from "../components/Avisos";
 import useRoles from "../hooks/useRoles";
 import { PERMISOS, PUESTOS, ROLES_AUDITORIA } from "../permisos";
 
-// Matriz de puestos y permisos (solo lectura, para Jefatura y Administración).
-// Sale de src/permisos.js, que es la misma tabla que PERMISOS en SALUD-BACKEND/auth.py:
-// lo que se ve aquí es exactamente lo que el servidor deja hacer en cada petición.
+// Matriz de puestos y permisos (Jefatura y Administración). Muestra la matriz VIGENTE de GET /permisos
+// (la original de auth.PERMISOS con los ajustes); con permisos.editar (Administración) cada casilla de
+// un puesto de Salud se toca para dar o quitar el permiso (PUT /permisos). Los cambios llevan borde ámbar.
 const COLUMNAS = [
   [PUESTOS.MEDICO, "Médico"], [PUESTOS.ENFERMERIA, "Enfermería"], [PUESTOS.RECEPCION, "Recepción"],
   [PUESTOS.FARMACIA, "Farmacia"], [PUESTOS.CAJA, "Caja"], [PUESTOS.JEFATURA, "Jefatura"],
@@ -55,18 +58,51 @@ const AREAS = [
     ["bitacora.ver", "Bitácora de accesos a datos de pacientes"],
     ["puestos.asignar", "Asignar puestos y sedes al personal"],
     ["sedes.cambiar", "Ver otra sede o todas las sedes"],
+    ["permisos.editar", "Agregar o quitar permisos a un puesto"],
   ]],
 ];
 
 export default function Permisos() {
-  const { roles } = useRoles();
+  const { roles, puede } = useRoles();
+  const avisos = useAvisos();
+  const edita = puede("permisos.editar");
+  const [datos, setDatos] = useState(null);
+  const [guardando, setGuardando] = useState(null);
+  const cargar = () => client.get("/permisos").then((r) => setDatos(r.data.data)).catch((e) => avisos.error(mensajeError(e)));
+  useEffect(() => { cargar(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const vigente = datos?.vigente ?? PERMISOS;
+  const original = datos?.original ?? PERMISOS;
+  const protegido = (clave, rol) => (datos?.protegidos ?? []).some(([p, r]) => p === clave && r === rol);
+  const ajuste = (clave, rol) => datos?.ajustes.find((a) => a.permiso === clave && a.rol === rol);
   const mio = (rol) => roles.includes(rol) || (rol === ROLES_AUDITORIA[0] && ROLES_AUDITORIA.some((r) => roles.includes(r)));
-  const totales = COLUMNAS.map(([rol]) => Object.values(PERMISOS).filter((lista) => lista.includes(rol)).length);
+  const totales = COLUMNAS.map(([rol]) => Object.values(vigente).filter((lista) => lista.includes(rol)).length);
+
+  function cambiar(clave, rol, concedido) {
+    setGuardando(`${clave}|${rol}`);
+    client.put("/permisos", { permiso: clave, rol, concedido })
+      .then((r) => { avisos.exito(r.data.message); return cargar(); })
+      .catch((e) => avisos.error(mensajeError(e)))
+      .finally(() => setGuardando(null));
+  }
+
+  function restablecer() {
+    if (!window.confirm("¿Volver a la matriz original? Se borran todos los cambios hechos aquí.")) return;
+    client.delete("/permisos/ajustes")
+      .then((r) => { avisos.exito(r.data.message); cargar(); })
+      .catch((e) => avisos.error(mensajeError(e)));
+  }
 
   return (
     <div className="p-4 sm:p-6 space-y-4">
-      <div>
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-2xl font-bold">Puestos y permisos</h1>
+        {edita && datos?.ajustes.length > 0 && (
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-amber-800">{datos.ajustes.length} cambio(s) a la matriz original</span>
+            <button onClick={restablecer} className="border rounded-lg px-3 py-1.5 hover:bg-slate-50">Restablecer original</button>
+          </div>
+        )}
       </div>
 
       <div className="overflow-x-auto rounded-xl ring-1 ring-slate-200">
@@ -93,12 +129,26 @@ export default function Permisos() {
                     <span className="block text-[11px] text-slate-400 font-mono">{clave}</span>
                   </td>
                   {COLUMNAS.map(([rol, nombre]) => {
-                    const si = (PERMISOS[clave] || []).includes(rol);
+                    const si = (vigente[clave] || []).includes(rol);
+                    const cambiado = ajuste(clave, rol);
+                    const editable = edita && datos?.editables.includes(rol) && !protegido(clave, rol);
+                    const marca = si
+                      ? <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold ${cambiado ? "ring-2 ring-amber-400" : ""}`}>✓</span>
+                      : <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-300 ${cambiado ? "ring-2 ring-amber-400" : ""}`}>·</span>;
+                    const detalle = cambiado
+                      ? ` (cambiado por ${cambiado.cambiado_por || "Administración"}; en la matriz original: ${(original[clave] || []).includes(rol) ? "sí" : "no"})`
+                      : "";
                     return (
-                      <td key={rol} className={`p-2 text-center ${mio(rol) ? "bg-blue-50/50" : ""}`}>
-                        {si
-                          ? <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold" aria-label={`${nombre}: sí`}>✓</span>
-                          : <span className="text-slate-300" aria-label={`${nombre}: no`}>·</span>}
+                      <td key={rol} className={`p-1 text-center ${mio(rol) ? "bg-blue-50/50" : ""}`}>
+                        {editable ? (
+                          <button onClick={() => cambiar(clave, rol, !si)} disabled={guardando === `${clave}|${rol}`}
+                            title={`${si ? "Quitar" : "Dar"} a ${nombre}${detalle}`} aria-label={`${nombre}: ${si ? "sí" : "no"}. ${si ? "Quitar" : "Dar"} permiso`}
+                            className="rounded-full p-1 hover:bg-slate-100 disabled:opacity-50">
+                            {marca}
+                          </button>
+                        ) : (
+                          <span title={detalle.trim() || undefined} aria-label={`${nombre}: ${si ? "sí" : "no"}`}>{marca}</span>
+                        )}
                       </td>
                     );
                   })}
