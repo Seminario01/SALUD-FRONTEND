@@ -17,6 +17,7 @@ const Turnos = cargar(() => import("./pages/Turnos"));
 const PantallaTurnos = cargar(() => import("./pages/PantallaTurnos"));
 const Recursos = cargar(() => import("./pages/Recursos"));
 const Vacunacion = cargar(() => import("./pages/Vacunacion"));
+const Jornadas = cargar(() => import("./pages/Jornadas"));
 const Expedientes = cargar(() => import("./pages/Expedientes"));
 const Integraciones = cargar(() => import("./pages/Integraciones"));
 const Recetas = cargar(() => import("./pages/Recetas"));
@@ -97,6 +98,7 @@ export default function App() {
           <Route path="/turnos" element={<Turnos />} />
           <Route path="/recursos" element={<Recursos />} />
           <Route path="/vacunacion" element={<Vacunacion />} />
+          <Route path="/vacunacion/jornadas" element={<Jornadas />} />
           <Route path="/expedientes" element={<Expedientes />} />
           <Route path="/recetas" element={<Recetas />} />
           <Route path="/laboratorio" element={<Laboratorio />} />

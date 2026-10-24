@@ -1,5 +1,5 @@
 /* ARCHIVO GENERADO por scripts/modo-oscuro.mjs: no se edita a mano. */
-/* Colores del modo oscuro para las clases de Tailwind que usa la app (100 clases). */
+/* Colores del modo oscuro para las clases de Tailwind que usa la app (102 clases). */
 /* Van en la capa "utilities" con :where() para que hover:, focus: y dark: sigan ganando. */
 @media screen {
   @layer utilities {
@@ -23,6 +23,7 @@
     :where(html.dark) .bg-slate-200:not(:where(.papel, .papel *)) { background-color: oklch(37.2% 0.044 257.287); }
     :where(html.dark) .bg-slate-300:not(:where(.papel, .papel *)) { background-color: oklch(44.6% 0.043 257.281); }
     :where(html.dark) .bg-slate-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(27.9% 0.041 260.031) 50%, transparent); }
+    :where(html.dark) .bg-violet-100:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(60.6% 0.25 292.717) 20%, transparent); }
     :where(html.dark) .bg-white:not(:where(.papel, .papel *)) { background-color: oklch(20.8% 0.042 265.755); }
     :where(html.dark) .bg-yellow-100:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(79.5% 0.184 86.047) 20%, transparent); }
     :where(html.dark) .bg-yellow-50:not(:where(.papel, .papel *)) { background-color: color-mix(in oklab, oklch(79.5% 0.184 86.047) 12%, transparent); }
@@ -101,6 +102,7 @@
     :where(html.dark) .text-slate-800:not(:where(.papel, .papel *)) { color: oklch(92.9% 0.013 255.508); }
     :where(html.dark) .text-slate-900:not(:where(.papel, .papel *)) { color: oklch(96.8% 0.007 247.896); }
     :where(html.dark) .text-teal-700:not(:where(.papel, .papel *)) { color: oklch(85.5% 0.138 181.071); }
+    :where(html.dark) .text-violet-800:not(:where(.papel, .papel *)) { color: oklch(89.4% 0.057 293.283); }
     :where(html.dark) .text-yellow-600:not(:where(.papel, .papel *)) { color: oklch(85.2% 0.199 91.936); }
     :where(html.dark) .text-yellow-800:not(:where(.papel, .papel *)) { color: oklch(94.5% 0.129 101.54); }
   }

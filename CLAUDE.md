@@ -112,6 +112,13 @@ Salud a una cuenta del Login Único (por el código de "Mi resumen" o eligiéndo
 `utils/puestosAsignados.js` lee los `asignados` de `GET /mis-permisos` una vez por sesión (ProtectedRoute
 espera a tenerlos) y `useRoles` los suma a los roles del token; el servidor los aplica en cada petición.
 
+## Jornadas con Educación (Vacunación)
+
+`pages/Jornadas.jsx` (`/vacunacion/jornadas`, botón "Jornadas con Educación" en Vacunación): las jornadas que pidió
+Educación (WS-SALUD-01) o que se coordinaron aquí ("Coordinar y traer estudiantes" llama a Educación E2), con los
+estudiantes convocados, si ya son pacientes de Salud y su esquema, y la casilla "Vacunado". En el panel de la persona de
+Vacunación, "Verificar en Educación" (E1) consulta si es estudiante activo.
+
 ## Servicios integrados (en Integraciones)
 
 `components/MapaServicios.jsx`: "APIs que Salud consume" y "APIs de Salud que consumen los otros módulos" con

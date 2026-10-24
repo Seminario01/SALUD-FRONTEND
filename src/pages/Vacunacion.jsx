@@ -153,6 +153,37 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
   );
 }
 
+// Consulta a Educación (E1) desde el panel de la persona: ¿es estudiante activo?
+function VerificarEducacion({ cui }) {
+  const [estado, setEstado] = useState(null);
+  function verificar() {
+    setEstado({ cargando: true });
+    client.get(`/educacion/estudiantes/${encodeURIComponent(cui)}`)
+      .then((res) => setEstado({ datos: res.data.data }))
+      .catch((err) => setEstado({ error: mensajeError(err) }));
+  }
+  const d = estado?.datos;
+  return (
+    <section className="rounded-lg border p-3 space-y-2 text-sm">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="font-semibold text-slate-700">Educación</h3>
+        <button type="button" onClick={verificar} disabled={!cui || estado?.cargando}
+          title={cui ? "Consultar al módulo de Educación" : "El paciente no tiene CUI registrado"}
+          className="text-xs px-2 py-1 rounded border hover:bg-gray-100 disabled:opacity-40">
+          {estado?.cargando ? "Consultando..." : "Verificar en Educación"}
+        </button>
+      </div>
+      {!estado && <p className="text-slate-500">{cui ? "Consulte si es estudiante activo." : "Sin DPI: no se puede consultar."}</p>}
+      {estado?.error && <p className="text-slate-600">{estado.error}</p>}
+      {d && (d.esEstudiante ? (
+        <p className="text-blue-800 bg-blue-50 rounded px-2 py-1">
+          Estudiante de {d.establecimiento ?? "—"} · {d.grado ?? ""}{d.seccion ? ` sección ${d.seccion}` : ""} · jornada {d.jornada ?? "—"}
+        </p>
+      ) : <p className="text-slate-600">El CUI no corresponde a un estudiante activo.</p>)}
+    </section>
+  );
+}
+
 // ---------- Vista del ciudadano: solo su propio registro ----------
 function MiVacunacion() {
   const { pacientes, aviso } = usePacientesSeleccionables(false);
@@ -308,7 +339,12 @@ function VacunacionPersonal({ registra, anula }) {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Vacunación</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">Vacunación</h1>
+        <Link to="/vacunacion/jornadas" className="text-sm px-3 py-1.5 rounded border border-blue-700 text-blue-800 hover:bg-blue-50">
+          Jornadas con Educación
+        </Link>
+      </div>
 
       {registra ? (
         <FormularioVacunacion
@@ -457,6 +493,7 @@ function VacunacionPersonal({ registra, anula }) {
               <p className="text-slate-500">Todavía no tiene registro de vacunación.</p>
             )}
           </section>
+          {registra && <VerificarEducacion key={abierto} cui={filaAbierta.paciente.cui} />}
         </PanelPaciente>
       )}
     </div>

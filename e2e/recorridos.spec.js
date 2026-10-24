@@ -234,3 +234,31 @@ test("Integraciones muestra las APIs que Salud consume y las que le consumen", a
   await expect(detalle).toBeHidden();
   expect(errores).toEqual([]);
 });
+
+test("Enfermería coordina una jornada con Educación y marca a una estudiante vacunada", async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrar(page, "enfermera1");
+  await page.goto("/vacunacion");
+  await page.getByRole("link", { name: "Jornadas con Educación" }).click();
+  const tipo = `Vacunación Td y VPH ${Date.now()}`;
+  await page.getByLabel("Tipo de jornada *").fill(tipo);
+  await page.getByLabel("Establecimiento educativo *").fill("INEB Jornada Matutina");
+  const manana = new Date(Date.now() + 86400000).toLocaleDateString("en-CA");
+  await page.getByLabel("Fecha *").fill(manana);
+  await page.getByRole("button", { name: "Coordinar y traer estudiantes" }).click();
+  await expect(page.getByText(/Jornada coordinada con Educación: \d+ estudiante/)).toBeVisible();
+  const lista = page.getByRole("region", { name: "Estudiantes convocados" });
+  await expect(lista.getByText("Sofía Alejandra Gómez Ruiz")).toBeVisible();
+  await lista.getByLabel("Vacunado: Sofía Alejandra Gómez Ruiz").click();   // se guarda y la lista se recarga
+  await expect(page.getByText("Sofía Alejandra Gómez Ruiz: vacunado")).toBeVisible();
+  await expect(page.getByRole("button", { name: new RegExp(tipo) })).toContainText("1 vacunado");
+
+  // Desde Vacunación, el panel de la persona consulta a Educación (E1)
+  await page.goto("/vacunacion");
+  await page.getByPlaceholder("Nombre o DPI").fill("2504567890106");
+  await page.locator("tbody tr").first().getByRole("button").first().click();
+  const panel = page.getByRole("dialog");
+  await panel.getByRole("button", { name: "Verificar en Educación" }).click();
+  await expect(panel.getByText(/Estudiante de INEB/)).toBeVisible();
+  expect(errores).toEqual([]);
+});
