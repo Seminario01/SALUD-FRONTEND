@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import client, { mensajeError } from "../api/client";
 import BotonesExportar from "./Exportar";
+import DetalleServicio from "./DetalleServicio";
 
 // Mapa de servicios entre Salud y los otros módulos (GET /integraciones/servicios): cada API que
 // Salud consume y cada API que le consumen, con la última llamada real que funcionó. Sirve para
@@ -32,7 +33,7 @@ function estadoServicio(s, conexion) {
   return { clave: "sin", texto: "Sin llamadas aún", clase: "bg-slate-100 text-slate-600" };
 }
 
-function Tabla({ titulo, servicios, conexion, saliente }) {
+function Tabla({ titulo, servicios, conexion, saliente, onAbrir }) {
   const funcionan = servicios.filter((s) => estadoServicio(s, conexion).clave === "ok").length;
   return (
     <div>
@@ -56,12 +57,14 @@ function Tabla({ titulo, servicios, conexion, saliente }) {
             {servicios.map((s) => {
               const e = estadoServicio(s, conexion);
               return (
-                <tr key={s.clave} className="border-b last:border-0 align-top" data-servicio={s.clave}>
+                <tr key={s.clave} data-servicio={s.clave} title="Ver el detalle de las llamadas"
+                  onClick={() => onAbrir(s.clave)} className="border-b last:border-0 align-top hover:bg-blue-50/60 cursor-pointer">
                   <td className="py-2 pr-3 font-medium text-slate-800 whitespace-nowrap">{s.modulo}</td>
                   <td className="py-2 pr-3">
                     <p className="text-slate-800">
                       {s.codigo && <span className="mr-1.5 rounded bg-blue-50 text-blue-800 px-1.5 py-0.5 text-[11px] font-semibold">{s.codigo}</span>}
-                      {s.nombre}
+                      <button type="button" onClick={(e) => { e.stopPropagation(); onAbrir(s.clave); }}
+                        className="text-left text-blue-700 hover:underline">{s.nombre}</button>
                     </p>
                     <p className="font-mono text-[11px] text-slate-400 break-all">{s.metodo} {s.ruta}</p>
                   </td>
@@ -102,6 +105,8 @@ function Tabla({ titulo, servicios, conexion, saliente }) {
 export default function MapaServicios({ conexion, actualizar }) {
   const [servicios, setServicios] = useState(null);
   const [error, setError] = useState(null);
+  const [abierto, setAbierto] = useState(null);
+  const cerrar = useCallback(() => setAbierto(null), []);
 
   useEffect(() => {
     client.get("/integraciones/servicios")
@@ -133,10 +138,11 @@ export default function MapaServicios({ conexion, actualizar }) {
       {!servicios && !error && <p className="text-sm text-slate-400">Cargando...</p>}
       {servicios && (
         <>
-          <Tabla titulo="APIs que Salud consume" servicios={salientes} conexion={conexion} saliente />
-          <Tabla titulo="APIs de Salud que consumen los otros módulos" servicios={entrantes} conexion={conexion} />
+          <Tabla titulo="APIs que Salud consume" servicios={salientes} conexion={conexion} saliente onAbrir={setAbierto} />
+          <Tabla titulo="APIs de Salud que consumen los otros módulos" servicios={entrantes} conexion={conexion} onAbrir={setAbierto} />
         </>
       )}
+      {abierto && <DetalleServicio clave={abierto} onCerrar={cerrar} />}
     </section>
   );
 }

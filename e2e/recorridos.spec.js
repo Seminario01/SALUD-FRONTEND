@@ -227,5 +227,10 @@ test("Integraciones muestra las APIs que Salud consume y las que le consumen", a
   await expect(mapa.getByRole("heading", { name: "APIs de Salud que consumen los otros módulos" })).toBeVisible();
   await expect(mapa.locator("[data-servicio=s-jornada]")).toContainText("WS-SALUD-01");
   await expect(mapa.locator("[data-servicio=edu-estudiante]")).toContainText("/api/v1/educacion/estudiantes/");
+  await mapa.locator("[data-servicio=s-jornada]").getByRole("button").click();     // detalle de sus llamadas
+  const detalle = page.getByRole("dialog", { name: "Detalle del servicio" });
+  await expect(detalle.getByRole("heading", { name: /WS-SALUD-01/ })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(detalle).toBeHidden();
   expect(errores).toEqual([]);
 });

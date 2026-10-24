@@ -43,6 +43,11 @@ const hora = (iso) => new Date(iso).toLocaleString("es-GT", { day: "2-digit", mo
 function TarjetaModulo({ modulo, estado }) {
   const e = estado ?? { estado: "no_configurado" };
   const estilo = ESTADO[e.estado] ?? ESTADO.no_disponible;
+  // Los indicadores esperados; si el módulo manda otros nombres, se muestran los que mande (números)
+  const esperados = modulo.indicadores.filter(([k]) => e.indicadores?.[k] !== undefined);
+  const otros = Object.entries(e.indicadores ?? {}).filter(([, v]) => typeof v === "number").slice(0, 4)
+    .map(([k]) => [k, k.replace(/([a-z])([A-Z])/g, "$1 $2").replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase())]);
+  const indicadores = esperados.length ? esperados : otros;
   return (
     <div className="bg-white border rounded-lg p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
@@ -51,16 +56,21 @@ function TarjetaModulo({ modulo, estado }) {
       <p className="flex items-center gap-2 text-sm text-slate-600">
         <span className={`h-2.5 w-2.5 rounded-full ${estilo.punto}`} /> {estilo.texto}
       </p>
-      {e.indicadores && (
+      {e.indicadores && (indicadores.length > 0 ? (
         <dl className="grid grid-cols-2 gap-2">
-          {modulo.indicadores.map(([k, t]) => (
+          {indicadores.map(([k, t]) => (
             <div key={k} className="rounded-lg bg-slate-50 px-3 py-2">
               <dt className="text-[11px] text-slate-500">{t}</dt>
               <dd className="font-semibold text-slate-800 tabular-nums">{numero(e.indicadores[k])}</dd>
             </div>
           ))}
         </dl>
-      )}
+      ) : (
+        <p className="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
+          Responde, pero no publica indicadores
+          {e.estadoHttp ? `: ${e.ruta} respondió HTTP ${e.estadoHttp}` : ""}.
+        </p>
+      ))}
       <div className="text-sm">
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Salud le consulta</p>
         <ul className="mt-1 text-slate-700 list-disc list-inside">{modulo.consumimos.map((c) => <li key={c}>{c}</li>)}</ul>

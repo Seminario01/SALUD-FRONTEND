@@ -117,6 +117,9 @@ espera a tenerlos) y `useRoles` los suma a los roles del token; el servidor los 
 `components/MapaServicios.jsx`: "APIs que Salud consume" y "APIs de Salud que consumen los otros módulos" con
 `GET /integraciones/servicios`: estado (Funciona, Funcionó; la última falló, Falla, Sin llamadas aún; los indicadores
 "Responde ahora" con la verificación de conexión), última respuesta correcta y llamadas de 30 días; botón Excel.
+Clic en un servicio abre `components/DetalleServicio.jsx`: sus últimas 10 llamadas con a dónde, lo que se envió y lo que
+respondió (JSON enmascarado por el backend). Las tarjetas de módulo, si el módulo no publica los indicadores
+esperados, muestran los números que mande o "Responde, pero no publica indicadores" con la ruta y el HTTP.
 Es la evidencia de la integración para la presentación.
 
 ## Auditoría Social (en Integraciones)
