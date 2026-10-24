@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { RangoEdad } from "../components/Filtros";
+import { enRangoEdad } from "../utils/filtros";
+import NombrePaciente from "../components/NombrePaciente";
 import { Link, useNavigate } from "react-router-dom";
 import EstadoPago from "../components/EstadoPago";
 import { formatoDia } from "../utils/fechas";
@@ -135,7 +138,9 @@ export default function Citas() {
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
   const [texto, setTexto] = useState("");
+  const [edad, setEdad] = useState({ desde: "", hasta: "" });
   const filtradas = citas.filter((c) => {
+    if ((edad.desde || edad.hasta) && !enRangoEdad(pacientes.find((p) => p.id === c.paciente_id)?.fecha_nacimiento, edad.desde, edad.hasta)) return false;
     const dia = String(c.fecha_hora).slice(0, 10);
     if (filtroEstado && c.estado !== filtroEstado) return false;
     if (desde && dia < desde) return false;
@@ -149,8 +154,8 @@ export default function Citas() {
     }
     return true;
   });
-  const pag = usePaginacion(filtradas, 15, `${filtroEstado}|${desde}|${hasta}|${texto}`);
-  const hayFiltros = filtroEstado || desde || hasta || texto;
+  const pag = usePaginacion(filtradas, 15, `${filtroEstado}|${desde}|${hasta}|${texto}|${edad.desde}|${edad.hasta}`);
+  const hayFiltros = filtroEstado || desde || hasta || texto || edad.desde || edad.hasta;
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [errorAccion, setErrorAccion] = useState(null);
@@ -283,8 +288,9 @@ export default function Citas() {
           <label className="text-sm">{esPersonal ? "Buscar" : "Motivo"}
             <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Nombre, DPI o motivo" className="border rounded px-2 py-1 block w-52" />
           </label>
+          {esPersonal && <RangoEdad desde={edad.desde} hasta={edad.hasta} onCambio={setEdad} />}
           {hayFiltros && (
-            <button onClick={() => { setFiltroEstado(""); setDesde(""); setHasta(""); setTexto(""); }}
+            <button onClick={() => { setFiltroEstado(""); setDesde(""); setHasta(""); setTexto(""); setEdad({ desde: "", hasta: "" }); }}
               className="text-sm px-3 py-1.5 rounded border hover:bg-gray-100">Quitar filtros</button>
           )}
           <span className="text-sm text-slate-500 ml-auto">{filtradas.length} cita(s)</span>
@@ -330,7 +336,8 @@ export default function Citas() {
                     <Link to={`/citas/${c.id}`} className="text-blue-800 hover:underline">{formatoFecha(c.fecha_hora)}</Link>
                     {c.medico_nombre && <span className="block text-xs text-slate-500">Dr(a). {c.medico_nombre}</span>}
                   </td>
-                  {esPersonal && <td className="p-2 font-medium text-slate-700">{nombrePaciente(c.paciente_id)}</td>}
+                  {esPersonal && <td className="p-2"><NombrePaciente id={c.paciente_id} nombre={nombrePaciente(c.paciente_id)}
+                    paciente={pacientes.find((p) => p.id === c.paciente_id)} /></td>}
                   <td className="p-2">{c.motivo}</td>
                   <td className="p-2">
                     <span className={`px-2 py-1 rounded text-sm ${colores[c.estado] ?? "bg-gray-100 text-gray-800"}`}>

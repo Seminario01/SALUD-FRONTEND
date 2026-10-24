@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import NombrePaciente from "../components/NombrePaciente";
 import { useSearchParams } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
@@ -419,7 +420,7 @@ export default function Hospitalizacion() {
                     {activos.map((h) => (
                       <tr key={h.id} onClick={abrirFila(h)} title="Ver el detalle" className="border-b last:border-0 hover:bg-blue-50/60 cursor-pointer">
                         <td className="p-2 font-semibold tabular-nums whitespace-nowrap">{h.cama}</td>
-                        <td className="p-2 text-slate-800 font-medium">{h.paciente}</td>
+                        <td className="p-2"><NombrePaciente id={h.paciente_id} nombre={h.paciente} /></td>
                         <td className="p-2 text-sm text-slate-600">{h.area}</td>
                         <td className="p-2 text-sm text-slate-600">{fechaHora(h.fecha_ingreso)}</td>
                         <td className="p-2 text-sm tabular-nums">{textoDias(h.dias_estancia)}</td>
@@ -470,7 +471,7 @@ export default function Hospitalizacion() {
               <tbody>
                 {pagEgresos.items.map((h) => (
                   <tr key={h.id} onClick={abrirFila(h)} title="Ver el detalle" className="border-b last:border-0 hover:bg-blue-50/60 cursor-pointer">
-                    <td className="p-2 text-slate-800 font-medium">{h.paciente}</td>
+                    <td className="p-2"><NombrePaciente id={h.paciente_id} nombre={h.paciente} /></td>
                     <td className="p-2 text-sm text-slate-600">{h.area} · {h.cama}</td>
                     <td className="p-2 text-sm text-slate-600">{fechaHora(h.fecha_ingreso)}</td>
                     <td className="p-2 text-sm text-slate-600">{fechaHora(h.fecha_egreso)}</td>

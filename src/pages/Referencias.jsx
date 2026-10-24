@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import NombrePaciente from "../components/NombrePaciente";
 import { Link } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import { useAvisos } from "../components/Avisos";
@@ -81,7 +82,7 @@ export default function Referencias() {
           <tbody>
             {pag.items.map((r) => (
               <tr key={r.id} className="align-top">
-                <td className="p-2"><Link to={`/pacientes/${r.paciente_id}`} className="font-medium text-blue-700 hover:underline">{r.paciente}</Link>
+                <td className="p-2"><NombrePaciente id={r.paciente_id} nombre={r.paciente} />
                   <span className="block text-xs text-slate-500">{fecha(r.fecha)} · {r.medico_nombre || "—"}</span></td>
                 <td className="p-2 text-sm">{r.establecimiento}<span className="block text-xs text-slate-500">{r.establecimiento_municipio}{r.establecimiento_telefono && ` · Tel. ${r.establecimiento_telefono}`}</span></td>
                 <td className="p-2 text-sm">{r.motivo}{r.diagnostico && <span className="block text-xs text-slate-500">{r.codigo_cie10} {r.diagnostico}</span>}</td>

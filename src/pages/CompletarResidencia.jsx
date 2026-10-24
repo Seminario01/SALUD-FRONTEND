@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import NombrePaciente from "../components/NombrePaciente";
 import { Link } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import { useAvisos } from "../components/Avisos";
@@ -30,7 +31,7 @@ function Fila({ p, onGuardado }) {
     <li className="bg-white border rounded-lg p-3 shadow-sm">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <Link to={`/pacientes/${p.id}`} className="font-semibold text-blue-800 hover:underline">{p.nombre_completo}</Link>
+          <NombrePaciente paciente={p} />
           <span className="text-xs text-slate-500"> · DPI {p.cui || "sin registrar"}{p.telefono ? ` · Tel. ${p.telefono}` : ""}</span>
         </div>
         <span className="text-xs text-slate-500">

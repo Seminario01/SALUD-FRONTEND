@@ -112,6 +112,13 @@ Salud a una cuenta del Login Único (por el código de "Mi resumen" o eligiéndo
 `utils/puestosAsignados.js` lee los `asignados` de `GET /mis-permisos` una vez por sesión (ProtectedRoute
 espera a tenerlos) y `useRoles` los suma a los roles del token; el servidor los aplica en cada petición.
 
+## Servicios integrados (en Integraciones)
+
+`components/MapaServicios.jsx`: "APIs que Salud consume" y "APIs de Salud que consumen los otros módulos" con
+`GET /integraciones/servicios`: estado (Funciona, Funcionó; la última falló, Falla, Sin llamadas aún; los indicadores
+"Responde ahora" con la verificación de conexión), última respuesta correcta y llamadas de 30 días; botón Excel.
+Es la evidencia de la integración para la presentación.
+
 ## Auditoría Social (en Integraciones)
 
 `components/AuditoriaSocial.jsx` (`TarjetaAuditoria`, cuarta tarjeta de Integraciones): "Servicio operativo"
@@ -150,10 +157,13 @@ dígitos) y `enRangoEdad`. `components/Filtros.jsx`: `RangoEdad` (de… a… añ
 `usePaginacion(lista, porPagina, reinicio)`: al cambiar `reinicio` (los filtros en texto) vuelve a la página 1;
 `Paginacion` muestra números de página, "Mostrar 15/20/50/100" y sube al inicio de la lista al cambiar de página.
 `components/PanelPaciente.jsx`: panel lateral con los datos de la persona (Escape cierra), lo propio de cada
-pantalla como `children` y "Ver ficha completa". Vacunación: cuadros de totales que filtran (completo, incompleto,
+pantalla como `children` y "Ver ficha completa"; recibe el `paciente` o solo `pacienteId` (lo pide).
+**Regla única:** en las listas, el nombre de una persona es `components/NombrePaciente.jsx` (abre ese panel, en un
+portal y sin que el clic llegue a la fila); la fila abre el detalle propio de la lista (cita, cuenta, hospitalización).
+Los paneles de detalle y las páginas de detalle sí enlazan directo a la ficha. Vacunación: cuadros de totales que filtran (completo, incompleto,
 sin registro), filtros por edad, género, estudiante y vacuna pendiente, clic en la persona abre el panel. Pacientes:
-búsqueda mientras se escribe y filtros por edad, género, seguro, departamento y alergias; clic en la fila abre la
-ficha. Laboratorio y Referencias: búsqueda y "Solo urgentes". Hospitalización: clic en la fila abre el detalle y
+búsqueda mientras se escribe y filtros por edad, género, seguro, departamento y alergias; clic en la fila abre el
+panel (con "Consultar antecedentes"). Citas: también filtro por edad. Laboratorio y Referencias: búsqueda y "Solo urgentes". Hospitalización: clic en la fila abre el detalle y
 búsqueda en Egresos. Las claves de fila deben ser únicas (hay pacientes con dos registros de vacunación viejos).
 
 ## Ayuda dentro del sistema

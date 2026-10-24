@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import NombrePaciente from "../components/NombrePaciente";
 import { Link } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
@@ -45,7 +46,7 @@ function PacientesDelMunicipio({ municipio, params }) {
     <ul className="divide-y text-sm max-h-80 overflow-y-auto">
       {lista.map((c, i) => (
         <li key={`${c.paciente_id}-${c.fecha}-${i}`} className="py-1.5">
-          <Link to={`/pacientes/${c.paciente_id}`} className="font-medium text-blue-800 hover:underline">{c.nombre}</Link>
+          <NombrePaciente id={c.paciente_id} nombre={c.nombre} />
           <span className="text-slate-500"> · {c.edad ?? "?"} años{c.genero ? ` · ${c.genero}` : ""}</span>
           <p className="text-xs text-slate-600"><span className="font-mono">{c.codigo}</span> {c.cie10 || c.diagnostico} · {fecha(c.fecha)}</p>
           {c.zona && <p className="text-xs text-slate-500">{c.zona}</p>}

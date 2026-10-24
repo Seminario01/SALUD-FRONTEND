@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import NombrePaciente from "../components/NombrePaciente";
 import { Link } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
@@ -126,7 +127,7 @@ export default function ListaEspera() {
                 <div className="flex flex-wrap items-start gap-x-4 gap-y-1">
                   <span className="text-lg font-bold text-slate-400 tabular-nums w-8">{i + 1}</span>
                   <div className="flex-1 min-w-48">
-                    <Link to={`/pacientes/${e.paciente_id}`} className="font-semibold text-blue-800 hover:underline">{e.paciente}</Link>
+                    <NombrePaciente id={e.paciente_id} nombre={e.paciente} />
                     <p className="text-sm text-slate-700">{e.motivo}{e.preferencia ? ` · ${e.preferencia}` : ""}</p>
                     <p className="text-xs text-slate-500">
                       Esperando {e.dias_esperando === 0 ? "desde hoy" : `${e.dias_esperando} día(s)`}

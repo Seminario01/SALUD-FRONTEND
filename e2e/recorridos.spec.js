@@ -161,7 +161,8 @@ test("el médico refiere a una paciente al Roosevelt y Enfermería confirma que 
   await entrar(medico, "medico1");
   await medico.goto("/pacientes");
   await medico.getByPlaceholder("Buscar por nombre o CUI").fill("María José López");
-  await medico.getByRole("link", { name: "María José López Hernández" }).first().click();
+  await medico.getByRole("button", { name: "María José López Hernández" }).first().click();   // abre el panel
+  await medico.getByRole("dialog").getByRole("link", { name: "Ver ficha completa →" }).click();
   await medico.getByRole("button", { name: "Referir" }).click();
   const seccion = medico.locator("section", { hasText: "Referencias a otros establecimientos" });
   await seccion.getByLabel("Departamento").selectOption({ label: "Guatemala" });
@@ -214,5 +215,17 @@ test("Vacunación filtra por edad y esquema y abre el detalle de la persona", as
   }
   await page.getByRole("button", { name: "Quitar filtros" }).click();
   await expect(page.getByLabel("Edad desde")).toHaveValue("");
+  expect(errores).toEqual([]);
+});
+
+test("Integraciones muestra las APIs que Salud consume y las que le consumen", async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrar(page, "jefatura1");
+  await page.goto("/integraciones");
+  const mapa = page.getByRole("region", { name: "Servicios integrados" });
+  await expect(mapa.getByRole("heading", { name: "APIs que Salud consume" })).toBeVisible();
+  await expect(mapa.getByRole("heading", { name: "APIs de Salud que consumen los otros módulos" })).toBeVisible();
+  await expect(mapa.locator("[data-servicio=s-jornada]")).toContainText("WS-SALUD-01");
+  await expect(mapa.locator("[data-servicio=edu-estudiante]")).toContainText("/api/v1/educacion/estudiantes/");
   expect(errores).toEqual([]);
 });

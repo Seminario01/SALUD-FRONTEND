@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import NombrePaciente from "../components/NombrePaciente";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import client, { mensajeError } from "../api/client";
@@ -251,7 +252,7 @@ function TarjetaReceta({ receta, mostrarPaciente, puedeDespachar, puedeAnular, o
         <div>
           <p className="font-semibold text-slate-800">
             Receta No. {receta.id}
-            {mostrarPaciente && <span className="font-normal text-slate-600"> · {receta.paciente ?? `Paciente ${receta.paciente_id}`}</span>}
+            {mostrarPaciente && <span className="font-normal text-slate-600"> · <NombrePaciente id={receta.paciente_id} nombre={receta.paciente} /></span>}
           </p>
           <p className="text-xs text-slate-500">
             {formatoFecha(receta.fecha)}{receta.medico ? ` · Dr(a). ${receta.medico}` : ""}

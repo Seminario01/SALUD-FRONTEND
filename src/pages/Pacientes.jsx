@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Paginacion from "../components/Paginacion";
 import usePaginacion from "../hooks/usePaginacion";
 import client, { mensajeError } from "../api/client";
@@ -8,6 +8,7 @@ import { REGLAS, reglasNacimiento } from "../utils/validacion";
 import { useAvisos } from "../components/Avisos";
 import SelectorResidencia from "../components/SelectorResidencia";
 import BotonesExportar from "../components/Exportar";
+import PanelPaciente from "../components/PanelPaciente";
 import { QuitarFiltros, RangoEdad, SelectFiltro, campoFiltro } from "../components/Filtros";
 import { coincidePaciente, edadDe, enRangoEdad } from "../utils/filtros";
 
@@ -201,7 +202,8 @@ function cumpleFiltros(p, f) {
 export default function Pacientes() {
   const { puedeRegistrarPacientes, puede } = useRoles();
   const puedeAntecedentes = puede("pacientes.antecedentes");
-  const navigate = useNavigate();
+  const [abierto, setAbierto] = useState(null);   // paciente del panel de detalle
+  const cerrarPanel = useCallback(() => setAbierto(null), []);
 
   // --- Listado real: GET /pacientes (solo personal de Salud); los filtros se aplican en el navegador ---
   const [pacientes, setPacientes] = useState([]);
@@ -328,12 +330,12 @@ export default function Pacientes() {
             </thead>
             <tbody>
               {pag.items.map((p) => (
-                <tr key={p.id} title="Abrir la ficha del paciente"
-                  onClick={(e) => { if (!e.target.closest("button, a, input, select")) navigate(`/pacientes/${p.id}`); }}
+                <tr key={p.id} title="Ver el detalle del paciente"
+                  onClick={(e) => { if (!e.target.closest("button, a, input, select")) setAbierto(p); }}
                   className="border-b hover:bg-blue-50/60 cursor-pointer">
                   <td className="p-2">{p.id}</td>
                   <td className="p-2">
-                    <Link to={`/pacientes/${p.id}`} className="font-medium text-blue-700 hover:underline">{p.nombre_completo}</Link>
+                    <button type="button" onClick={() => setAbierto(p)} className="font-medium text-blue-700 hover:underline text-left">{p.nombre_completo}</button>
                     {p.cui && <span className="block text-xs text-slate-500">DPI {p.cui}</span>}
                   </td>
                   <td className="p-2 tabular-nums">{edadDe(p.fecha_nacimiento) ?? "—"}</td>
@@ -358,6 +360,16 @@ export default function Pacientes() {
         </div>
       )}
       <Paginacion {...pag} />
+
+      {abierto && (
+        <PanelPaciente paciente={abierto} titulo="Paciente" onCerrar={cerrarPanel}
+          acciones={puedeAntecedentes && (
+            <button onClick={() => { setAbierto(null); consultarAntecedentes(abierto); }}
+              className="text-sm px-3 py-1.5 rounded border hover:bg-gray-100">
+              Consultar antecedentes
+            </button>
+          )} />
+      )}
     </div>
   );
 }

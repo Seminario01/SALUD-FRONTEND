@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import NombrePaciente from "../components/NombrePaciente";
+import { useSearchParams } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import BuscadorPaciente from "../components/BuscadorPaciente";
@@ -154,7 +155,7 @@ export default function Bitacora() {
                   <td className="p-2 text-slate-700">{r.descripcion}</td>
                   <td className="p-2">
                     {r.paciente_id ? (
-                      <Link to={`/pacientes/${r.paciente_id}`} className="text-blue-700 hover:underline">{r.paciente ?? `Paciente ${r.paciente_id}`}</Link>
+                      <NombrePaciente id={r.paciente_id} nombre={r.paciente} />
                     ) : <span className="text-slate-400">—</span>}
                   </td>
                   <td className="p-2 text-xs text-slate-500 font-mono">{r.ip ?? "—"}</td>

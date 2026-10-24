@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import NombrePaciente from "../components/NombrePaciente";
 import { Link, useSearchParams } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
@@ -186,7 +187,7 @@ function TarjetaOrden({ orden, catalogo, onCambio }) {
       <header className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="font-semibold text-slate-800">
-            Orden No. {orden.id} · <Link to={`/pacientes/${orden.paciente_id}`} className="text-blue-700 hover:underline">{orden.paciente ?? `Paciente ${orden.paciente_id}`}</Link>
+            Orden No. {orden.id} · <NombrePaciente id={orden.paciente_id} nombre={orden.paciente} />
             {orden.prioridad === "URGENTE" && <span className="ml-2 px-2 py-0.5 rounded text-xs bg-red-100 text-red-800 align-middle">URGENTE</span>}
           </p>
           <p className="text-xs text-slate-500">{fecha(orden.fecha)}{orden.medico ? ` · Dr(a). ${orden.medico}` : ""}</p>

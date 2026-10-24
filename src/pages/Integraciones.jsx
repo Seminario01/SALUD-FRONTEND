@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import client, { mensajeError } from "../api/client";
 import { TarjetaAuditoria } from "../components/AuditoriaSocial";
+import MapaServicios from "../components/MapaServicios";
 
 // Integración con los otros módulos de la Red: estado de cada conexión y bitácora de llamadas.
 
@@ -13,7 +14,7 @@ const MODULOS = [
   },
   {
     clave: "educacion", nombre: "Educación",
-    consumimos: ["Si un paciente es estudiante (vacunación)", "Estudiantes para una jornada (WS-SALUD-01)", "Validar practicantes (WS-SALUD-07)"],
+    consumimos: ["Si un paciente es estudiante (vacunación)", "Estudiantes para una jornada (WS-SALUD-01)"],
     nosConsume: ["Coordinar jornadas de vacunación (WS-SALUD-01)", "Horas de práctica de un practicante (WS-SALUD-06)"],
     indicadores: [["estudiantesInscritos", "Estudiantes inscritos"], ["establecimientosActivos", "Establecimientos"]],
   },
@@ -106,6 +107,8 @@ export default function Integraciones() {
         <TarjetaAuditoria />
       </div>
       {!estado && <p className="text-sm text-slate-400">Verificando conexión...</p>}
+
+      <MapaServicios conexion={estado} actualizar={bitacora} />
 
       <section className="bg-white border rounded-lg p-5">
         <div className="flex flex-wrap items-end justify-between gap-3 mb-3">

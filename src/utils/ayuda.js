@@ -161,6 +161,7 @@ export const AYUDA = {
     consejos: [
       { texto: "Muestra cómo se comunica Salud con Educación, Seguridad, Tributario y Auditoría, y la bitácora de cada llamada (sin datos personales)." },
       { texto: "Cada tarjeta dice si el módulo está conectado. En Auditoría Social, «Servicio operativo» indica que el servicio responde; «Aún no consumido», que Auditoría todavía no lo ha consultado. Si una consulta se rechaza, aparece el motivo." },
+      { texto: "«Servicios integrados» es la prueba de la integración: cada API que Salud consume y cada API que le consumen, con la última respuesta correcta y las llamadas de 30 días (de la bitácora real). «Excel» la baja para entregarla." },
     ],
   },
   "/bitacora": {

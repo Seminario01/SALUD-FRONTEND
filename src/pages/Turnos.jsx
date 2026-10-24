@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import NombrePaciente from "../components/NombrePaciente";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
@@ -221,7 +222,7 @@ export default function Turnos() {
             {turnos.map((t) => (
               <tr key={t.id} className="border-b hover:bg-gray-50">
                 <td className="p-2 font-bold">{t.numero_turno}</td>
-                {"paciente" in t && <td className="p-2">{t.paciente ?? "—"}</td>}
+                {"paciente" in t && <td className="p-2">{t.paciente_id ? <NombrePaciente id={t.paciente_id} nombre={t.paciente} /> : "—"}</td>}
                 <td className="p-2">
                   {TIPOS[t.tipo_atencion] ?? t.tipo_atencion}
                   {t.modulo_asignado && <span className="block text-xs text-slate-500">{t.modulo_asignado}</span>}

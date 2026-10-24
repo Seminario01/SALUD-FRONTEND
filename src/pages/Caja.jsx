@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import NombrePaciente from "../components/NombrePaciente";
 import { useSearchParams } from "react-router-dom";
 import client, { mensajeError } from "../api/client";
 import useRoles from "../hooks/useRoles";
@@ -254,9 +255,11 @@ export default function Caja() {
                   {pag.items.map((c) => {
                     const e = ESTADO_CUENTA[c.estado] ?? { texto: c.estado, clase: "bg-gray-100" };
                     return (
-                      <tr key={c.id} className="border-b last:border-0 hover:bg-gray-50" data-cuenta={c.id}>
+                      <tr key={c.id} title="Ver la cuenta" data-cuenta={c.id}
+                        onClick={(ev) => { if (!ev.target.closest("button, a, input, select")) abrir(c.id); }}
+                        className="border-b last:border-0 hover:bg-blue-50/60 cursor-pointer">
                         <td className="p-2 tabular-nums text-slate-500">{c.id}</td>
-                        <td className="p-2 text-slate-800">{c.paciente}</td>
+                        <td className="p-2"><NombrePaciente id={c.paciente_id} nombre={c.paciente} /></td>
                         <td className="p-2 text-sm text-slate-600">
                           <span className="block text-slate-700">{c.tipo === "AMBULATORIA" ? "Ambulatoria" : "Hospitalización"}</span>
                           {c.tipo === "HOSPITALIZACION" && (
