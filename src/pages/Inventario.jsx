@@ -271,7 +271,7 @@ export default function Inventario() {
     }
     return true;
   });
-  const pag = usePaginacion(filtrados, 15);
+  const pag = usePaginacion(filtrados, 15, `${soloBajos}|${soloVencer}|${texto}`);
 
   if (cargando) return <p className="p-6">Cargando...</p>;
 

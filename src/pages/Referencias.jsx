@@ -4,6 +4,10 @@ import client, { mensajeError } from "../api/client";
 import { useAvisos } from "../components/Avisos";
 import useRoles from "../hooks/useRoles";
 import { ESTADO_REFERENCIA, PRIORIDAD } from "../utils/red";
+import Paginacion from "../components/Paginacion";
+import usePaginacion from "../hooks/usePaginacion";
+import { campoFiltro } from "../components/Filtros";
+import { coincidePaciente, sinTildes } from "../utils/filtros";
 
 // Referencias de pacientes a otros establecimientos: las enviadas primero (urgentes arriba).
 // Recepción coordina el traslado; Enfermería, Médico o Jefatura la marcan recibida o cancelada.
@@ -15,6 +19,17 @@ export default function Referencias() {
   const [estado, setEstado] = useState("ENVIADA");
   const [lista, setLista] = useState(null);
   const [error, setError] = useState(null);
+  const [texto, setTexto] = useState("");
+  const [soloUrgentes, setSoloUrgentes] = useState(false);
+  // Paciente (nombre o DPI), destino o motivo
+  const visibles = (lista ?? []).filter((r) => {
+    if (soloUrgentes && r.prioridad !== "URGENTE") return false;
+    const t = texto.trim();
+    if (!t) return true;
+    return coincidePaciente({ nombre_completo: r.paciente, cui: r.cui }, t)
+      || [r.establecimiento, r.motivo, r.diagnostico].some((c) => sinTildes(c).includes(sinTildes(t)));
+  });
+  const pag = usePaginacion(visibles, 15, `${estado}|${texto}|${soloUrgentes}`);
 
   const cargar = useCallback(() => client.get("/referencias", { params: estado ? { estado } : {} })
     .then((r) => { setLista(r.data.data); setError(null); })
@@ -43,13 +58,28 @@ export default function Referencias() {
           <option value="">Todas</option>
         </select>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      {lista && lista.length === 0 && <p className="text-sm text-slate-500">No hay referencias {estado === "ENVIADA" ? "por confirmar" : "con ese estado"}.</p>}
       {lista?.length > 0 && (
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="text-sm">Buscar
+            <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Paciente, DPI, destino o motivo"
+              className={`${campoFiltro} w-72`} />
+          </label>
+          <label className="text-sm flex items-center gap-2 pb-2">
+            <input type="checkbox" checked={soloUrgentes} onChange={(e) => setSoloUrgentes(e.target.checked)} />
+            Solo urgentes
+          </label>
+          <span className="text-sm text-slate-500 ml-auto pb-2">{visibles.length} referencia(s)</span>
+        </div>
+      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      {lista?.length > 0 && visibles.length === 0 && <p className="text-sm text-slate-500">Ninguna referencia coincide con la búsqueda.</p>}
+      {lista && lista.length === 0 && <p className="text-sm text-slate-500">No hay referencias {estado === "ENVIADA" ? "por confirmar" : "con ese estado"}.</p>}
+      {visibles.length > 0 && (
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead><tr className="text-left"><th className="p-2">Paciente</th><th className="p-2">Destino</th><th className="p-2">Motivo</th><th className="p-2">Estado</th><th className="p-2" /></tr></thead>
           <tbody>
-            {lista.map((r) => (
+            {pag.items.map((r) => (
               <tr key={r.id} className="align-top">
                 <td className="p-2"><Link to={`/pacientes/${r.paciente_id}`} className="font-medium text-blue-700 hover:underline">{r.paciente}</Link>
                   <span className="block text-xs text-slate-500">{fecha(r.fecha)} · {r.medico_nombre || "—"}</span></td>
@@ -73,7 +103,9 @@ export default function Referencias() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
+      <Paginacion {...pag} />
     </div>
   );
 }

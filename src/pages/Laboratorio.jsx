@@ -5,6 +5,10 @@ import useRoles from "../hooks/useRoles";
 import usePacientesSeleccionables from "../hooks/usePacientesSeleccionables";
 import BuscadorPaciente from "../components/BuscadorPaciente";
 import { useAvisos } from "../components/Avisos";
+import Paginacion from "../components/Paginacion";
+import usePaginacion from "../hooks/usePaginacion";
+import { campoFiltro } from "../components/Filtros";
+import { coincidePaciente, sinTildes } from "../utils/filtros";
 import { ESTADO_ORDEN, NIVEL, fueraDeRango, interpretar } from "../utils/laboratorio";
 
 // Laboratorio clínico. El médico pide exámenes; Enfermería toma la muestra y registra los
@@ -238,6 +242,8 @@ export default function Laboratorio() {
   const [ordenes, setOrdenes] = useState(null);
   const [error, setError] = useState(null);
   const [filtro, setFiltro] = useState("activas");
+  const [texto, setTexto] = useState("");
+  const [soloUrgentes, setSoloUrgentes] = useState(false);
 
   useEffect(() => {
     client.get("/laboratorio/examenes").then((r) => setCatalogo(r.data.data)).catch((err) => setError(mensajeError(err)));
@@ -248,7 +254,17 @@ export default function Laboratorio() {
   }, []);
   useEffect(() => { cargar(); }, [cargar]);
 
-  const visibles = (ordenes ?? []).filter((o) => (filtro === "activas" ? ["PENDIENTE", "EN_PROCESO"].includes(o.estado) : !filtro || o.estado === filtro));
+  // Paciente (nombre o DPI), No. de orden o nombre de un examen
+  const coincide = (o) => {
+    const t = texto.trim();
+    if (!t) return true;
+    if (String(o.id) === t) return true;
+    if (coincidePaciente({ nombre_completo: o.paciente, cui: o.paciente_cui }, t)) return true;
+    return o.examenes.some((e) => sinTildes(e.nombre).includes(sinTildes(t)));
+  };
+  const visibles = (ordenes ?? []).filter((o) => (filtro === "activas" ? ["PENDIENTE", "EN_PROCESO"].includes(o.estado) : !filtro || o.estado === filtro))
+    .filter((o) => (!soloUrgentes || o.prioridad === "URGENTE") && coincide(o));
+  const pag = usePaginacion(visibles, 15, `${filtro}|${texto}|${soloUrgentes}`);
   const cuenta = (f) => (ordenes ?? []).filter((o) => (f === "activas" ? ["PENDIENTE", "EN_PROCESO"].includes(o.estado) : !f || o.estado === f)).length;
 
   return (
@@ -257,7 +273,7 @@ export default function Laboratorio() {
       {ordena && catalogo.length > 0 && (
         <NuevaOrden catalogo={catalogo} pacientes={pacientes} pacienteInicial={params.get("paciente")} onCreada={(m) => { avisos.exito(m); cargar(); }} />
       )}
-      <div className="flex flex-wrap gap-2 mb-4" role="group" aria-label="Filtrar órdenes">
+      <div className="flex flex-wrap gap-2 mb-3" role="group" aria-label="Filtrar órdenes">
         {FILTROS.map(([v, t]) => (
           <button key={v || "todas"} onClick={() => setFiltro(v)} aria-pressed={filtro === v}
             className={`px-3 py-1.5 text-sm rounded-full border ${filtro === v ? "bg-blue-700 text-white border-blue-700" : "bg-white hover:bg-slate-100"}`}>
@@ -265,12 +281,26 @@ export default function Laboratorio() {
           </button>
         ))}
       </div>
+      <div className="flex flex-wrap items-end gap-3 mb-4">
+        <label className="text-sm">Buscar
+          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Paciente, DPI, No. de orden o examen"
+            className={`${campoFiltro} w-72`} />
+        </label>
+        <label className="text-sm flex items-center gap-2 pb-2">
+          <input type="checkbox" checked={soloUrgentes} onChange={(e) => setSoloUrgentes(e.target.checked)} />
+          Solo urgentes
+        </label>
+        {ordenes && <span className="text-sm text-slate-500 ml-auto pb-2">{visibles.length} orden(es)</span>}
+      </div>
       {error && <p className="text-sm text-red-600 mb-4">No se pudo cargar el laboratorio: {error}</p>}
       {ordenes === null && !error && <p className="text-sm text-slate-400">Cargando...</p>}
-      {ordenes && visibles.length === 0 && <p className="text-sm text-slate-500">No hay órdenes en esta lista.</p>}
+      {ordenes && visibles.length === 0 && (
+        <p className="text-sm text-slate-500">{texto || soloUrgentes ? "Ninguna orden coincide con la búsqueda." : "No hay órdenes en esta lista."}</p>
+      )}
       <div className="space-y-3">
-        {visibles.slice(0, 50).map((o) => <TarjetaOrden key={o.id} orden={o} catalogo={catalogo} onCambio={cargar} />)}
+        {pag.items.map((o) => <TarjetaOrden key={o.id} orden={o} catalogo={catalogo} onCambio={cargar} />)}
       </div>
+      <Paginacion {...pag} />
     </div>
   );
 }

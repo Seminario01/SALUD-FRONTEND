@@ -23,7 +23,8 @@ export const AYUDA = {
       { si: "pacientes.registrar", texto: "Para registrar llene al menos el nombre. Si el sistema encuentra a alguien parecido (mismo DPI, mismo nombre o nombre parecido con la misma fecha de nacimiento), avisa antes de crear un duplicado." },
       { si: "pacientes.registrar", texto: "Anote las alergias desde el registro: el médico verá el aviso al recetar." },
       { si: "pacientes.registrar", texto: "Registre el departamento, municipio y zona donde vive: con eso funciona el mapa de vigilancia epidemiológica. Si escribe el DPI, el sistema sugiere el municipio de inscripción." },
-      { texto: "Busque por nombre o CUI y abra la ficha para ver todo lo del paciente en un solo lugar." },
+      { texto: "La lista se filtra mientras escribe: por nombre (con o sin tildes) o por DPI. También por edad (de… a…), género, seguro, departamento y alergias; «Quitar filtros» vuelve a mostrar todos." },
+      { texto: "Haga clic en un paciente para abrir su ficha con todo lo del paciente en un solo lugar. «Excel» baja la lista con los filtros aplicados." },
     ],
   },
   "/pacientes/": {
@@ -94,6 +95,7 @@ export const AYUDA = {
       { si: "hospitalizacion.notas", texto: "En el detalle registre notas con signos vitales. Lo que sale del rango normal se marca en rojo y avisa al guardar." },
       { texto: "«Evolución de los signos durante la estancia» muestra gráficas de presión, temperatura, pulso y oxigenación." },
       { si: "hospitalizacion.camas", texto: "El censo de camas muestra libres, ocupadas, en limpieza y en mantenimiento." },
+      { texto: "Haga clic en un paciente ingresado o egresado para abrir su detalle. En «Egresos» puede buscar por nombre." },
     ],
   },
   "/recetas": {
@@ -111,6 +113,7 @@ export const AYUDA = {
       { si: "laboratorio.ordenar", texto: "Elija al paciente, marque los exámenes y la prioridad. Las urgentes salen primero en la cola." },
       { si: "laboratorio.procesar", texto: "Use «Tomar muestra» y luego «Registrar resultados». Al digitar, lo que sale del rango normal se pone en rojo. Puede guardar avances y entregar cuando estén todos." },
       { si: "laboratorio.procesar", texto: "El sistema rechaza valores imposibles (por ejemplo una hemoglobina de 132) para evitar errores de digitación." },
+      { texto: "Busque por paciente, DPI, número de orden o examen, o marque «Solo urgentes»." },
       { texto: "El informe impreso marca ↑ alto, ↓ bajo y * anormal junto a los valores de referencia." },
     ],
   },
@@ -129,6 +132,8 @@ export const AYUDA = {
     titulo: "Vacunación",
     consejos: [
       { si: "vacunacion.registrar", texto: "Registre el esquema del paciente y las vacunas pendientes." },
+      { texto: "Los cuadros de arriba (completo, incompleto, sin registro) filtran la lista con un clic. «Sin registro» muestra a los pacientes que aún no tienen vacunación." },
+      { texto: "Filtre por edad (por ejemplo de 9 a 14 años), género, estudiante o una vacuna pendiente (VPH, Td...). Haga clic en un paciente para ver su detalle sin salir de la lista." },
       { texto: "La constancia de vacunación (PDF) se imprime desde la lista de vacunación o desde la ficha del paciente." },
     ],
   },
@@ -177,6 +182,7 @@ export const AYUDA = {
     titulo: "Referencias",
     consejos: [
       { texto: "Pacientes referidos a otros establecimientos. Las urgentes y las que faltan por confirmar van primero." },
+      { texto: "Busque por paciente, DPI, destino o motivo, o marque «Solo urgentes»." },
       { si: "referencias.gestionar", texto: "Cuando confirmen que el paciente llegó (por teléfono o con la hoja firmada), márquela «Recibida». Para cancelar hay que escribir el motivo." },
       { si: "referencias.crear", texto: "Para referir: en la ficha del paciente, sección «Referencias», botón «Referir». Se abre la hoja para imprimir." },
     ],

@@ -1,5 +1,5 @@
 /* ARCHIVO GENERADO por scripts/modo-oscuro.mjs: no se edita a mano. */
-/* Colores del modo oscuro para las clases de Tailwind que usa la app (99 clases). */
+/* Colores del modo oscuro para las clases de Tailwind que usa la app (100 clases). */
 /* Van en la capa "utilities" con :where() para que hover:, focus: y dark: sigan ganando. */
 @media screen {
   @layer utilities {
@@ -59,6 +59,7 @@
     :where(html.dark) .hover\:bg-white:not(:where(.papel, .papel *)):hover { background-color: oklch(20.8% 0.042 265.755); }
     :where(html.dark) .hover\:text-green-900:not(:where(.papel, .papel *)):hover { color: oklch(92.5% 0.084 155.995); }
     :where(html.dark) .hover\:text-slate-700:not(:where(.papel, .papel *)):hover { color: oklch(86.9% 0.022 252.894); }
+    :where(html.dark) .ring-blue-200:not(:where(.papel, .papel *)) { --tw-ring-color: color-mix(in oklab, oklch(62.3% 0.214 259.815) 40%, transparent); }
     :where(html.dark) .ring-slate-200:not(:where(.papel, .papel *)) { --tw-ring-color: oklch(37.2% 0.044 257.287); }
     :where(html.dark) .ring-white:not(:where(.papel, .papel *)) { --tw-ring-color: oklch(20.8% 0.042 265.755); }
     :where(html.dark) .stroke-slate-100:not(:where(.papel, .papel *)) { stroke: oklch(27.9% 0.041 260.031); }

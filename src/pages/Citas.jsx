@@ -149,7 +149,7 @@ export default function Citas() {
     }
     return true;
   });
-  const pag = usePaginacion(filtradas, 15);
+  const pag = usePaginacion(filtradas, 15, `${filtroEstado}|${desde}|${hasta}|${texto}`);
   const hayFiltros = filtroEstado || desde || hasta || texto;
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);

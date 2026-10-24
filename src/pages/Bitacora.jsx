@@ -51,7 +51,7 @@ export default function Bitacora() {
   }, [consultar]);
 
   const registros = resultado?.data ?? [];
-  const pag = usePaginacion(registros, 25);
+  const pag = usePaginacion(registros, 25, `${pacienteId}|${usuario}|${accion}|${desde}|${hasta}`);
   const elegido = pacientes.find((p) => String(p.id) === pacienteId);
   const hayFiltros = pacienteId || usuario || accion || desde || hasta;
   const totales = resultado?.totales ?? {};

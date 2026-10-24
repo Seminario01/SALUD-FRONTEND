@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Paginacion from "../components/Paginacion";
 import usePaginacion from "../hooks/usePaginacion";
 import client, { mensajeError } from "../api/client";
@@ -7,6 +7,9 @@ import useRoles from "../hooks/useRoles";
 import { REGLAS, reglasNacimiento } from "../utils/validacion";
 import { useAvisos } from "../components/Avisos";
 import SelectorResidencia from "../components/SelectorResidencia";
+import BotonesExportar from "../components/Exportar";
+import { QuitarFiltros, RangoEdad, SelectFiltro, campoFiltro } from "../components/Filtros";
+import { coincidePaciente, edadDe, enRangoEdad } from "../utils/filtros";
 
 const PACIENTE_VACIO = {
   nombre_completo: "",
@@ -182,23 +185,47 @@ function ResultadoAntecedentes({ consulta, onCerrar }) {
   );
 }
 
+const SIN_FILTROS = { texto: "", edadDesde: "", edadHasta: "", genero: "", seguro: "", departamento: "", alergias: "" };
+
+function cumpleFiltros(p, f) {
+  if (!coincidePaciente(p, f.texto)) return false;
+  if (!enRangoEdad(p.fecha_nacimiento, f.edadDesde, f.edadHasta)) return false;
+  if (f.genero && p.genero !== f.genero) return false;
+  if (f.seguro && (p.tipo_seguro || "sin") !== f.seguro) return false;
+  if (f.departamento && (p.departamento || "sin") !== f.departamento) return false;
+  if (f.alergias === "si" && !p.alergias) return false;
+  if (f.alergias === "no" && p.alergias) return false;
+  return true;
+}
+
 export default function Pacientes() {
   const { puedeRegistrarPacientes, puede } = useRoles();
   const puedeAntecedentes = puede("pacientes.antecedentes");
+  const navigate = useNavigate();
 
-  // --- Listado real: GET /pacientes (solo personal de Salud) ---
+  // --- Listado real: GET /pacientes (solo personal de Salud); los filtros se aplican en el navegador ---
   const [pacientes, setPacientes] = useState([]);
-  const pag = usePaginacion(pacientes, 15);
+  const [f, setF] = useState(SIN_FILTROS);
+  const cambiar = (c) => setF((actual) => ({ ...actual, ...c }));
+  const hayFiltros = Object.values(f).some(Boolean);
+  const filtrados = useMemo(() => pacientes.filter((p) => cumpleFiltros(p, f)), [pacientes, f]);
+  const pag = usePaginacion(filtrados, 15, JSON.stringify(f));
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
-  // Solo vale la respuesta de la última petición: si la lista inicial llega después de una
-  // búsqueda, no debe reemplazar sus resultados.
+  // Departamentos que aparecen en la lista (para el filtro)
+  const departamentos = useMemo(() => {
+    const vistos = new Map();
+    pacientes.forEach((p) => { if (p.departamento) vistos.set(p.departamento, p.departamento_nombre ?? p.departamento); });
+    return [...vistos.entries()].sort((a, b) => a[1].localeCompare(b[1], "es")).concat([["sin", "Sin residencia"]]);
+  }, [pacientes]);
+
+  // Solo vale la respuesta de la última petición
   const ultima = useRef(0);
-  const cargar = useCallback((q = "") => {
+  const cargar = useCallback(() => {
     const numero = ++ultima.current;
     client
-      .get("/pacientes", { params: q ? { q } : {} })
+      .get("/pacientes")
       .then((res) => {
         if (numero !== ultima.current) return;
         setPacientes(res.data.data);
@@ -232,21 +259,6 @@ export default function Pacientes() {
       .catch((err) => setConsulta({ paciente: p, error: mensajeError(err) }));
   }
 
-  // --- Búsqueda por nombre o CUI (GET /pacientes?q=...) ---
-  const [texto, setTexto] = useState("");
-
-  function buscar(e) {
-    e.preventDefault();
-    setCargando(true);
-    cargar(texto.trim());
-  }
-
-  function limpiar() {
-    setTexto("");
-    setCargando(true);
-    cargar("");
-  }
-
   return (
     <div className="p-6">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -260,67 +272,90 @@ export default function Pacientes() {
 
       {puedeRegistrarPacientes && <FormularioPaciente onCreado={cargar} />}
 
-      <div className="flex flex-wrap items-end justify-between gap-3 mb-3">
-        <h2 className="font-bold text-gray-700">Listado de pacientes</h2>
-        <form onSubmit={buscar} className="flex gap-2">
+      <h2 className="font-bold text-gray-700 mb-3">Listado de pacientes</h2>
+      <div className="flex flex-wrap items-end gap-3 mb-3">
+        <label className="text-sm">Buscar
           <input
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
+            value={f.texto}
+            onChange={(e) => cambiar({ texto: e.target.value })}
             placeholder="Buscar por nombre o CUI"
-            className="border rounded px-3 py-1.5 w-64"
+            className={`${campoFiltro} w-60`}
           />
-          <button type="submit" className="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800">Buscar</button>
-          {texto && (
-            <button type="button" onClick={limpiar} className="px-3 py-1.5 rounded border hover:bg-gray-100 text-sm">
-              Limpiar
-            </button>
-          )}
-        </form>
+        </label>
+        <RangoEdad desde={f.edadDesde} hasta={f.edadHasta} onCambio={({ desde, hasta }) => cambiar({ edadDesde: desde, edadHasta: hasta })} />
+        <SelectFiltro etiqueta="Género" valor={f.genero} onCambio={(v) => cambiar({ genero: v })}
+          opciones={[["F", "Femenino"], ["M", "Masculino"], ["Otro", "Otro"]]} />
+        <SelectFiltro etiqueta="Seguro" valor={f.seguro} onCambio={(v) => cambiar({ seguro: v })}
+          opciones={[["IGSS", "IGSS"], ["Privado", "Privado"], ["Ninguno", "Ninguno"], ["sin", "Sin dato"]]} />
+        <SelectFiltro etiqueta="Departamento" valor={f.departamento} onCambio={(v) => cambiar({ departamento: v })} opciones={departamentos} />
+        <SelectFiltro etiqueta="Alergias" valor={f.alergias} onCambio={(v) => cambiar({ alergias: v })}
+          opciones={[["si", "Con alergias"], ["no", "Sin alergias"]]} />
+        <QuitarFiltros visible={hayFiltros} onQuitar={() => setF(SIN_FILTROS)} />
+        <span className="text-sm text-slate-500 ml-auto">{filtrados.length} paciente(s)</span>
+        <BotonesExportar nombre="pacientes" titulo="Pacientes" filas={filtrados} columnas={[
+          { titulo: "ID", valor: (p) => p.id, ancho: 7 },
+          { titulo: "Nombre", valor: (p) => p.nombre_completo, ancho: 34 },
+          { titulo: "DPI", valor: (p) => p.cui ?? "", ancho: 16 },
+          { titulo: "Edad", valor: (p) => edadDe(p.fecha_nacimiento) ?? "", ancho: 7 },
+          { titulo: "Género", valor: (p) => p.genero ?? "", ancho: 9 },
+          { titulo: "Teléfono", valor: (p) => p.telefono ?? "", ancho: 12 },
+          { titulo: "Seguro", valor: (p) => p.tipo_seguro ?? "", ancho: 10 },
+          { titulo: "Departamento", valor: (p) => p.departamento_nombre ?? "", ancho: 18 },
+          { titulo: "Municipio", valor: (p) => p.municipio_nombre ?? "", ancho: 20 },
+          { titulo: "Alergias", valor: (p) => p.alergias ?? "", ancho: 24 },
+        ]} />
       </div>
       {cargando && <p className="text-sm text-gray-500">Cargando...</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
       <ResultadoAntecedentes consulta={consulta} onCerrar={() => setConsulta(null)} />
-      {!cargando && !error && pacientes.length === 0 && (
-        <p className="text-sm text-gray-500">No se encontraron pacientes.</p>
+      {!cargando && !error && filtrados.length === 0 && (
+        <p className="text-sm text-gray-500">{hayFiltros ? "Ningún paciente coincide con los filtros." : "No se encontraron pacientes."}</p>
       )}
-      {!cargando && !error && pacientes.length > 0 && (
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b bg-gray-100">
-              <th className="p-2">ID</th>
-              <th className="p-2">Nombre</th>
-              <th className="p-2">CUI</th>
-              <th className="p-2">Teléfono</th>
-              <th className="p-2">Tipo de seguro</th>
-              <th className="p-2">Alergias</th>
-              {puedeAntecedentes && <th className="p-2">Antecedentes (Seguridad)</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {pag.items.map((p) => (
-              <tr key={p.id} className="border-b hover:bg-gray-50">
-                <td className="p-2">{p.id}</td>
-                <td className="p-2">
-                  <Link to={`/pacientes/${p.id}`} className="font-medium text-blue-700 hover:underline">{p.nombre_completo}</Link>
-                </td>
-                <td className="p-2">{p.cui}</td>
-                <td className="p-2">{p.telefono}</td>
-                <td className="p-2">{p.tipo_seguro}</td>
-                <td className="p-2">{p.alergias ? <span className="text-xs rounded bg-red-50 text-red-800 px-1.5 py-0.5">⚠ {p.alergias}</span> : <span className="text-slate-400">—</span>}</td>
-                {puedeAntecedentes && (
-                  <td className="p-2">
-                    <button
-                      onClick={() => consultarAntecedentes(p)}
-                      className="text-xs px-2 py-1 rounded border hover:bg-gray-100"
-                    >
-                      Consultar
-                    </button>
-                  </td>
-                )}
+      {!cargando && !error && filtrados.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b bg-gray-100">
+                <th className="p-2">ID</th>
+                <th className="p-2">Nombre</th>
+                <th className="p-2">Edad</th>
+                <th className="p-2">Teléfono</th>
+                <th className="p-2">Tipo de seguro</th>
+                <th className="p-2">Residencia</th>
+                <th className="p-2">Alergias</th>
+                {puedeAntecedentes && <th className="p-2">Antecedentes (Seguridad)</th>}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {pag.items.map((p) => (
+                <tr key={p.id} title="Abrir la ficha del paciente"
+                  onClick={(e) => { if (!e.target.closest("button, a, input, select")) navigate(`/pacientes/${p.id}`); }}
+                  className="border-b hover:bg-blue-50/60 cursor-pointer">
+                  <td className="p-2">{p.id}</td>
+                  <td className="p-2">
+                    <Link to={`/pacientes/${p.id}`} className="font-medium text-blue-700 hover:underline">{p.nombre_completo}</Link>
+                    {p.cui && <span className="block text-xs text-slate-500">DPI {p.cui}</span>}
+                  </td>
+                  <td className="p-2 tabular-nums">{edadDe(p.fecha_nacimiento) ?? "—"}</td>
+                  <td className="p-2">{p.telefono}</td>
+                  <td className="p-2">{p.tipo_seguro}</td>
+                  <td className="p-2 text-sm">{p.municipio_nombre ? `${p.municipio_nombre}, ${p.departamento_nombre}` : <span className="text-slate-400">—</span>}</td>
+                  <td className="p-2">{p.alergias ? <span className="text-xs rounded bg-red-50 text-red-800 px-1.5 py-0.5">⚠ {p.alergias}</span> : <span className="text-slate-400">—</span>}</td>
+                  {puedeAntecedentes && (
+                    <td className="p-2">
+                      <button
+                        onClick={() => consultarAntecedentes(p)}
+                        className="text-xs px-2 py-1 rounded border hover:bg-gray-100"
+                      >
+                        Consultar
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       <Paginacion {...pag} />
     </div>

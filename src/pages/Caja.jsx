@@ -145,7 +145,7 @@ export default function Caja() {
     }
     return true;
   });
-  const pag = usePaginacion(filtradas, 15);
+  const pag = usePaginacion(filtradas, 15, `${pestana}|${texto}`);
 
   if (cargando) return <p className="p-6">Cargando...</p>;
   if (error) return <p className="p-6 text-red-600">No se pudo cargar Caja: {error}</p>;

@@ -14,10 +14,11 @@ test("Recepción registra un paciente nuevo", async ({ page }) => {
   const errores = vigilarErrores(page);
   await entrar(page, "recepcion1");
   await page.goto("/pacientes");
-  await page.getByLabel("Nombre completo *").fill(NOMBRE);
-  await page.getByLabel("Género").selectOption("F");
-  await page.getByLabel("Tipo de seguro").selectOption("Ninguno");
-  await page.getByRole("button", { name: "Registrar", exact: true }).click();
+  const formulario = page.locator("form", { hasText: "Registrar paciente" });   // la lista también tiene filtro de género
+  await formulario.getByLabel("Nombre completo *").fill(NOMBRE);
+  await formulario.getByLabel("Género").selectOption("F");
+  await formulario.getByLabel("Tipo de seguro").selectOption("Ninguno");
+  await formulario.getByRole("button", { name: "Registrar", exact: true }).click();
   // Si el sistema avisa de alguien parecido (de otra corrida), es otra persona
   const parecido = page.getByRole("button", { name: "Sí, es otra persona" });
   const exito = page.getByText(/Paciente registrado con ID \d+/);
@@ -73,7 +74,7 @@ test("el médico pide un examen de glucosa urgente", async ({ page }) => {
   await page.getByRole("combobox", { name: "Paciente" }).fill(NOMBRE);
   await page.getByRole("option", { name: new RegExp(NOMBRE) }).first().click();
   await page.getByLabel("Glucosa en ayunas").check();
-  await page.getByLabel("Urgente").check();
+  await page.getByRole("radio", { name: "Urgente" }).check();
   await page.getByRole("button", { name: "Pedir 1 examen" }).click();
   const aviso = page.getByText(/Orden de laboratorio No\. \d+ creada/);
   await expect(aviso).toBeVisible();
@@ -160,7 +161,6 @@ test("el médico refiere a una paciente al Roosevelt y Enfermería confirma que 
   await entrar(medico, "medico1");
   await medico.goto("/pacientes");
   await medico.getByPlaceholder("Buscar por nombre o CUI").fill("María José López");
-  await medico.getByRole("button", { name: "Buscar", exact: true }).click();
   await medico.getByRole("link", { name: "María José López Hernández" }).first().click();
   await medico.getByRole("button", { name: "Referir" }).click();
   const seccion = medico.locator("section", { hasText: "Referencias a otros establecimientos" });
@@ -185,5 +185,34 @@ test("el médico refiere a una paciente al Roosevelt y Enfermería confirma que 
   await expect(fila).toContainText("Urgente");
   await fila.getByRole("button", { name: "Recibida" }).click();
   await expect(enfermera.getByText("Referencia marcada como recibida")).toBeVisible();
+  expect(errores).toEqual([]);
+});
+
+test("Vacunación filtra por edad y esquema y abre el detalle de la persona", async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrar(page, "medico1");
+  await page.goto("/vacunacion");
+  const total = page.getByText(/^\d+ paciente\(s\)$/);
+  await expect(total).toBeVisible();
+  const antes = Number((await total.textContent()).match(/\d+/)[0]);
+  await page.getByLabel("Edad desde").fill("9");
+  await page.getByLabel("Edad hasta").fill("14");
+  await page.getByRole("button", { name: /Esquema incompleto/ }).click();
+  await expect(page.getByRole("combobox", { name: "Esquema", exact: true })).toHaveValue("incompleto");
+  const despues = Number((await total.textContent()).match(/\d+/)[0]);
+  expect(despues).toBeLessThanOrEqual(antes);
+  // Todas las edades de la página están en el rango
+  const edades = await page.locator("tbody tr td:nth-child(2)").allTextContents();
+  for (const e of edades) expect(Number(e) >= 9 && Number(e) <= 14).toBe(true);
+  if (despues > 0) {
+    await page.locator("tbody tr").first().getByRole("button").first().click();
+    const panel = page.getByRole("dialog");
+    await expect(panel.getByRole("link", { name: "Ver ficha completa →" })).toBeVisible();
+    await expect(panel.getByText("Esquema completo:")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(panel).toBeHidden();
+  }
+  await page.getByRole("button", { name: "Quitar filtros" }).click();
+  await expect(page.getByLabel("Edad desde")).toHaveValue("");
   expect(errores).toEqual([]);
 });

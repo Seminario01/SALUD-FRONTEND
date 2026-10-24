@@ -372,7 +372,7 @@ export default function Recetas() {
     }
     return true;
   });
-  const pag = usePaginacion(filtradas, 10);
+  const pag = usePaginacion(filtradas, 10, `${estado}|${texto}`);
   const cuenta = (e) => recetas.filter((r) => r.estado === e).length;
 
   async function despachar(receta) {

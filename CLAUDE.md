@@ -142,6 +142,20 @@ refiere a un establecimiento activo y se abre la hoja `/imprimir/referencia/:id`
 `Documentos.jsx`, en la misma pestaña). `pages/Referencias.jsx` (`/referencias`): por confirmar primero;
 Enfermería, Médico o Jefatura la marcan recibida o cancelada. `utils/red.js`: textos y la red en memoria.
 
+## Listas: filtros, paginación y detalle
+
+Las listas se cargan completas y se filtran en el navegador. `utils/filtros.js`: `edadDe` (años cumplidos sin
+corrimiento de zona horaria), `sinTildes`, `coincidePaciente` (nombre sin tildes, todas las palabras, o DPI con 3+
+dígitos) y `enRangoEdad`. `components/Filtros.jsx`: `RangoEdad` (de… a… años), `SelectFiltro`, `QuitarFiltros`.
+`usePaginacion(lista, porPagina, reinicio)`: al cambiar `reinicio` (los filtros en texto) vuelve a la página 1;
+`Paginacion` muestra números de página, "Mostrar 15/20/50/100" y sube al inicio de la lista al cambiar de página.
+`components/PanelPaciente.jsx`: panel lateral con los datos de la persona (Escape cierra), lo propio de cada
+pantalla como `children` y "Ver ficha completa". Vacunación: cuadros de totales que filtran (completo, incompleto,
+sin registro), filtros por edad, género, estudiante y vacuna pendiente, clic en la persona abre el panel. Pacientes:
+búsqueda mientras se escribe y filtros por edad, género, seguro, departamento y alergias; clic en la fila abre la
+ficha. Laboratorio y Referencias: búsqueda y "Solo urgentes". Hospitalización: clic en la fila abre el detalle y
+búsqueda en Egresos. Las claves de fila deben ser únicas (hay pacientes con dos registros de vacunación viejos).
+
 ## Ayuda dentro del sistema
 
 Botón "?" del encabezado (`components/Ayuda.jsx`): consejos de la pantalla actual en `utils/ayuda.js`

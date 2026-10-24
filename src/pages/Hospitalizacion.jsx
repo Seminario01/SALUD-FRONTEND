@@ -7,6 +7,10 @@ import DetalleHospitalizacion from "../components/DetalleHospitalizacion";
 import { AREAS, ESTADO_CAMA, TIPOS_EGRESO, fechaHora, haceCuanto, textoDias } from "../utils/hospitalizacion";
 import BuscadorPaciente from "../components/BuscadorPaciente";
 import { useAvisos } from "../components/Avisos";
+import Paginacion from "../components/Paginacion";
+import usePaginacion from "../hooks/usePaginacion";
+import { campoFiltro } from "../components/Filtros";
+import { coincidePaciente } from "../utils/filtros";
 
 const campo = "border rounded px-3 py-1.5 w-full";
 
@@ -289,6 +293,10 @@ export default function Hospitalizacion() {
   const [pestana, setPestana] = useState("curso");
   const [ordenando, setOrdenando] = useState(Boolean(params.get("paciente")));
   const [detalle, setDetalle] = useState(null);
+  const [textoEgresos, setTextoEgresos] = useState("");
+  const [tipoEgreso, setTipoEgreso] = useState("");
+  // Clic en la fila (fuera de un botón) abre el detalle
+  const abrirFila = (h) => (e) => { if (!e.target.closest("button, a, input, select")) setDetalle(h.id); };
   const [camaSel, setCamaSel] = useState(null);
 
   const cargar = useCallback(() => {
@@ -311,12 +319,18 @@ export default function Hospitalizacion() {
     if (gestionaCamas) setCamaSel(camaSel === c.id ? null : c.id);
   }
 
+  // Egresos (con búsqueda): se calculan antes de los "return" de carga y error
+  const egresosTodos = (lista ?? []).filter((h) => h.estado === "EGRESADO");
+  const egresosVisibles = egresosTodos.filter((h) => coincidePaciente({ nombre_completo: h.paciente }, textoEgresos)
+    && (!tipoEgreso || h.tipo_egreso === tipoEgreso));
+  const pagEgresos = usePaginacion(egresosVisibles, 15, `${textoEgresos}|${tipoEgreso}`);
+
   if (cargando) return <p className="p-6">Cargando...</p>;
   if (error) return <p className="p-6 text-red-600">No se pudo cargar Hospitalización: {error}</p>;
 
   const pendientes = lista.filter((h) => h.estado === "PENDIENTE");
   const activos = lista.filter((h) => h.estado === "ACTIVO").sort((a, b) => String(a.cama).localeCompare(String(b.cama)));
-  const egresos = lista.filter((h) => h.estado === "EGRESADO");
+  const egresos = egresosTodos;
   const disponibles = camas.filter((c) => c.estado === "DISPONIBLE").length;
   const ocupadas = camas.filter((c) => c.estado === "OCUPADA").length;
   const cama = camas.find((c) => c.id === camaSel);
@@ -403,9 +417,9 @@ export default function Hospitalizacion() {
                   </thead>
                   <tbody>
                     {activos.map((h) => (
-                      <tr key={h.id} className="border-b last:border-0 hover:bg-gray-50">
+                      <tr key={h.id} onClick={abrirFila(h)} title="Ver el detalle" className="border-b last:border-0 hover:bg-blue-50/60 cursor-pointer">
                         <td className="p-2 font-semibold tabular-nums whitespace-nowrap">{h.cama}</td>
-                        <td className="p-2 text-slate-800">{h.paciente}</td>
+                        <td className="p-2 text-slate-800 font-medium">{h.paciente}</td>
                         <td className="p-2 text-sm text-slate-600">{h.area}</td>
                         <td className="p-2 text-sm text-slate-600">{fechaHora(h.fecha_ingreso)}</td>
                         <td className="p-2 text-sm tabular-nums">{textoDias(h.dias_estancia)}</td>
@@ -426,6 +440,23 @@ export default function Hospitalizacion() {
 
       {pestana === "egresos" && (
         egresos.length === 0 ? <p className="text-sm text-slate-500">No hay egresos registrados.</p> : (
+          <>
+          <div className="flex flex-wrap items-end gap-3 mb-3">
+            <label className="text-sm">Buscar
+              <input value={textoEgresos} onChange={(e) => setTextoEgresos(e.target.value)} placeholder="Nombre del paciente"
+                className={`${campoFiltro} w-56`} />
+            </label>
+            {clinico && (
+              <label className="text-sm">Tipo de egreso
+                <select value={tipoEgreso} onChange={(e) => setTipoEgreso(e.target.value)} className={campoFiltro}>
+                  <option value="">Todos</option>
+                  {Object.entries(TIPOS_EGRESO).map(([v, t]) => <option key={v} value={v}>{t}</option>)}
+                </select>
+              </label>
+            )}
+            <span className="text-sm text-slate-500 ml-auto pb-2">{egresosVisibles.length} egreso(s)</span>
+          </div>
+          {egresosVisibles.length === 0 ? <p className="text-sm text-slate-500">Ningún egreso coincide con la búsqueda.</p> : (
           <div className="bg-white border rounded-lg shadow-sm overflow-x-auto">
             <table className="w-full text-left">
               <thead>
@@ -437,9 +468,9 @@ export default function Hospitalizacion() {
                 </tr>
               </thead>
               <tbody>
-                {egresos.map((h) => (
-                  <tr key={h.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="p-2 text-slate-800">{h.paciente}</td>
+                {pagEgresos.items.map((h) => (
+                  <tr key={h.id} onClick={abrirFila(h)} title="Ver el detalle" className="border-b last:border-0 hover:bg-blue-50/60 cursor-pointer">
+                    <td className="p-2 text-slate-800 font-medium">{h.paciente}</td>
                     <td className="p-2 text-sm text-slate-600">{h.area} · {h.cama}</td>
                     <td className="p-2 text-sm text-slate-600">{fechaHora(h.fecha_ingreso)}</td>
                     <td className="p-2 text-sm text-slate-600">{fechaHora(h.fecha_egreso)}</td>
@@ -453,6 +484,9 @@ export default function Hospitalizacion() {
               </tbody>
             </table>
           </div>
+          )}
+          <Paginacion {...pagEgresos} />
+          </>
         )
       )}
 
