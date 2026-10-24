@@ -153,9 +153,12 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
   );
 }
 
-// Consulta a Educación (E1) desde el panel de la persona: ¿es estudiante activo?
-function VerificarEducacion({ cui }) {
+// Consulta a Educación (E1) desde el panel de la persona: ¿es estudiante activo? Si Educación dice
+// otra cosa que el registro de Salud, ofrece corregir "Estudiante" en Salud.
+function VerificarEducacion({ cui, pacienteId, registro, onActualizado }) {
   const [estado, setEstado] = useState(null);
+  const [guardando, setGuardando] = useState(false);
+  const avisos = useAvisos();
   function verificar() {
     setEstado({ cargando: true });
     client.get(`/educacion/estudiantes/${encodeURIComponent(cui)}`)
@@ -163,6 +166,14 @@ function VerificarEducacion({ cui }) {
       .catch((err) => setEstado({ error: mensajeError(err) }));
   }
   const d = estado?.datos;
+  const distinto = d && registro && Boolean(registro.es_estudiante) !== Boolean(d.esEstudiante);
+  function corregir() {
+    setGuardando(true);
+    client.put(`/vacunacion/${pacienteId}`, { es_estudiante: Boolean(d.esEstudiante) })
+      .then(() => { avisos.exito(`Actualizado en Salud: ${d.esEstudiante ? "es estudiante" : "no es estudiante"}.`); onActualizado(); })
+      .catch((err) => avisos.error(mensajeError(err)))
+      .finally(() => setGuardando(false));
+  }
   return (
     <section className="rounded-lg border p-3 space-y-2 text-sm">
       <div className="flex items-center justify-between gap-2">
@@ -180,6 +191,18 @@ function VerificarEducacion({ cui }) {
           Estudiante de {d.establecimiento ?? "—"} · {d.grado ?? ""}{d.seccion ? ` sección ${d.seccion}` : ""} · jornada {d.jornada ?? "—"}
         </p>
       ) : <p className="text-slate-600">El CUI no corresponde a un estudiante activo.</p>)}
+      {distinto && (
+        <div className="rounded bg-amber-50 border border-amber-200 text-amber-900 px-2 py-1.5 space-y-1.5">
+          <p>
+            En Salud está registrado como {registro.es_estudiante ? "estudiante" : "no estudiante"}, pero Educación
+            {d.esEstudiante ? " sí lo tiene inscrito." : " no lo tiene inscrito."}
+          </p>
+          <button type="button" onClick={corregir} disabled={guardando}
+            className="text-xs px-2 py-1 rounded border border-amber-400 bg-white hover:bg-amber-100 disabled:opacity-50">
+            {guardando ? "Guardando..." : `Actualizar en Salud: ${d.esEstudiante ? "es estudiante" : "no es estudiante"}`}
+          </button>
+        </div>
+      )}
     </section>
   );
 }
@@ -493,7 +516,8 @@ function VacunacionPersonal({ registra, anula }) {
               <p className="text-slate-500">Todavía no tiene registro de vacunación.</p>
             )}
           </section>
-          {registra && <VerificarEducacion key={abierto} cui={filaAbierta.paciente.cui} />}
+          {registra && <VerificarEducacion key={abierto} cui={filaAbierta.paciente.cui} pacienteId={abierto}
+            registro={filaAbierta.registro} onActualizado={cargar} />}
         </PanelPaciente>
       )}
     </div>
