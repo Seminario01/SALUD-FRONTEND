@@ -25,7 +25,6 @@ const Si = ({ valor }) => (
 
 function datosDe(registro) {
   return {
-    es_estudiante: registro?.es_estudiante ?? false,
     esquema_completo: registro?.esquema_completo ?? false,
     vacunas_pendientes: registro?.vacunas_pendientes ?? "",
   };
@@ -60,7 +59,6 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
       .then((res) => {
         const d = res.data.data;
         setEducacion({ datos: d });
-        setDatos((actual) => ({ ...actual, es_estudiante: Boolean(d.esEstudiante) }));
       })
       .catch((err) => setEducacion({ error: mensajeError(err) }));
   }
@@ -92,25 +90,20 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
           Paciente *
           <BuscadorPaciente pacientes={pacientes} valor={pacienteId} onCambio={elegirPaciente} requerido />
         </label>
-        <label className="text-sm flex items-center gap-2 pb-2">
-          <input
-            type="checkbox"
-            checked={datos.es_estudiante}
-            onChange={(e) => setDatos({ ...datos, es_estudiante: e.target.checked })}
-          />
-          Es estudiante
+        {/* Si es estudiante lo dice Educación (en vivo); Salud no lo guarda */}
+        <div className="text-sm flex items-center gap-2 pb-2">
           {pacienteId && (
             <button
               type="button"
               onClick={verificarEducacion}
               disabled={!cui || educacion?.cargando}
               title={cui ? "Consultar al módulo de Educación" : "El paciente no tiene CUI registrado"}
-              className="ml-2 text-xs px-2 py-0.5 rounded border hover:bg-gray-100 disabled:opacity-40"
+              className="text-xs px-2 py-1 rounded border hover:bg-gray-100 disabled:opacity-40"
             >
               {educacion?.cargando ? "Consultando..." : "Verificar en Educación"}
             </button>
           )}
-        </label>
+        </div>
         <label className="text-sm flex items-center gap-2 pb-2">
           <input
             type="checkbox"
@@ -153,12 +146,10 @@ function FormularioVacunacion({ pacientes, registros, seleccionInicial, onGuarda
   );
 }
 
-// Consulta a Educación (E1) desde el panel de la persona: ¿es estudiante activo? Si Educación dice
-// otra cosa que el registro de Salud, ofrece corregir "Estudiante" en Salud.
-function VerificarEducacion({ cui, pacienteId, registro, onActualizado }) {
+// Consulta a Educación (E1) desde el panel de la persona: ¿es estudiante activo? Lo dice Educación;
+// Salud no guarda si alguien es estudiante.
+function VerificarEducacion({ cui }) {
   const [estado, setEstado] = useState(null);
-  const [guardando, setGuardando] = useState(false);
-  const avisos = useAvisos();
   function verificar() {
     setEstado({ cargando: true });
     client.get(`/educacion/estudiantes/${encodeURIComponent(cui)}`)
@@ -166,14 +157,6 @@ function VerificarEducacion({ cui, pacienteId, registro, onActualizado }) {
       .catch((err) => setEstado({ error: mensajeError(err) }));
   }
   const d = estado?.datos;
-  const distinto = d && registro && Boolean(registro.es_estudiante) !== Boolean(d.esEstudiante);
-  function corregir() {
-    setGuardando(true);
-    client.put(`/vacunacion/${pacienteId}`, { es_estudiante: Boolean(d.esEstudiante) })
-      .then(() => { avisos.exito(`Actualizado en Salud: ${d.esEstudiante ? "es estudiante" : "no es estudiante"}.`); onActualizado(); })
-      .catch((err) => avisos.error(mensajeError(err)))
-      .finally(() => setGuardando(false));
-  }
   return (
     <section className="rounded-lg border p-3 space-y-2 text-sm">
       <div className="flex items-center justify-between gap-2">
@@ -191,18 +174,6 @@ function VerificarEducacion({ cui, pacienteId, registro, onActualizado }) {
           Estudiante de {d.establecimiento ?? "—"} · {d.grado ?? ""}{d.seccion ? ` sección ${d.seccion}` : ""} · jornada {d.jornada ?? "—"}
         </p>
       ) : <p className="text-slate-600">El CUI no corresponde a un estudiante activo.</p>)}
-      {distinto && (
-        <div className="rounded bg-amber-50 border border-amber-200 text-amber-900 px-2 py-1.5 space-y-1.5">
-          <p>
-            En Salud está registrado como {registro.es_estudiante ? "estudiante" : "no estudiante"}, pero Educación
-            {d.esEstudiante ? " sí lo tiene inscrito." : " no lo tiene inscrito."}
-          </p>
-          <button type="button" onClick={corregir} disabled={guardando}
-            className="text-xs px-2 py-1 rounded border border-amber-400 bg-white hover:bg-amber-100 disabled:opacity-50">
-            {guardando ? "Guardando..." : `Actualizar en Salud: ${d.esEstudiante ? "es estudiante" : "no es estudiante"}`}
-          </button>
-        </div>
-      )}
     </section>
   );
 }
@@ -229,7 +200,6 @@ function MiVacunacion() {
       {registro && (
         <div className="bg-white border rounded-lg p-4 shadow-sm max-w-md space-y-2 text-sm">
           <p>Esquema completo: <Si valor={registro.esquema_completo} /></p>
-          <p>Estudiante: {registro.es_estudiante ? "Sí" : "No"}</p>
           <p>Vacunas pendientes: {registro.vacunas_pendientes || "Ninguna"}</p>
         </div>
       )}
@@ -243,7 +213,7 @@ export default function Vacunacion() {
   return <VacunacionPersonal registra={puede("vacunacion.registrar")} anula={puede("vacunacion.anular")} />;
 }
 
-const SIN_FILTROS = { texto: "", edadDesde: "", edadHasta: "", genero: "", estudiante: "", esquema: "", pendiente: "" };
+const SIN_FILTROS = { texto: "", edadDesde: "", edadHasta: "", genero: "", esquema: "", pendiente: "" };
 
 const ESQUEMAS = [
   ["completo", "Completo"],
@@ -259,7 +229,6 @@ function cumpleFiltros({ paciente, registro }, f) {
   if (!registro) return false;
   if (f.esquema === "completo" && !registro.esquema_completo) return false;
   if (f.esquema === "incompleto" && registro.esquema_completo) return false;
-  if (f.estudiante && registro.es_estudiante !== (f.estudiante === "si")) return false;
   if (f.pendiente && !sinTildes(registro.vacunas_pendientes).includes(sinTildes(f.pendiente).trim())) return false;
   return true;
 }
@@ -402,8 +371,6 @@ function VacunacionPersonal({ registra, anula }) {
             <SelectFiltro etiqueta="Esquema" valor={f.esquema} onCambio={(v) => cambiar({ esquema: v })} opciones={ESQUEMAS} />
             {f.esquema !== "sin_registro" && (
               <>
-                <SelectFiltro etiqueta="Estudiante" valor={f.estudiante} onCambio={(v) => cambiar({ estudiante: v })}
-                  opciones={[["si", "Sí"], ["no", "No"]]} />
                 <label className="text-sm">Vacuna pendiente
                   <input value={f.pendiente} onChange={(e) => cambiar({ pendiente: e.target.value })} placeholder="Ej.: VPH, Td"
                     className={`${campoFiltro} w-36`} />
@@ -416,7 +383,6 @@ function VacunacionPersonal({ registra, anula }) {
               { titulo: "Paciente", valor: (x) => x.paciente?.nombre_completo ?? `ID ${x.id}`, ancho: 32 },
               { titulo: "DPI", valor: (x) => x.paciente?.cui ?? "", ancho: 16 },
               { titulo: "Edad", valor: (x) => edadDe(x.paciente?.fecha_nacimiento) ?? "", ancho: 7 },
-              { titulo: "Estudiante", valor: (x) => (x.registro ? (x.registro.es_estudiante ? "Sí" : "No") : ""), ancho: 11 },
               { titulo: "Esquema completo", valor: (x) => (x.registro ? (x.registro.esquema_completo ? "Sí" : "No") : "Sin registro"), ancho: 16 },
               { titulo: "Vacunas pendientes", valor: (x) => x.registro?.vacunas_pendientes ?? "", ancho: 40 },
             ]} />
@@ -435,7 +401,6 @@ function VacunacionPersonal({ registra, anula }) {
                   <tr className="border-b bg-gray-100">
                     <th className="p-2">Paciente</th>
                     <th className="p-2">Edad</th>
-                    <th className="p-2">Estudiante</th>
                     <th className="p-2">Esquema completo</th>
                     <th className="p-2">Pendientes</th>
                     <th className="p-2">Constancia</th>
@@ -456,13 +421,12 @@ function VacunacionPersonal({ registra, anula }) {
                       <td className="p-2 tabular-nums">{edadDe(paciente?.fecha_nacimiento) ?? "—"}</td>
                       {v ? (
                         <>
-                          <td className="p-2">{v.es_estudiante ? "Sí" : "No"}</td>
                           <td className="p-2"><Si valor={v.esquema_completo} /></td>
                           <td className="p-2">{v.vacunas_pendientes || "—"}</td>
                           <td className="p-2">{constancia(id)}</td>
                         </>
                       ) : (
-                        <td className="p-2 text-slate-500" colSpan={4}>Sin registro de vacunación</td>
+                        <td className="p-2 text-slate-500" colSpan={3}>Sin registro de vacunación</td>
                       )}
                       {(registra || anula) && (
                         <td className="p-2 space-x-1 whitespace-nowrap">
@@ -506,7 +470,6 @@ function VacunacionPersonal({ registra, anula }) {
             {filaAbierta.registro ? (
               <>
                 <p>Esquema completo: <Si valor={filaAbierta.registro.esquema_completo} /></p>
-                <p>Estudiante: {filaAbierta.registro.es_estudiante ? "Sí" : "No"}</p>
                 <p>Vacunas pendientes: {filaAbierta.registro.vacunas_pendientes || "Ninguna"}</p>
                 {filaAbierta.registro.fecha_actualizacion && (
                   <p className="text-xs text-slate-500">Actualizado el {formatoFechaHora(filaAbierta.registro.fecha_actualizacion)}</p>
@@ -516,8 +479,7 @@ function VacunacionPersonal({ registra, anula }) {
               <p className="text-slate-500">Todavía no tiene registro de vacunación.</p>
             )}
           </section>
-          {registra && <VerificarEducacion key={abierto} cui={filaAbierta.paciente.cui} pacienteId={abierto}
-            registro={filaAbierta.registro} onActualizado={cargar} />}
+          {registra && <VerificarEducacion key={abierto} cui={filaAbierta.paciente.cui} />}
         </PanelPaciente>
       )}
     </div>

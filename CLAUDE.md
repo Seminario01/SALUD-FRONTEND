@@ -126,7 +126,8 @@ espera a tenerlos) y `useRoles` los suma a los roles del token; el servidor los 
 `pages/Jornadas.jsx` (`/vacunacion/jornadas`, botón "Jornadas con Educación" en Vacunación): las jornadas que pidió
 Educación (WS-SALUD-01) o que se coordinaron aquí ("Coordinar y traer estudiantes" llama a Educación E2), con los
 estudiantes convocados, si ya son pacientes de Salud y su esquema, y la casilla "Vacunado". En el panel de la persona de
-Vacunación, "Verificar en Educación" (E1) consulta si es estudiante activo.
+Vacunación, "Verificar en Educación" (E1) consulta si es estudiante activo. Salud ya no tiene casilla "Es estudiante"
+(ni columna, filtro, ficha ni constancia): ese dato es de Educación y se pregunta en vivo.
 
 ## Servicios integrados (en Integraciones)
 

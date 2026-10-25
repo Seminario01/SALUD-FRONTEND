@@ -346,7 +346,6 @@ export function ConstanciaVacunacion() {
             </p>
             {!v.esquema_completo && <p className="mt-1">Vacunas pendientes: <b>{v.vacunas_pendientes || "no especificadas"}</b></p>}
             {v.esquema_completo && v.vacunas_pendientes && <p className="mt-1">Observaciones: {v.vacunas_pendientes}</p>}
-            <p className="mt-1">Estudiante: {v.es_estudiante ? "Sí" : "No"}</p>
           </div>
 
           <p className="text-xs text-slate-600">Registro actualizado el {fechaHora(v.fecha_actualizacion)}</p>

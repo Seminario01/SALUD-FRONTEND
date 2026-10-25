@@ -309,7 +309,6 @@ export default function FichaPaciente() {
               <p className={`font-semibold ${vacunacion.esquema_completo ? "text-green-700" : "text-amber-600"}`}>
                 {vacunacion.esquema_completo ? "Esquema completo" : "Esquema incompleto"}
               </p>
-              <p>Estudiante: {vacunacion.es_estudiante ? "Sí" : "No"}</p>
               {vacunacion.vacunas_pendientes && <p>Pendientes: {vacunacion.vacunas_pendientes}</p>}
               <Link to={`/imprimir/vacunacion/${id}`} className="no-imprimir inline-block mt-1 text-blue-700 hover:underline">Constancia de vacunación (PDF)</Link>
             </div>

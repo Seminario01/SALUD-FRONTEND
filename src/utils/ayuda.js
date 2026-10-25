@@ -133,7 +133,7 @@ export const AYUDA = {
     consejos: [
       { si: "vacunacion.registrar", texto: "Registre el esquema del paciente y las vacunas pendientes." },
       { texto: "Los cuadros de arriba (completo, incompleto, sin registro) filtran la lista con un clic. «Sin registro» muestra a los pacientes que aún no tienen vacunación." },
-      { texto: "Filtre por edad (por ejemplo de 9 a 14 años), género, estudiante o una vacuna pendiente (VPH, Td...). Haga clic en un paciente para ver su detalle sin salir de la lista; ahí está «Verificar en Educación»." },
+      { texto: "Filtre por edad (por ejemplo de 9 a 14 años), género o una vacuna pendiente (VPH, Td...). Haga clic en un paciente para ver su detalle sin salir de la lista; ahí está «Verificar en Educación»: si es estudiante lo responde Educación en ese momento (Salud no lo guarda)." },
       { texto: "«Jornadas con Educación» muestra las jornadas de vacunación coordinadas con Educación y sus estudiantes convocados." },
       { texto: "La constancia de vacunación (PDF) se imprime desde la lista de vacunación o desde la ficha del paciente." },
     ],
