@@ -47,6 +47,15 @@ cd ~/proyecto-salud/SALUD-BACKEND/deploy && docker compose ps
   del backend y, si no viene, uno en español según el código. No mostrar `err.message`.
 - Antes de hacer commit: `npx eslint src` y `npm run build`.
 
+## Cabeceras de seguridad (nginx)
+
+`docker/seguridad.conf` (nosniff, X-Frame-Options DENY, Referrer-Policy, HSTS, Permissions-Policy) se incluye en el
+server **y en cada location con `add_header` propio** (en nginx esos ya no heredan los del server). `location /` lleva
+además la Content-Security-Policy: solo scripts propios, estilos propios y de Google Fonts, `connect-src`/`frame-src`
+`https:` por el Login Único (su dirección llega en `/config.js`). No va en el server porque /apidocs usa scripts en línea.
+Antes de cambiarla, probar la app compilada con esas cabeceras (`vite preview` con `preview.headers`) y correr las
+pruebas de pantallas: `vigilarErrores` (`e2e/ayuda.js`) falla si el navegador bloquea algo por la CSP.
+
 ## App instalable (PWA)
 
 `public/manifest.webmanifest`, íconos `public/icono-*.png` y `public/sw.js` (se registra solo en

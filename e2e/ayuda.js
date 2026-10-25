@@ -18,6 +18,10 @@ export async function entrar(page, usuario) {
 export function vigilarErrores(page) {
   const errores = [];
   page.on("pageerror", (e) => errores.push(`Error de JavaScript: ${e.message}`));
+  // Algo bloqueado por la Content-Security-Policy (se prueba con la app compilada y las cabeceras de nginx)
+  page.on("console", (m) => {
+    if (m.type() === "error" && /Content Security Policy/i.test(m.text())) errores.push(`CSP: ${m.text().slice(0, 200)}`);
+  });
   page.on("response", (r) => {
     if (r.url().includes("/api/") && r.status() >= 500) errores.push(`${r.status()} en ${r.request().method()} ${new URL(r.url()).pathname}`);
   });
